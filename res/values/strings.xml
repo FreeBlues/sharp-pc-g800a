@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">g800a</string>
+    
+    <string name="menu_sio">SIO...</string>
+    <string name="menu_sio_stop">No import/outport</string>
+    <string name="menu_sio_in">Import from file</string>
+    <string name="menu_sio_out">Outport to file</string>
+    <string name="menu_direct_load">Direct load</string>
+    <string name="menu_go">Go</string>
+    <string name="menu_machine">Pokecom...</string>
+    <string name="menu_machine_e200">PC-E200</string>
+    <string name="menu_machine_g815">PC-G815</string>
+    <string name="menu_machine_g850">PC-G850</string>
+    <string name="menu_settings">Settings...</string>
+    <string name="menu_import_e200_rom">Import ROM images (PC-E200)</string>
+    <string name="menu_import_g815_rom">Import ROM images (PC-G815)</string>
+    <string name="menu_import_g850_rom">Import ROM images (PC-G850)</string>
+    <string name="menu_hide_rightside_menu">(IS01 only) Hide right side menu</string>
+    <string name="menu_show_rightside_menu">(IS01 only) Show right side menu</string>
+    <string name="menu_clocks">CPU clocks</string>
+    <string name="menu_reset">Reset</string>
+    
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="hide">Hide</string>
+    <string name="address">Start address</string>
+    <string name="reading">Reading</string>
+    <string name="writing">Writing</string>
+    
+    <string name="unknown_error">Unknown error.</string>
+    <string name="file_not_found">File not found.</string>
+    <string name="cannot_open">Cannot open.</string>
+    <string name="wrong_hex_file">Wrong Intel HEX file.</string>
+    <string name="rom_file_not_found">ROM image file not found.</string>
+</resources>

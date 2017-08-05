@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">g800a</string>
+    
+    <string name="menu_sio">SIO...</string>
+    <string name="menu_sio_stop">入出力なし</string>
+    <string name="menu_sio_in">ファイルから入力</string>
+    <string name="menu_sio_out">ファイルへ出力</string>
+    <string name="menu_direct_load">直接ロード</string>
+    <string name="menu_go">実行</string>
+    <string name="menu_machine">機種...</string>
+    <string name="menu_machine_e200">PC-E200</string>
+    <string name="menu_machine_g815">PC-G815</string>
+    <string name="menu_machine_g850">PC-G850</string>
+    <string name="menu_settings">設定...</string>
+    <string name="menu_import_e200_rom">PC-E200のROMイメージを読み込む</string>
+    <string name="menu_import_g815_rom">PC-G815のROMイメージを読み込む</string>
+    <string name="menu_import_g850_rom">PC-G850のROMイメージを読み込む</string>
+    <string name="menu_hide_rightside_menu">(IS01のみ) 右側のメニューを消す</string>
+    <string name="menu_show_rightside_menu">(IS01のみ) 右側のメニューを表示する</string>
+    <string name="menu_clocks">CPUクロック数</string>
+    <string name="menu_reset">リセット</string>
+    
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
+    <string name="hide">隠す</string>
+    <string name="address">開始アドレス</string>
+    <string name="reading">読込中</string>
+    <string name="writing">書込中</string>
+    
+    <string name="unknown_error">不明なエラーです</string>
+    <string name="file_not_found">ファイルがありません</string>
+    <string name="cannot_open">ファイルを開けませんでした</string>
+    <string name="wrong_hex_file">不正なIntelHEXファイルです</string>
+    <string name="rom_file_not_found">ROMイメージファイルがありません</string>
+</resources>
