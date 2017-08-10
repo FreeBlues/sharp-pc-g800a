@@ -68,7 +68,7 @@ print("R16 增加:", string.format("%X",R16:get()))
 
 print("==== Z80:Z80Emulator() 构造函数-------------------")
 z80 = Z:Z80Emulator()
-for k,v in pairs(Z) do print(k,v) end
+--for k,v in pairs(Z) do print(k,v) end
 print(Z.iff,Z.hlt,Z.a)
 
 
