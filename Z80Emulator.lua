@@ -464,6 +464,27 @@ local pc	=	Z80.pc
 local restStates	=	Z80.restStates
 local trace	=	Z80.trace
 
+-- 内存Ram (0x0000~0xffff) 
+--	private byte[] memory;
+local memory = {}
+
+-- Ram 初始值 (0x0000~0x003f)
+-- private byte[] base = new byte[] {...}
+local base = {
+		 0xc3,  0xf4,  0xbf,  0x00,  0x00,  0x00,  0x00,  0x00,
+		 0xc9,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+		 0xc9,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+		 0xc9,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+		 0xc9,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+		 0xc9,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+		 0xc9,  0x03,  0xbd,  0x00,  0x00,  0x00,  0x00,  0x00,
+		 0xc9,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
+	}
+
+-- ROM (0x8000~0xffff)
+-- private byte[][] rom;
+local rom = {{}}
+
 -- 输出日志 abstract void log(String message);
 function Z80:log(message)
 
@@ -472,6 +493,12 @@ end
 -- 读取内存（8位）abstract byte read(int address);
 function Z80:read(address)
 
+end
+
+-- 只读存储器（覆盖）
+-- @Override public byte read(int address)
+function Z80:read(address)
+	return memory[address];
 end
 
 -- int read8(int address | Register16 address)
@@ -502,6 +529,14 @@ end
 -- 写入内存（8位）abstract void write(int address, byte value);
 function Z80:write(address, value)
 
+end
+
+-- 写入到存储器（超驰）
+-- @Override public void write(int address, byte value)
+function Z80:write(address, value)
+	if(address < 0x8000) then
+		memory[address] = value;
+	end
 end
 
 -- void write8(int address | Register16 address, int value | Register8 value)
@@ -4115,12 +4150,11 @@ function Z80:execute(execute_state)
 		
 		restStates = restStates - states;
 
-	--until (restStates <= 0)	
+		--until (restStates <= 0)	
+		end
+
+		return 0
+
 	end
-
-	return 0
-
-end 
-
 end
 return Z80
