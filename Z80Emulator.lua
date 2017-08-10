@@ -1,5 +1,5 @@
 --[[
---Zilog Z80 emulator for Java
+--Zilog Z80 emulator for Lua
 --]]
 
 Z80Emulator = {}
@@ -8,17 +8,22 @@ local Z80 = Z80Emulator
 
 --
 -- 8位寄存器
-Z80.Register8  = { x = 0x00 }
+Z80.Register8  = {}
 local R8 = Z80.Register8
 
 -- 构造函数
 function R8:init(value)
-	if value then 
+	if value then
 		self.x = value & 0xff;
 	elseif value == nil then
-		self.x = 0 & 0xff;
+		self.x = 0 & 0xff; 
 	end
-	return self.x
+
+	local instance = {}
+	instance.x = self.x
+	setmetatable(instance, {__index = self})
+
+	return instance
 end
 
 -- 获取值 int get()
@@ -36,7 +41,7 @@ function R8:add(value)  return R8:set(R8:get() + value) end
 -- 获得进位标志 int cy() | int ncy()
 function R8:cy()  return self.x & Z80Emulator.MASK_CY; end
 
-function R8:ncy() return R:cy() ~ Z80Emulator.MASK_CY; end
+function R8:ncy() return R8:cy() ~ Z80Emulator.MASK_CY; end
 
 -- 获得减标志 int n()
 function R8:n()  return self.x & Z80Emulator.MASK_N end
@@ -58,18 +63,25 @@ function R8:s()  return self.x & Z80Emulator.MASK_S; end
 function R8:ns() return R8:s() ~ Z80Emulator.MASK_S; end
 
 -- 16位寄存器
-Z80.Register16 = {h = R8, l = R8}
+Z80.Register16 = {l = R8, h = R8}
 local R16 = Z80.Register16
 
 -- 构造函数 Register16(Register8 low, Register8 high)
 function R16:init(low, high)
 	self.l = low;
 	self.h = high
+	
+	local instance = {} 
+	instance.l = self.l
+	instance.h = self.h
+	setmetatable(instance, {__index = self})
+
+	return instance
 end
 
 -- 获取值 int get()
 function R16:get()
-	return (self.h.x << 8) | self.l.x;
+	return ((self.h.x << 8) | self.l.x);
 end
 
 -- 设置值 int set(int value | Register16 value)
@@ -100,19 +112,19 @@ end
 Z80Emulator.MASK_CY = 0x01
 
 -- 减标记 static final int MASK_N
-Z80Emulator.MMASK_N  = 0x02
+Z80Emulator.MASK_N  = 0x02
 
 -- 奇偶/溢出标志 static final int MASK_PV
-Z80Emulator.MMASK_PV = 0x04
+Z80Emulator.MASK_PV = 0x04
 
 -- 半进位标志 static final int MASK_HC
-Z80Emulator.MMASK_HC = 0x10
+Z80Emulator.MASK_HC = 0x10
 
 -- 零标志 static final int MASK_Z
-Z80Emulator.MMASK_Z  = 0x40
+Z80Emulator.MASK_Z  = 0x40
 
 -- 注册标志 static final int MASK_S
-Z80Emulator.MMASK_S  = 0x80
+Z80Emulator.MASK_S  = 0x80
 
 local MASK_CY = Z80Emulator.MASK_CY 
 local MASK_N  = Z80Emulator.MASK_N
@@ -383,7 +395,7 @@ Z80.rnd = 0xffffffff
 
 
 -- 构造函数
-function Z80.Z80Emulator()
+function Z80:Z80Emulator()
 	Z80.im = 0;
 	Z80.iff = 0;
 	Z80.hlt = false;
@@ -472,6 +484,11 @@ function Z80:read8(address)
 	end
 end
 
+function Z80:read8(address)
+	local address1 = nOrReg(address)
+	return (Z80:read(address1)) & 0xff;
+end
+
 -- 读取内存（16位）int read16(int address | Register16 address)
 function Z80:read16(address)
 	local typeAddress = type(address)
@@ -506,7 +523,8 @@ function Z80:write16(address, value)
 	local typeAddress, typeValue = type(address), type(value)
 	if typeAddress == "number" and typeValue == "number" then
 		Z80:write8(address, value & 0xff);
-		Z80write8((address + 1) & 0xffff, value >>> 8);
+		--Z80write8((address + 1) & 0xffff, value >>> 8);
+		Z80write8((address + 1) & 0xffff, value >> 8);
 	elseif typeAddress == "table" and typeValue == "number" then
 		Z80:write16(address.get(), value);
 	elseif typeAddress == "number" and typeValue == "table" then
@@ -517,7 +535,7 @@ function Z80:write16(address, value)
 end
 
 -- 输入到 I/O abstract int inport(int address)
-function Z80:inport(int address)
+function Z80:inport(address)
 
 end
 
@@ -527,7 +545,7 @@ function Z80:inport(address)
 end
 
 -- 输出到 I/O abstract void outport(int address, int value);
-function Z80:outport(int address, int value)
+function Z80:outport(address, value)
 
 end
 
@@ -556,22 +574,23 @@ end
 -- 获取R的值 int getR()
 local function getR()
 	rnd = rnd * 8197 + 1;
-	return (rnd >>> 25) & 0xff;
+	--return (rnd >>> 25) & 0xff;
+	return (rnd >> 25) & 0xff;
 end
 
 -- 改变进位标志（8位加法）int setCy8(int acc)
 local function setCy8(acc)
-	return ((acc & 0x00000100) != 0 and {MASK_CY} or {0})[1];
+	return ((acc & 0x00000100) ~= 0 and {MASK_CY} or {0})[1];
 end
 
 -- 改变进位标志（16位加法）int setCy16(int acc)
 local function setCy16(acc) 
-	return ((acc & 0x00010000) != 0 and {MASK_CY} or {0})[1];
+	return ((acc & 0x00010000) ~= 0 and {MASK_CY} or {0})[1];
 end
 
 -- 改变进位标志（减法）int setCyS(int acc)
 local function setCyS(acc)
-	return ((acc & 0x80000000) != 0 and {MASK_CY} or {0})[1];
+	return ((acc & 0x80000000) ~= 0 and {MASK_CY} or {0})[1];
 end
 
 -- 改变奇偶校验/溢出标志（奇偶校验）int setP(int acc | Register8 r)
@@ -588,10 +607,10 @@ end
 local function setV8(acc, x, y)
 	local typeX = type(x)
 	if typeX == "number" then
-		return (((x ~ y) & 0x80) != 0 and {0} or {(((x ~ acc) & 0x80) != 0 and {MASK_PV} or {0})[1]})[1];
+		return (((x ~ y) & 0x80) ~= 0 and {0} or {(((x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]})[1];
 	elseif typeX == "table" then
 		local _x = x.get();
-		return (((_x ~ y) & 0x80) != 0 and {0} or {(((_x ~ acc) & 0x80) != 0 and {MASK_PV} or {0})[1]})[1];
+		return (((_x ~ y) & 0x80) ~= 0 and {0} or {(((_x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]})[1];
 	end
 end
 
@@ -599,26 +618,26 @@ end
 local function setV16(acc, x, y)
 	local _x = x.get();
 	local _y = y.get();
-	return (((_x ~ _y) & 0x8000) != 0 and {0} or {(((_x ~ acc) & 0x8000) != 0 and {MASK_PV} or {0})[1]})[1];
+	return (((_x ~ _y) & 0x8000) ~= 0 and {0} or {(((_x ~ acc) & 0x8000) ~= 0 and {MASK_PV} or {0})[1]})[1];
 end
 
 -- 改变奇偶校验/溢出标志（8位减法）int setV8S(int acc, int x | Register8 x, int y | Register8 y)
 local function setV8S(acc, x, y)
 	local typeX, typeY = type(x), type(y)
 	if typeX == "number" and typeY == "number" then
-		return (((x ~ y) & 0x80) != 0 and {(((x ~ acc) & 0x80) != 0 and {MASK_PV} or {0})[1]} or {0})[1];
+		return (((x ~ y) & 0x80) ~= 0 and {(((x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]} or {0})[1];
 	elseif typeX == "table" and typeY == "number" then
 		local _x = x.get();
-		return (((_x ~ y) & 0x80) != 0 and {(((_x ~ acc) & 0x80) != 0 and {MASK_PV} or {0})[1]} or {0})[1];
+		return (((_x ~ y) & 0x80) ~= 0 and {(((_x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]} or {0})[1];
 	elseif typeX == "number" and typeY == "table" then
-		return (((x ~ y.get()) & 0x80) != 0 and {(((x ~ acc) & 0x80) != 0 and {MASK_PV} or {0})[1]} or {0})[1];
+		return (((x ~ y.get()) & 0x80) ~= 0 and {(((x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]} or {0})[1];
 	end	
 end
 
 -- 改变奇偶校验/溢出标志（16位减法）int setV16S(int acc, Register16 x, Register16 y)
 local function setV16S(acc, x, y)
 	local _x = x.get();
-	return (((_x ~ y.get()) & 0x80) != 0 and {(((_x ~ acc) & 0x80) != 0 and {MASK_PV} or {0})[1]} or {0})[1];
+	return (((_x ~ y.get()) & 0x80) ~= 0 and {(((_x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]} or {0})[1];
 end
 
 -- 更改半进位标志（8位加法）int setHC8(Register8 x | int x, int y, int cy)
@@ -651,45 +670,45 @@ end
 -- 更改半进位标志（16位加法）int setHC16(Register16 x, Register16 y, int cy)
 local function setHC16(x, y, cy) 
 	if cy ~= nil then
-		return ((((x.get() & 0x0fff) + (y.get() & 0x0fff) + cy) & 0x1000) != 0 and {MASK_HC} or {0})[1];
+		return ((((x.get() & 0x0fff) + (y.get() & 0x0fff) + cy) & 0x1000) ~= 0 and {MASK_HC} or {0})[1];
 	elseif cy == nil then
-		return ((((x.get() & 0x0fff) + (y.get() & 0x0fff)) & 0x1000) != 0 and {MASK_HC} or {0})[1];
+		return ((((x.get() & 0x0fff) + (y.get() & 0x0fff)) & 0x1000) ~= 0 and {MASK_HC} or {0})[1];
 	end
 end
 
 -- 更改半进位标志（16位减法）int setHC16S(Register16 x, Register16 y, int cy)
 local function setHC16S(x, y, cy)
-	return ((((x.get() & 0x0fff) - (y.get() & 0x0fff) - cy) & 0x1000) != 0 and {MASK_HC} or {0})[1];
+	return ((((x.get() & 0x0fff) - (y.get() & 0x0fff) - cy) & 0x1000) ~= 0 and {MASK_HC} or {0})[1];
 end
 
 -- 改变零标志位（8位）int setZ8(int acc | Register8 r)
 local function setZ8(accr)
-	local typeAccr == type(accr)
+	local typeAccr = type(accr)
 	if typeAccr == "number" then
-		return ((acc & 0xff) != 0 and {0} or {MASK_Z})[1];
+		return ((acc & 0xff) ~= 0 and {0} or {MASK_Z})[1];
 	elseif typeAccr == "table" then
-		return ((r.get() & 0xff) != 0 and {0} or {MASK_Z})[1];
+		return ((r.get() & 0xff) ~= 0 and {0} or {MASK_Z})[1];
 	end
 end
 
 -- 改变零标志位（16位）int setZ16(int acc)
 local function setZ16(acc)
-	return ((acc & 0xffff) != 0 and {0} or {MASK_Z})[1];
+	return ((acc & 0xffff) ~= 0 and {0} or {MASK_Z})[1];
 end
 
 -- 更改符号标志（8位）int setS8(int acc | Register8 r)
 local function setS8(accr)
-	local typeAccr == type(accr)
+	local typeAccr = type(accr)
 	if typeAccr == "number" then
-		return ((acc & 0x80) != 0 and {MASK_S} or {0})[1];
+		return ((acc & 0x80) ~= 0 and {MASK_S} or {0})[1];
 	elseif typeAccr == "table" then
-		return (((r.get() & 0x80) != 0) and {MASK_S} or {0})[1];
+		return ((r.get() & 0x80) ~= 0 and {MASK_S} or {0})[1];
 	end
 end
 
 -- 更改符号标志（16位）int setS16(int acc)
 local function setS16(acc)
-	return ((acc & 0x8000) != 0 ? {MASK_S} or {0})[1];
+	return ((acc & 0x8000) ~= 0 and {MASK_S} or {0})[1];
 end
 
 --[[	
@@ -822,7 +841,7 @@ end
 		and IYH
 		and IYL
 --]]
-local function and(nr)
+local function And(nr)
 	local n = nOrReg(nr)
 	local acc = a.get() & n;
 	f.set(setP(acc) | MASK_HC | setZ8(acc) | setS8(acc));
@@ -848,7 +867,7 @@ end
 --]]
 local function bit(b, nr)
 	local n = nOrReg(nr)
-	f.set(f.cy() | ((n & (1 << b)) != 0  and {0} or {MASK_PV})[1] | MASK_HC | ((n & (1 << b)) != 0 and {0} or {MASK_Z})[1] | (n & 0x80 & (1 << b)));
+	f.set(f.cy() | ((n & (1 << b)) ~= 0  and {0} or {MASK_PV})[1] | MASK_HC | ((n & (1 << b)) ~= 0 and {0} or {MASK_Z})[1] | (n & 0x80 & (1 << b)));
 	pc = pc + length;
 
 end
@@ -900,7 +919,7 @@ end
 -- ccf void ccf()
 local function ccf()
 	local f = Z80.f
-	f.set((f.cy() ~ MASK_CY) | f.pv() | (f.cy() != 0 and {MASK_HC} or {0})[1] | f.z() | f.s());
+	f.set((f.cy() ~ MASK_CY) | f.pv() | (f.cy() ~= 0 and {MASK_HC} or {0})[1] | f.z() | f.s());
 	pc = pc + length;
 end
 
@@ -945,7 +964,7 @@ end
 
 -- cpdr
 local function cpdr()
-	while(!bc.isZero() && acc != 0) do
+	while(~bc.isZero() and acc ~= 0) do
 		local n = Z80:read8(hl);
 		local acc = a.get() - n;
 		f.set(setCyS(acc) | MASK_N | setV8S(acc, a, n) | setHC8S(a, n) | setZ8(acc) | setS8(acc));
@@ -977,7 +996,7 @@ local function cpir()
 		bc.add(-1);
 		hl.add(1);
 		states = states + 21;
-	until (!bc.isZero() && acc != 0)
+	until (~bc.isZero() and acc ~= 0)
 	states = states - 5;
 	pc = pc + length;
 end
@@ -1151,7 +1170,7 @@ end
 local function djnz(d)
 
 	b.add(-1);
-	if(!b.isZero()) then
+	if(~b.isZero()) then
 		pc = pc + d;
 		states = states + 5;
 	end
@@ -1161,9 +1180,9 @@ end
 -- ei private boolean ei()
 local function ei()
 	pc = pc + length;
-	if(iff != 3) then
+	if(iff ~= 3) then
 		iff = 3;
-		restStates -= states;
+		restStates = restStates - states;
 		return true;
 	else
 		return false;
@@ -1235,7 +1254,7 @@ end
 		in F, (C)
 		in A, (C)
 --]]
-local function in_c(Register8 r)
+local function in_c(r)
 	
 		r.set(inport(c));
 		f.set(f.cy() | setP(r) | setZ8(r) | setS8(r));
@@ -1248,7 +1267,7 @@ local function ind()
 	Z80:write8(hl, n);
 		b.add(-1);
 		hl.add(-1);
-		f.set(f.cy() | ((n & 0x80) != 0 and {MASK_N} or {0})[1] | f.pv() | f.hc() | (b.isZero() and {MASK_Z} or {0})[1] | f.s());
+		f.set(f.cy() | ((n & 0x80) ~= 0 and {MASK_N} or {0})[1] | f.pv() | f.hc() | (b.isZero() and {MASK_Z} or {0})[1] | f.s());
 		pc = pc + length;
 end
 
@@ -1256,7 +1275,7 @@ end
 -- indr private void indr()
 local function indr()
 
-		while(!b.isZero()) do
+		while(~b.isZero()) do
 			local n = inport(c);
 			Z80:write8(hl, n);
 			b.add(-1);
@@ -1280,9 +1299,9 @@ local function ini()
 end
 
 -- inir private void inir()
-local function inir
+local function inir()
 
-	while(!b.isZero()) do
+	while(~b.isZero()) do
 			local n = inport(c);
 			Z80:write8(hl, n);
 			b.add(-1);
@@ -1373,10 +1392,9 @@ local function jp(condition, address)
 	local address = nOrReg(address)
 
 		if(condition ~= 0) then
-			int s, old_pc;
 
-			s = subroutine(address);
-			old_pc = pc;
+			local s = subroutine(address);
+			local old_pc = pc;
 			pc = address;
 
 			if(s < 0) then
@@ -1384,7 +1402,7 @@ local function jp(condition, address)
 			elseif(s > 0) then
 				pc = Z80:read16(sp);
 				sp.add(2);
-				states += s;
+				states = states + s;
 				return false;
 			else 
 				pc = old_pc;
@@ -1502,7 +1520,7 @@ end
 local function ld_a_i()
 	local acc = i.get();
 
-	f.set(f.cy() | ((iff & 0x02) != 0 and {0} or {MASK_PV})[1] | setZ8(acc) | setS8(acc));
+	f.set(f.cy() | ((iff & 0x02) ~= 0 and {0} or {MASK_PV})[1] | setZ8(acc) | setS8(acc));
 	a.set(acc);
 	pc = pc + length;
 end
@@ -1511,7 +1529,7 @@ end
 local function ld_a_r()
 	local acc = getR();
 
-	f.set(f.cy() | ((iff & 0x02) != 0 and {0} or {MASK_PV})[1] | setZ8(acc) | setS8(acc));
+	f.set(f.cy() | ((iff & 0x02) ~= 0 and {0} or {MASK_PV})[1] | setZ8(acc) | setS8(acc));
 	a.set(acc);
 	pc = pc + length;
 end
@@ -1537,7 +1555,7 @@ end
         ld (DE), A
         ld (HL), r	
 --]]
-local function st8(int address, int n)
+local function st8(address, n)
 	local address = nOrReg(address)
 	local n = nOrReg(n)
 	Z80:write8(address, n);
@@ -1563,7 +1581,7 @@ local function ldd()
 	de.add(-1);
 	hl.add(-1);
 	bc.add(-1);
-	f.set(f.cy() | (!bc.isZero() and {MASK_PV} or {0})[1] | f.z() | f.s());
+	f.set(f.cy() | (~bc.isZero() and {MASK_PV} or {0})[1] | f.z() | f.s());
 	pc = pc + length;
 end
 
@@ -1576,7 +1594,7 @@ local function lddr()
 			hl.add(-1);
 			bc.add(-1);
 			states = states + 21;
-		until(!bc.isZero());
+		until(~bc.isZero());
 		states = states - 5;
 		f.set(f.cy() | f.z() | f.s());
 		pc = pc + length;
@@ -1589,7 +1607,7 @@ local function ldi()
 	bc.add(-1);
 	de.add(1);
 	hl.add(1);
-	f.set(f.cy() | (!bc.isZero() and {MASK_PV} or {0})[1] | f.z() | f.s());
+	f.set(f.cy() | (~bc.isZero() and {MASK_PV} or {0})[1] | f.z() | f.s());
 	pc = pc + length;
 end
 
@@ -1602,7 +1620,7 @@ local function ldir()
 		de.add(1);
 		hl.add(1);
 		states = states + 21;
-	until(!bc.isZero());
+	until(~bc.isZero());
 		states = states - 5;
 		f.set(f.cy() | f.z() | f.s());
 		pc = pc + length;
@@ -1643,7 +1661,7 @@ end
         or IYH
         or IYL
 --]]
-local function or(n)
+local function Or(n)
 	local n = nOrReg(n)
 	local acc = a.get() | n;
 
@@ -1689,7 +1707,7 @@ end
 
 -- otdr private void otdr()
 local function otdr()
-		while(!b.isZero()) do
+		while(~b.isZero()) do
 			outport(c, Z80:read8(hl));
 			b.add(-1);
 			hl.add(-1);
@@ -1712,7 +1730,7 @@ end
 
 -- otir private void otir()
 local function otir()
-	while(!b.isZero()) do
+	while(~b.isZero()) do
 		outport(c, Z80:read8(hl));
 		b.add(-1);
 		hl.add(1);
@@ -1795,7 +1813,7 @@ end
 
 		res n, (HL)
 --]]
-local function res_m(int b, int address)
+local function res_m(b, address)
 	
 	local address = nOrReg(address)
 	res_m_r(b, address, tmpreg8);
@@ -1815,7 +1833,7 @@ end
 --]]
 local function ret(condition)
 	
-		if(condition != 0) then
+		if(condition ~= 0) then
 			pc = Z80:read16(sp);
 			sp.add(2);
 			states = states + 6;
@@ -1849,7 +1867,7 @@ local function rl_r(r)
 	
 	local acc = (r.get() << 1) | f.cy();
 
-	f.set(((r.get() & 0x80) != 0 and {MASK_CY} or {0})[1] | setP(acc) | setZ8(acc) | setS8(acc));
+	f.set(((r.get() & 0x80) ~= 0 and {MASK_CY} or {0})[1] | setP(acc) | setZ8(acc) | setS8(acc));
 	r.set(acc);
 	pc = pc + length;
 end
@@ -1884,7 +1902,7 @@ end
 local function rla()
 	local acc = (a.get() << 1) | f.cy();
 
-	f.set(((a.get() & 0x80) != 0 and {MASK_CY} or {0})[1] | f.pv() | f.z() | f.s());
+	f.set(((a.get() & 0x80) ~= 0 and {MASK_CY} or {0})[1] | f.pv() | f.z() | f.s());
 	a.set(acc);
 	pc = pc + length;
 end
@@ -1901,9 +1919,9 @@ end
 --]]
 local function rlc_r(r)
 	
-	local acc = (r.get() << 1) | ((r.get() & 0x80) != 0 and {0x01} or {0})[1];
+	local acc = (r.get() << 1) | ((r.get() & 0x80) ~= 0 and {0x01} or {0})[1];
 
-		f.set(((r.get() & 0x80) != 0 and {MASK_CY} or {0})[1] | setP(acc) | setZ8(acc) | setS8(acc));
+		f.set(((r.get() & 0x80) ~= 0 and {MASK_CY} or {0})[1] | setP(acc) | setZ8(acc) | setS8(acc));
 		r.set(acc);
 		pc = pc + length;
 end
@@ -1937,16 +1955,17 @@ end
 
 -- rlca`private void rlca()
 local function rlca()
-	local acc = (a.get() << 1) | ((a.get() & 0x80) != 0 and {0x01} or {0})[1];
+	local acc = (a.get() << 1) | ((a.get() & 0x80) ~= 0 and {0x01} or {0})[1];
 
-	f.set(((a.get() & 0x80) != 0 and {MASK_CY} or {0})[1] | f.pv() | f.z() | f.s());
+	f.set(((a.get() & 0x80) ~= 0 and {MASK_CY} or {0})[1] | f.pv() | f.z() | f.s());
 	a.set(acc);
 	pc = pc + length;
 end
 
 -- rld private void rld()
 local function rld()	
-	local acc = (a.get() & 0xf0) | (Z80:read8(hl) >>> 4);
+	--local acc = (a.get() & 0xf0) | (Z80:read8(hl) >>> 4);
+	local acc = (a.get() & 0xf0) | (Z80:read8(hl) >> 4);
 
 	Z80:write8(hl, (Z80:read8(hl) << 4) | (a.get() & 0x0f));
 	f.set(f.cy() | setP(acc) | setZ8(acc) | setS8(acc));
@@ -1966,7 +1985,8 @@ end
 --]]
 local function rr_r(r)
 	
-	local acc = (r.get() >>> 1) | (f.cy() != 0 and {0x80} or {0})[1];
+	--local acc = (r.get() >>> 1) | (f.cy() = 0 and {0x80} or {0})[1];
+	local acc = (r.get() >> 1) | (f.cy() ~= 0 and {0x80} or {0})[1];
 
 		f.set((r.get() & 0x01) | setP(acc) | setZ8(acc) | setS8(acc));
 		r.set(acc);
@@ -2000,7 +2020,8 @@ end
 
 -- rra private void rra()
 local function rra()
-	local acc = (a.get() >>> 1) | (f.cy() != 0 and {0x80} or {0})[1];
+	--local acc = (a.get() >>> 1) | (f.cy() = 0 and {0x80} or {0})[1];
+	local acc = (a.get() >> 1) | (f.cy() ~= 0 and {0x80} or {0})[1];
 
 		f.set((a.get() & 0x01) | f.pv() | f.z() | f.s());
 		a.set(acc);
@@ -2019,7 +2040,8 @@ end
 --]]
 local function rrc_r(r)
 	
-	local acc = (r.get() >>> 1) | ((r.get() & 0x01) != 0 and {0x80} or {0})[1];
+	--local acc = (r.get() >>> 1) | ((r.get() & 0x01) = 0 and {0x80} or {0})[1];
+	local acc = (r.get() >> 1) | ((r.get() & 0x01) ~= 0 and {0x80} or {0})[1];
 
 	f.set((r.get() & 0x01) | setP(acc) | setZ8(acc) | setS8(acc));
 	r.set(acc);
@@ -2055,7 +2077,8 @@ end
 
 -- rrca private void rrca()
 local function rrca()
-	local acc = (a.get() >>> 1) | ((a.get() & 0x01) != 0 and {0x80} or {0})[1];
+	--local acc = (a.get() >>> 1) | ((a.get() & 0x01) = 0 and {0x80} or {0})[1];
+	local acc = (a.get() >> 1) | ((a.get() & 0x01) ~= 0 and {0x80} or {0})[1];
 
 	f.set((a.get() & 0x01) | f.pv() | f.z() | f.s());
 	a.set(acc);
@@ -2066,7 +2089,9 @@ end
 local function rrd()
 	local acc = (a.get() & 0xf0) | (Z80:read8(hl) & 0x0f);
 
-	Z80:write8(hl, (Z80:read8(hl) >>> 4) | (a.get() << 4));
+	--Z80:write8(hl, (Z80:read8(hl) >>> 4) | (a.get() << 4));
+	Z80:write8(hl, (Z80:read8(hl) >> 4) | (a.get() << 4));
+
 	f.set(f.cy() | setP(acc) | setZ8(acc) | setS8(acc));
 	a.set(acc);
 	pc = pc + length;
@@ -2195,7 +2220,7 @@ end
 local function sla_r(r)
 	local acc = r.get() << 1;
 
-	f.set(((r.get() & 0x80) != 0 and {MASK_CY} or {0})[1] | setP(acc) | setS8(acc) | setZ8(acc));
+	f.set(((r.get() & 0x80) ~= 0 and {MASK_CY} or {0})[1] | setP(acc) | setS8(acc) | setZ8(acc));
 	r.set(acc);
 	pc = pc + length;
 end
@@ -2242,7 +2267,7 @@ local function sll_r(r)
 	
 	local acc = (r.get() << 1) | 1;
 
-	f.set(((r.get() & 0x80) != 0 and {MASK_CY} or {0})[1] | setP(acc) | setS8(acc) | setZ8(acc));
+	f.set(((r.get() & 0x80) ~= 0 and {MASK_CY} or {0})[1] | setP(acc) | setS8(acc) | setZ8(acc));
 	r.set(acc);
 	pc = pc + length;
 end
@@ -2284,9 +2309,10 @@ end
 		sra A
 --]]
 local function sra_r(r)
-	local acc = (r.get() >>> 1) | (r.get() & 0x80);
+	--local acc = (r.get() >>> 1) | (r.get() & 0x80);
+	local acc = (r.get() >> 1) | (r.get() & 0x80);
 
-	f.set(((r.get() & 0x01) != 0 and {MASK_CY} or {0})[1] | setP(acc) | setS8(acc) | setZ8(acc));
+	f.set(((r.get() & 0x01) ~= 0 and {MASK_CY} or {0})[1] | setP(acc) | setS8(acc) | setZ8(acc));
 	r.set(acc);
 	pc = pc + length;
 end
@@ -2327,9 +2353,10 @@ end
 		srl A
 --]]
 local function srl_r(r)
-	local acc = r.get() >>> 1;
+	--local acc = r.get() >>> 1;
+	local acc = r.get() >> 1;
 
-		f.set(((r.get() & 0x01) != 0 and {MASK_CY} or {0})[1] | setP(acc) | setS8(acc) | setZ8(acc));
+		f.set(((r.get() & 0x01) ~= 0 and {MASK_CY} or {0})[1] | setP(acc) | setS8(acc) | setZ8(acc));
 		r.set(acc);
 		pc = pc + length;
 end
@@ -2381,7 +2408,7 @@ end
 --]]
 local function sub8(nr)
 	local n = nOrReg(nr)
-		int acc = a.get() - n;
+		local acc = a.get() - n;
 
 		f.set(setCyS(acc) | MASK_N | setV8S(acc, a, n) | setHC8S(a, n) | setZ8(acc) | setS8(acc));
 		a.set(acc);
@@ -2409,7 +2436,7 @@ end
         xor IYH
         xor IYL
 --]]
-local function xor(nr)
+local function Xor(nr)
 	local n = nOrReg(nr)
 	local acc = a.get() ~ n;
 
@@ -2525,13 +2552,13 @@ end
 
 -- 发送INT信号（IM1） public boolean int1()
 function Z80:int1()
-	if(!(im == 1 && iff == 3)) then
+	if(~(im == 1 and iff == 3)) then
 		return false;
 	end
 
 	hlt = false;
 	iff = 0;
-	states -= 13;
+	states = states - 13;
 
 	interrupt(0x38);
 	return true;
@@ -2543,12 +2570,12 @@ local function disassemble()
 		"%c%c%c%c%c%c(%02x) A=%02x BC=%04x DE=%04x HL=%04x SP=%04x PC=%04x %s" + System.getProperty("line.separator") +
 		"%c%c%c%c%c%c(%02x) A'%02x BC'%04x DE'%04x HL'%04x IX=%04x IY=%04x %s" + System.getProperty("line.separator") +
 		"%dclocks" + System.getProperty("line.separator"),
-		((f.get() & 0x80) != 0 and {'S'} or {'-'})[1],
-		((f.get() & 0x40) != 0 and {'Z'} or {'-'})[1],
-		((f.get() & 0x10) != 0 and {'H'} or {'-'})[1],
-		((f.get() & 0x04) != 0 and {'P'} or {'-'})[1],
-		((f.get() & 0x02) != 0 and {'N'} or {'-'})[1],
-		((f.get() & 0x01) != 0 and {'C'} or {'-'})[1],
+		((f.get() & 0x80) ~= 0 and {'S'} or {'-'})[1],
+		((f.get() & 0x40) ~= 0 and {'Z'} or {'-'})[1],
+		((f.get() & 0x10) ~= 0 and {'H'} or {'-'})[1],
+		((f.get() & 0x04) ~= 0 and {'P'} or {'-'})[1],
+		((f.get() & 0x02) ~= 0 and {'N'} or {'-'})[1],
+		((f.get() & 0x01) ~= 0 and {'C'} or {'-'})[1],
 		f.get(),
 		a.get(),
 		bc.get(),
@@ -2556,13 +2583,13 @@ local function disassemble()
 		hl.get(),
 		sp.get(),
 		pc,
-		Z80Disassembler.disassemble(new byte[] { (byte )read8(pc + 0), (byte )read8(pc + 1), (byte )read8(pc + 2), (byte )read8(pc + 3), (byte )read8(pc + 4) }),
-		((af_d.l.get() & 0x80) != 0 and {'S'} or {'-'})[1],
-		((af_d.l.get() & 0x40) != 0 and {'Z'} or {'-'})[1],
-		((af_d.l.get() & 0x10) != 0 and {'H'} or {'-'})[1],
-		((af_d.l.get() & 0x04) != 0 and {'P'} or {'-'})[1],
-		((af_d.l.get() & 0x02) != 0 and {'N'} or {'-'})[1],
-		((af_d.l.get() & 0x01) != 0 and {'C'} or {'-'})[1],
+		Z80Disassembler.disassemble( { Z80:read8(pc + 0), Z80:read8(pc + 1), Z80:read8(pc + 2), Z80:read8(pc + 3), Z80:read8(pc + 4) }),
+		((af_d.l.get() & 0x80) ~= 0 and {'S'} or {'-'})[1],
+		((af_d.l.get() & 0x40) ~= 0 and {'Z'} or {'-'})[1],
+		((af_d.l.get() & 0x10) ~= 0 and {'H'} or {'-'})[1],
+		((af_d.l.get() & 0x04) ~= 0 and {'P'} or {'-'})[1],
+		((af_d.l.get() & 0x02) ~= 0 and {'N'} or {'-'})[1],
+		((af_d.l.get() & 0x01) ~= 0 and {'C'} or {'-'})[1],
 		af_d.l.get(),
 		af_d.h.get(),
 		bc_d.get(),
@@ -2594,7 +2621,7 @@ function Z80:execute(execute_state)
 		
 		if (trace) then Z80:disassemble(); end
 
-		local f1 == fetchXX()
+		local f1 = fetchXX()
 
 		if 	   f1 == 0x00 then nop();		-- nop 
 		elseif f1 == 0x01 then ld16(bc, imm16());		-- ld BC, mn
@@ -2776,32 +2803,32 @@ function Z80:execute(execute_state)
 		elseif f1 == 0x9e then sbc8(mem8(hl));  	-- sbc (HL)  
 		elseif f1 == 0x9f then sbc8(a);         	-- sbc A  
 
-		elseif f1 == 0xa0 then and(b);         	-- and B  
-		elseif f1 == 0xa1 then and(c);         	-- and C  
-		elseif f1 == 0xa2 then and(d);         	-- and D  
-		elseif f1 == 0xa3 then and(e);         	-- and E  
-		elseif f1 == 0xa4 then and(h);         	-- and H  
-		elseif f1 == 0xa5 then and(l);         	-- and L  
-		elseif f1 == 0xa6 then and(mem8(hl));  	-- and (HL)  
-		elseif f1 == 0xa7 then and(a);         	-- and A  
+		elseif f1 == 0xa0 then And(b);         	-- and B  
+		elseif f1 == 0xa1 then And(c);         	-- and C  
+		elseif f1 == 0xa2 then And(d);         	-- and D  
+		elseif f1 == 0xa3 then And(e);         	-- and E  
+		elseif f1 == 0xa4 then And(h);         	-- and H  
+		elseif f1 == 0xa5 then And(l);         	-- and L  
+		elseif f1 == 0xa6 then And(mem8(hl));  	-- and (HL)  
+		elseif f1 == 0xa7 then And(a);         	-- and A  
 
-		elseif f1 == 0xa8 then xor(b);         	-- xor B  
-		elseif f1 == 0xa9 then xor(c);         	-- xor C  
-		elseif f1 == 0xaa then xor(d);         	-- xor D  
-		elseif f1 == 0xab then xor(e);         	-- xor E  
-		elseif f1 == 0xac then xor(h);         	-- xor H  
-		elseif f1 == 0xad then xor(l);         	-- xor L  
-		elseif f1 == 0xae then xor(mem8(hl));  	-- xor (HL)  
-		elseif f1 == 0xaf then xor(a);         	-- xor A  
+		elseif f1 == 0xa8 then Xor(b);         	-- xor B  
+		elseif f1 == 0xa9 then Xor(c);         	-- xor C  
+		elseif f1 == 0xaa then Xor(d);         	-- xor D  
+		elseif f1 == 0xab then Xor(e);         	-- xor E  
+		elseif f1 == 0xac then Xor(h);         	-- xor H  
+		elseif f1 == 0xad then Xor(l);         	-- xor L  
+		elseif f1 == 0xae then Xor(mem8(hl));  	-- xor (HL)  
+		elseif f1 == 0xaf then Xor(a);         	-- xor A  
 
-		elseif f1 == 0xb0 then or(b);         	-- or B  
-		elseif f1 == 0xb1 then or(c);         	-- or C  
-		elseif f1 == 0xb2 then or(d);         	-- or D  
-		elseif f1 == 0xb3 then or(e);         	-- or E  
-		elseif f1 == 0xb4 then or(h);         	-- or H  
-		elseif f1 == 0xb5 then or(l);         	-- or L  
-		elseif f1 == 0xb6 then or(mem8(hl));  	-- or (HL)  
-		elseif f1 == 0xb7 then or(a);         	-- or A  
+		elseif f1 == 0xb0 then Or(b);         	-- or B  
+		elseif f1 == 0xb1 then Or(c);         	-- or C  
+		elseif f1 == 0xb2 then Or(d);         	-- or D  
+		elseif f1 == 0xb3 then Or(e);         	-- or E  
+		elseif f1 == 0xb4 then Or(h);         	-- or H  
+		elseif f1 == 0xb5 then Or(l);         	-- or L  
+		elseif f1 == 0xb6 then Or(mem8(hl));  	-- or (HL)  
+		elseif f1 == 0xb7 then Or(a);         	-- or A  
 
 		elseif f1 == 0xb8 then cp(b);         	-- cp B  
 		elseif f1 == 0xb9 then cp(c);         	-- cp C  
@@ -3227,24 +3254,24 @@ function Z80:execute(execute_state)
 			elseif f12 == 0x9d then sbc8(ixl);                  	 -- sbc IXl  
 			elseif f12 == 0x9e then sbc8(mem8(ix.get() + dis()));  	 -- sbc (IX + d)  
 
-			elseif f12 == 0xa4 then and(ixh);                  	 -- and IXh  
-			elseif f12 == 0xa5 then and(ixl);                  	 -- and IXl  
-			elseif f12 == 0xa6 then and(mem8(ix.get() + dis()));  	 -- and (IX + d)  
+			elseif f12 == 0xa4 then And(ixh);                  	 -- and IXh  
+			elseif f12 == 0xa5 then And(ixl);                  	 -- and IXl  
+			elseif f12 == 0xa6 then And(mem8(ix.get() + dis()));  	 -- and (IX + d)  
 
-			elseif f12 == 0xac then xor(ixh);                  	 -- xor IXh  
-			elseif f12 == 0xad then xor(ixl);                  	 -- xor IXl  
-			elseif f12 == 0xae then xor(mem8(ix.get() + dis()));  	 -- xor (IX + d)  
+			elseif f12 == 0xac then Xor(ixh);                  	 -- xor IXh  
+			elseif f12 == 0xad then Xor(ixl);                  	 -- xor IXl  
+			elseif f12 == 0xae then Xor(mem8(ix.get() + dis()));  	 -- xor (IX + d)  
 
-			elseif f12 == 0xb4 then or(ixh);                  	 -- or IXh  
-			elseif f12 == 0xb5 then or(ixl);                  	 -- or IXl  
-			elseif f12 == 0xb6 then or(mem8(ix.get() + dis()));  	 -- or (IX + d)  
+			elseif f12 == 0xb4 then Or(ixh);                  	 -- or IXh  
+			elseif f12 == 0xb5 then Or(ixl);                  	 -- or IXl  
+			elseif f12 == 0xb6 then Or(mem8(ix.get() + dis()));  	 -- or (IX + d)  
 
 			elseif f12 == 0xbc then cp(ixh);                  	 -- cp IXh  
 			elseif f12 == 0xbd then cp(ixl);                  	 -- cp IXl  
 			elseif f12 == 0xbe then cp(mem8(ix.get() + dis()));  	 -- cp (IX + d)  
 
 			elseif f12 == 0xcb then
-				local f121 == fetchDDCBXX()
+				local f121 = fetchDDCBXX()
 				
 				if 	   f121 == 0x00 then rlc_m_r(ix.get() + dis(), b);  	 -- rlc (IX + d), B  
 				elseif f121 == 0x01 then rlc_m_r(ix.get() + dis(), c);  	 -- rlc (IX + d), C  
@@ -3556,7 +3583,7 @@ function Z80:execute(execute_state)
 		elseif f1 == 0xe3 then ex_sp(hl);               	 -- ex (SP), HL  
 		elseif f1 == 0xe4 then call(f.npv(), imm16());  	 -- call PO, mn  
 		elseif f1 == 0xe5 then push(hl);                	 -- push HL  
-		elseif f1 == 0xe6 then and(imm8());             	 -- and n  
+		elseif f1 == 0xe6 then And(imm8());             	 -- and n  
 		elseif f1 == 0xe7 then rst(0x20);               	 -- rst 20H  
 
 		elseif f1 == 0xe8 then ret(f.pv());            	 -- ret PE  
@@ -3670,13 +3697,13 @@ function Z80:execute(execute_state)
 		elseif f1 == 0xf3 then di();                   	 -- di  
 		elseif f1 == 0xf4 then call(f.ns(), imm16());  	 -- call P, mn  
 		elseif f1 == 0xf5 then push(af);               	 -- push AF  
-		elseif f1 == 0xf6 then or(imm8());             	 -- or n  
+		elseif f1 == 0xf6 then Or(imm8());             	 -- or n  
 		elseif f1 == 0xf7 then rst(0x30);              	 -- rst 30H  
 
 		elseif f1 == 0xf8 then ret(f.s());            	 -- ret M  
 		elseif f1 == 0xf9 then ld16(sp, hl);          	 -- ld SP, HL  
 		elseif f1 == 0xfa then jp(f.s(), imm16());    	 -- jp M, mn  
-		elseif f1 == 0xfb then if(ei()) then  continue;  else  end	 -- ei  
+		elseif f1 == 0xfb then if(ei()) then   else  break; end	 -- ei  
 		elseif f1 == 0xfc then call(f.s(), imm16());  	 -- call M, mn  
 		elseif f1 == 0xfd then
 			pc = pc + 1
@@ -3766,17 +3793,17 @@ function Z80:execute(execute_state)
 			elseif f14 == 0x9d then sbc8(iyl);                  	 -- sbc IYl  
 			elseif f14 == 0x9e then sbc8(mem8(iy.get() + dis()));  	 -- sbc (IY + d)  
 
-			elseif f14 == 0xa4 then and(iyh);                  	 -- and IYh  
-			elseif f14 == 0xa5 then and(iyl);                  	 -- and IYl  
-			elseif f14 == 0xa6 then and(mem8(iy.get() + dis()));  	 -- and (IY + d)  
+			elseif f14 == 0xa4 then And(iyh);                  	 -- and IYh  
+			elseif f14 == 0xa5 then And(iyl);                  	 -- and IYl  
+			elseif f14 == 0xa6 then And(mem8(iy.get() + dis()));  	 -- and (IY + d)  
 
-			elseif f14 == 0xac then xor(iyh);                  	 -- xor IYh  
-			elseif f14 == 0xad then xor(iyl);                  	 -- xor IYl  
-			elseif f14 == 0xae then xor(mem8(iy.get() + dis()));  	 -- xor (IY + d)  
+			elseif f14 == 0xac then Xor(iyh);                  	 -- xor IYh  
+			elseif f14 == 0xad then Xor(iyl);                  	 -- xor IYl  
+			elseif f14 == 0xae then Xor(mem8(iy.get() + dis()));  	 -- xor (IY + d)  
 
-			elseif f14 == 0xb4 then or(iyh);                  	 -- or IYh  
-			elseif f14 == 0xb5 then or(iyl);                  	 -- or IYl  
-			elseif f14 == 0xb6 then or(mem8(iy.get() + dis()));  	 -- or (IY + d)  
+			elseif f14 == 0xb4 then Or(iyh);                  	 -- or IYh  
+			elseif f14 == 0xb5 then Or(iyl);                  	 -- or IYl  
+			elseif f14 == 0xb6 then Or(mem8(iy.get() + dis()));  	 -- or (IY + d)  
 
 			elseif f14 == 0xbc then cp(iyh);                  	 -- cp IYh  
 			elseif f14 == 0xbd then cp(iyl);                  	 -- cp IYl  
@@ -4095,5 +4122,5 @@ function Z80:execute(execute_state)
 
 end 
 
-
+end
 return Z80
