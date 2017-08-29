@@ -2,17 +2,31 @@
 --]]
 
 -- public class G800Emulator extends Z80Emulator
+-- G8xxEmulator  以 Z80Emulator 为基类
 G8xxEmulator = {}
 
 local G8xx = G8xxEmulator
 
---	領域クラス public class Area {
+--  加载 Z80Emulator
+local Z  = require("Z80Emulator")
+
+setmetatable(G8xx, Z)
+G8xx.__index = G8xx
+
+function G8xx:init(x,y)
+	local instance  = Z:init(x)
+	instance.y = y
+	setmetatable(instance, G8xx)
+	return instance
+end
+
+
+--	布局区域类 public class Area
 G8xx.Area = {}
 local Area = G8xx.Area
 
 --	コンストラクタ
 --Area(int x, int y, int width, int height, String text, int fore_color, int back_color)		
-
 function Area:init(x, y, width, height, text, fore_color, back_color)
 	
 	this.x = x;
@@ -48,15 +62,23 @@ function Area:init(x, y, width, height, text, fore_color, back_color)
 end
 
 --  X座標 public int x;
+x = G8xx.x
 --  Y座標 public int y;
+y = G8xx.y
 --  幅 public int width;
+width = G8xx.width
 --  高さ public int height;
+height = G8xx.height
+
+text = G8xx.text
 --  文字 public String text;
+foreColor = G8xx.foreColor
 --  前景色 public int foreColor;
+backColor = G8xx.backColor
 --  背景色 public int backColor;
 
 
---	フォントパターン static private final byte[][] font
+-- 字体图案 static private final byte[][] font
 local font = {{
 		{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
 		{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
@@ -317,7 +339,7 @@ local font = {{
 		{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
 	}
 
--- キーコード -> ASCIIコード変換テーブル (大文字) private final int[] keyToAsciiUpper 
+-- 键码 ->> ASCII 码转换表 (大写) private final int[] keyToAsciiUpper 
 local keyToAsciiUpper = {
 		0x00, 0x06, 0x51, 0x57, 0x45, 0x52, 0x54, 0x59,
 		0x55, 0x41, 0x53, 0x44, 0x46, 0x47, 0x48, 0x4a,
@@ -351,7 +373,7 @@ local keyToAsciiUpper = {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	}
 
--- キーコード -> ASCIIコード変換テーブル (小文字) private final int[] keyToAsciiLower 
+--  键码 ->> ASCII 码转换表 (小写) private final int[] keyToAsciiLower 
 local keyToAsciiLower = {
 		0x00, 0x06, 0x71, 0x77, 0x65, 0x72, 0x74, 0x79,
 		0x75, 0x61, 0x73, 0x64, 0x66, 0x67, 0x68, 0x6a,
@@ -364,741 +386,1009 @@ local keyToAsciiLower = {
 		0x29, 0xfe, 0xfe, 0xfe, 0xfe, 0x5e, 0x28, 0xfe
 	}
 
--- レイアウト private final Area[][] layout 
+--   按键布局 private final Area[][] layout 
 local layout = {
-		{ Area:init(  2,  81,  17, 16, "ON",    COLOR_WHITE, COLOR_GRAY),     new Area(  2,  81,  17, 16, "ON",    COLOR_WHITE,  COLOR_GRAY),     new Area(294,   7,  17, 16, "ON",    COLOR_WHITE,  COLOR_GRAY)     }, -- BREAKキー 		{ Area:init(  2,  97,  17, 16, "OFF",   COLOR_WHITE, COLOR_GRAY),     new Area(  2,  97,  17, 16, "OFF",   COLOR_WHITE,  COLOR_GRAY),     new Area(277,   7,  17, 16, "OFF",   COLOR_WHITE,  COLOR_GRAY)     }, -- OFFキー 		{ Area:init(189, 129,  22, 16, "ANS",   COLOR_WHITE, COLOR_GRAY),     new Area(189, 129,  22, 16, "ANS",   COLOR_WHITE,  COLOR_GRAY),     new Area(260,   7,  17, 16, "ANS",   COLOR_WHITE,  COLOR_GRAY)     }, -- ANSキー 		{ Area:init(189, 113,  22, 16, "CONST", COLOR_WHITE, COLOR_GRAY),     new Area(189, 113,  22, 16, "CONST", COLOR_WHITE,  COLOR_GRAY),     new Area(243,   7,  17, 16, "CONST", COLOR_WHITE,  COLOR_GRAY)     }, -- CONSTキー 		{ Area:init( 19, 113,  17, 16, "TEXT",  COLOR_WHITE, COLOR_GREEN),    new Area( 19, 113,  17, 16, "TEXT",  COLOR_LIGHTGREEN,  COLOR_GRAY),new Area(226,   7,  17, 16, "TEXT",  COLOR_WHITE,  COLOR_GREEN)    }, -- TEXTキー 		{ Area:init(  2, 113,  17, 16, "BASIC", COLOR_WHITE, COLOR_GREEN),    new Area(  2, 113,  17, 16, "BASIC", COLOR_LIGHTGREEN,  COLOR_GRAY),new Area(209,   7,  17, 16, "BASIC", COLOR_WHITE,  COLOR_GREEN)    }, -- BASICキー 		{ Area:init(297,  24,  17, 16, "CLS",   COLOR_WHITE, COLOR_RED),      new Area(297,  24,  17, 16, "CLS",   COLOR_LIGHTRED,    COLOR_GRAY),new Area(294,  24,  17, 16, "CLS",   COLOR_WHITE,  COLOR_RED)      }, -- CLSキー 		{ Area:init(280,  24,  17, 16, "F-E",   COLOR_WHITE, COLOR_DARKGRAY), new Area(280,  24,  17, 16, "F-E",   COLOR_WHITE,  COLOR_GRAY),     new Area(277,  24,  17, 16, "F-E",   COLOR_WHITE,  COLOR_GRAY)     }, -- F←→Eキー 		{ Area:init(263,  24,  17, 16, "tan",   COLOR_WHITE, COLOR_DARKGRAY), new Area(263,  24,  17, 16, "tan",   COLOR_WHITE,  COLOR_GRAY),     new Area(260,  24,  17, 16, "tan",   COLOR_WHITE,  COLOR_GRAY)     }, -- tanキー 		{ Area:init(246,  24,  17, 16, "cos",   COLOR_WHITE, COLOR_DARKGRAY), new Area(246,  24,  17, 16, "cos",   COLOR_WHITE,  COLOR_GRAY),     new Area(243,  24,  17, 16, "cos",   COLOR_WHITE,  COLOR_GRAY)     }, -- cosキー 		{ Area:init(229,  24,  17, 16, "sin",   COLOR_WHITE, COLOR_DARKGRAY), new Area(229,  24,  17, 16, "sin",   COLOR_WHITE,  COLOR_GRAY),     new Area(226,  24,  17, 16, "sin",   COLOR_WHITE,  COLOR_GRAY)     }, -- sinキー 		{ Area:init(212,  24,  17, 16, "2ndF",  COLOR_BLACK, COLOR_YELLOW),   new Area(212,  24,  17, 16, "2ndF",  COLOR_LIGHTYELLOW, COLOR_GRAY),new Area(209,  24,  17, 16, "2ndF",  COLOR_WHITE,  COLOR_YELLOW)   }, -- 2ndFキー 		{ Area:init(297,  40,  17, 16, "MDF",   COLOR_WHITE, COLOR_DARKGRAY), new Area(297,  40,  17, 16, "MDF",   COLOR_WHITE,  COLOR_GRAY),     new Area(294,  40,  17, 16, "MDF",   COLOR_WHITE,  COLOR_GRAY)     }, -- MDFキー 		{ Area:init(280,  40,  17, 16, "1/x",   COLOR_WHITE, COLOR_DARKGRAY), new Area(280,  40,  17, 16, "1/x",   COLOR_WHITE,  COLOR_GRAY),     new Area(277,  40,  17, 16, "1/x",   COLOR_WHITE,  COLOR_GRAY)     }, -- 1/xキー 		{ Area:init(263,  40,  17, 16, "log",   COLOR_WHITE, COLOR_DARKGRAY), new Area(263,  40,  17, 16, "log",   COLOR_WHITE,  COLOR_GRAY),     new Area(260,  40,  17, 16, "log",   COLOR_WHITE,  COLOR_GRAY)     }, -- logキー 		{ Area:init(246,  40,  17, 16, "ln",    COLOR_WHITE, COLOR_DARKGRAY), new Area(246,  40,  17, 16, "ln",    COLOR_WHITE,  COLOR_GRAY),     new Area(243,  40,  17, 16, "ln",    COLOR_WHITE,  COLOR_GRAY)     }, -- lnキー 		{ Area:init(229,  40,  17, 16, "→DEG", COLOR_WHITE, COLOR_DARKGRAY), new Area(229,  40,  17, 16, "→DEG", COLOR_WHITE,  COLOR_GRAY),     new Area(226,  40,  17, 16, "→DEG", COLOR_WHITE,  COLOR_GRAY)     }, -- →DEGキー 		{ Area:init(212,  40,  17, 16, "nPr",   COLOR_WHITE, COLOR_DARKGRAY), new Area(212,  40,  17, 16, "nPr",   COLOR_WHITE,  COLOR_GRAY),     new Area(209,  40,  17, 16, "nPr",   COLOR_WHITE,  COLOR_GRAY)     }, -- nPrキー 		{ Area:init(297,  56,  17, 16, ")",     COLOR_WHITE, COLOR_DARKGRAY), new Area(297,  56,  17, 16, ")",     COLOR_WHITE,  COLOR_GRAY),     new Area(294,  56,  17, 16, ")",     COLOR_WHITE,  COLOR_GRAY)     }, --  )キー 		{ Area:init(280,  56,  17, 16, "(",     COLOR_WHITE, COLOR_DARKGRAY), new Area(280,  56,  17, 16, "(",     COLOR_WHITE,  COLOR_GRAY),     new Area(277,  56,  17, 16, "(",     COLOR_WHITE,  COLOR_GRAY)     }, -- (キー 		{ Area:init(263,  56,  17, 16, "^",     COLOR_WHITE, COLOR_DARKGRAY), new Area(263,  56,  17, 16, "^",     COLOR_WHITE,  COLOR_GRAY),     new Area(260,  56,  17, 16, "^",     COLOR_WHITE,  COLOR_GRAY)     }, -- ^キー 		{ Area:init(246,  56,  17, 16, "x^2",   COLOR_WHITE, COLOR_DARKGRAY), new Area(246,  56,  17, 16, "x^2",   COLOR_WHITE,  COLOR_GRAY),     new Area(243,  56,  17, 16, "x^2",   COLOR_WHITE,  COLOR_GRAY)     }, -- x^2キー 		{ Area:init(229,  56,  17, 16, "√",    COLOR_WHITE, COLOR_DARKGRAY), new Area(229,  56,  17, 16, "√",    COLOR_WHITE,  COLOR_GRAY),     new Area(226,  56,  17, 16, "√",    COLOR_WHITE,  COLOR_GRAY)     }, -- √キー 		{ Area:init(212,  56,  17, 16, "π",    COLOR_WHITE, COLOR_DARKGRAY), new Area(212,  56,  17, 16, "π",    COLOR_WHITE,  COLOR_GRAY),     new Area(209,  56,  17, 16, "π",    COLOR_WHITE,  COLOR_GRAY)     }, -- πキー 		{ Area:init(295,  73,  21, 18, "R・CM", COLOR_BLUE,  COLOR_DARKGRAY), new Area(295,  73,  21, 18, "R・CM", COLOR_WHITE,  COLOR_DARKGRAY), new Area(292,  73,  21, 18, "R・CM", COLOR_WHITE,  COLOR_DARKGRAY) }, -- R・CMキー 		{ Area:init(274,  73,  21, 18, "/",     COLOR_WHITE, COLOR_DARKGRAY), new Area(274,  73,  21, 18, "/",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(271,  73,  21, 18, "/",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- /キー 		{ Area:init(253,  73,  21, 18, "9",     COLOR_WHITE, COLOR_DARKGRAY), new Area(253,  73,  21, 18, "9",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(250,  73,  21, 18, "9",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 9キー 		{ Area:init(232,  73,  21, 18, "8",     COLOR_WHITE, COLOR_DARKGRAY), new Area(232,  73,  21, 18, "8",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(229,  73,  21, 18, "8",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 8キー 		{ Area:init(211,  73,  21, 18, "7",     COLOR_WHITE, COLOR_DARKGRAY), new Area(211,  73,  21, 18, "7",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(208,  73,  21, 18, "7",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 7キー 		{ Area:init(295,  91,  21, 18, "M+",    COLOR_BLUE,  COLOR_DARKGRAY), new Area(295,  91,  21, 18, "M+",    COLOR_WHITE,  COLOR_DARKGRAY), new Area(292,  91,  21, 18, "M+",    COLOR_WHITE,  COLOR_DARKGRAY) }, -- M+キー 		{ Area:init(274,  91,  21, 18, "*",     COLOR_WHITE, COLOR_DARKGRAY), new Area(274,  91,  21, 18, "*",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(271,  91,  21, 18, "*",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- *キー 		{ Area:init(253,  91,  21, 18, "6",     COLOR_WHITE, COLOR_DARKGRAY), new Area(253,  91,  21, 18, "6",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(250,  91,  21, 18, "6",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 6キー 		{ Area:init(232,  91,  21, 18, "5",     COLOR_WHITE, COLOR_DARKGRAY), new Area(232,  91,  21, 18, "5",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(229,  91,  21, 18, "5",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 5キー 		{ Area:init(211,  91,  21, 18, "4",     COLOR_WHITE, COLOR_DARKGRAY), new Area(211,  91,  21, 18, "4",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(208,  91,  21, 18, "4",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 4キー 		{ Area:init(295, 109,  21, 36, "",      COLOR_WHITE, COLOR_DARKGRAY), new Area(295, 109,  21, 36, "",      COLOR_WHITE,  COLOR_DARKGRAY), new Area(292, 109,  21, 36, "",      COLOR_WHITE,  COLOR_DARKGRAY) }, -- RETURNキー(テンキー側) 		{ Area:init(274, 109,  21, 18, "-",     COLOR_WHITE, COLOR_DARKGRAY), new Area(274, 109,  21, 18, "-",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(271, 109,  21, 18, "-",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- -キー 		{ Area:init(253, 109,  21, 18, "3",     COLOR_WHITE, COLOR_DARKGRAY), new Area(253, 109,  21, 18, "3",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(250, 109,  21, 18, "3",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 3キー 		{ Area:init(232, 109,  21, 18, "2",     COLOR_WHITE, COLOR_DARKGRAY), new Area(232, 109,  21, 18, "2",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(229, 109,  21, 18, "2",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 2キー 		{ Area:init(211, 109,  21, 18, "1",     COLOR_WHITE, COLOR_DARKGRAY), new Area(211, 109,  21, 18, "1",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(208, 109,  21, 18, "1",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 1キー 		{ Area:init(274, 127,  21, 18, "+",     COLOR_WHITE, COLOR_DARKGRAY), new Area(274, 127,  21, 18, "+",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(271, 127,  21, 18, "+",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- +キー 		{ Area:init(253, 127,  21, 18, "Exp",   COLOR_WHITE, COLOR_DARKGRAY), new Area(253, 127,  21, 18, "=",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(250, 127,  21, 18, "=",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- =キー 		{ Area:init(232, 127,  21, 18, ".",     COLOR_WHITE, COLOR_DARKGRAY), new Area(232, 127,  21, 18, ".",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(229, 127,  21, 18, ".",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- .キー 		{ Area:init(211, 127,  21, 18, "0",     COLOR_WHITE, COLOR_DARKGRAY), new Area(211, 127,  21, 18, "0",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(208, 127,  21, 18, "0",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 0キー 		{ Area:init(192,  81,  19, 16, "BS",    COLOR_WHITE, COLOR_GRAY),     new Area(192,  81,  19, 16, "BS",    COLOR_WHITE,  COLOR_GRAY),     new Area(189,  81,  19, 16, "BS",    COLOR_WHITE,  COLOR_GRAY)     }, -- BSキー 		{ Area:init(175,  81,  17, 16, "P",     COLOR_WHITE, COLOR_DARKGRAY), new Area(175,  81,  17, 16, "P",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(172,  81,  17, 16, "P",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Pキー 		{ Area:init(158,  81,  17, 16, "O",     COLOR_WHITE, COLOR_DARKGRAY), new Area(158,  81,  17, 16, "O",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(155,  81,  17, 16, "O",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Oキー 		{ Area:init(141,  81,  17, 16, "I",     COLOR_WHITE, COLOR_DARKGRAY), new Area(141,  81,  17, 16, "I",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(138,  81,  17, 16, "I",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Iキー 		{ Area:init(124,  81,  17, 16, "U",     COLOR_WHITE, COLOR_DARKGRAY), new Area(124,  81,  17, 16, "U",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(121,  81,  17, 16, "U",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Uキー 		{ Area:init(107,  81,  17, 16, "Y",     COLOR_WHITE, COLOR_DARKGRAY), new Area(107,  81,  17, 16, "Y",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(104,  81,  17, 16, "Y",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Yキー 		{ Area:init( 90,  81,  17, 16, "T",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 90,  81,  17, 16, "T",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 87,  81,  17, 16, "T",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Tキー 		{ Area:init( 73,  81,  17, 16, "R",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 73,  81,  17, 16, "R",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 70,  81,  17, 16, "R",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Rキー 		{ Area:init( 56,  81,  17, 16, "E",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 56,  81,  17, 16, "E",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 53,  81,  17, 16, "E",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Eキー 		{ Area:init( 39,  81,  17, 16, "W",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 39,  81,  17, 16, "W",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 36,  81,  17, 16, "W",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Wキー 		{ Area:init( 22,  81,  17, 16, "Q",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 22,  81,  17, 16, "Q",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 19,  81,  17, 16, "Q",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Qキー 		{ Area:init( 67, 129,  20, 16, "TAB",   COLOR_WHITE, COLOR_GRAY),     new Area( 67, 129,  20, 16, "TAB",   COLOR_WHITE,  COLOR_GRAY),     new Area(  2,  81,  17, 16, "TAB",   COLOR_WHITE,  COLOR_GRAY)     }, -- TABキー 		{ null,                                                 null,                                                                            Area:init(186,  97,  22, 32, "",      COLOR_WHITE,  COLOR_GRAY)     }, -- RETURNキー(アルファベットキー側) 		{ Area:init(172, 113,  17, 16, ";",     COLOR_WHITE, COLOR_GRAY),     new Area(172, 113,  17, 16, ";",     COLOR_WHITE,  COLOR_GRAY),     new Area(176,  97,  17, 16, ";",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- ;キー 		{ Area:init(162,  97,  17, 16, "L",     COLOR_WHITE, COLOR_DARKGRAY), new Area(162,  97,  17, 16, "L",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(159,  97,  17, 16, "L",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Lキー 		{ Area:init(145,  97,  17, 16, "K",     COLOR_WHITE, COLOR_DARKGRAY), new Area(145,  97,  17, 16, "K",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(142,  97,  17, 16, "K",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Kキー 		{ Area:init(128,  97,  17, 16, "J",     COLOR_WHITE, COLOR_DARKGRAY), new Area(128,  97,  17, 16, "J",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(125,  97,  17, 16, "J",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Jキー 		{ Area:init(111,  97,  17, 16, "H",     COLOR_WHITE, COLOR_DARKGRAY), new Area(111,  97,  17, 16, "H",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(108,  97,  17, 16, "H",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Hキー 		{ Area:init( 94,  97,  17, 16, "G",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 94,  97,  17, 16, "G",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 91,  97,  17, 16, "G",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Gキー 		{ Area:init( 77,  97,  17, 16, "F",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 77,  97,  17, 16, "F",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 74,  97,  17, 16, "F",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Fキー 		{ Area:init( 60,  97,  17, 16, "D",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 60,  97,  17, 16, "D",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 57,  97,  17, 16, "D",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Dキー 		{ Area:init( 43,  97,  17, 16, "S",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 43,  97,  17, 16, "S",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 40,  97,  17, 16, "S",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Sキー 		{ Area:init( 26,  97,  17, 16, "A",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 26,  97,  17, 16, "A",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 23,  97,  17, 16, "A",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Aキー 		{ Area:init( 33, 129,  17, 16, "CAPS",  COLOR_WHITE, COLOR_GRAY),     new Area( 33, 129,  17, 16, "CAPS",  COLOR_WHITE,  COLOR_GRAY),     new Area(  2,  97,  21, 16, "CAPS",  COLOR_WHITE,  COLOR_GRAY)     }, -- CAPSキー 		{ Area:init(138, 129,  17, 16, "↑",    COLOR_WHITE, COLOR_GRAY),     new Area(138, 129,  17, 16, "↑",    COLOR_WHITE,  COLOR_GRAY),     new Area(169, 113,  17, 16, "↑",    COLOR_WHITE,  COLOR_GRAY)     }, -- ↑キー 		{ Area:init(155, 113,  17, 16, ",",     COLOR_WHITE, COLOR_GRAY),     new Area(155, 113,  17, 16, ",",     COLOR_WHITE,  COLOR_GRAY),     new Area(152, 113,  17, 16, ",",     COLOR_WHITE,  COLOR_GRAY)     }, -- ,キー 		{ Area:init(138, 113,  17, 16, "M",     COLOR_WHITE, COLOR_DARKGRAY), new Area(138, 113,  17, 16, "M",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(135, 113,  17, 16, "M",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Mキー 		{ Area:init(121, 113,  17, 16, "N",     COLOR_WHITE, COLOR_DARKGRAY), new Area(121, 113,  17, 16, "N",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(118, 113,  17, 16, "N",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Nキー 		{ Area:init(104, 113,  17, 16, "B",     COLOR_WHITE, COLOR_DARKGRAY), new Area(104, 113,  17, 16, "B",     COLOR_WHITE,  COLOR_DARKGRAY), new Area(101, 113,  17, 16, "B",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Bキー 		{ Area:init( 87, 113,  17, 16, "V",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 87, 113,  17, 16, "V",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 84, 113,  17, 16, "V",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Vキー 		{ Area:init( 70, 113,  17, 16, "C",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 70, 113,  17, 16, "C",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 67, 113,  17, 16, "C",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Cキー 		{ Area:init( 53, 113,  17, 16, "X",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 53, 113,  17, 16, "X",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 50, 113,  17, 16, "X",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Xキー 		{ Area:init( 36, 113,  17, 16, "Z",     COLOR_WHITE, COLOR_DARKGRAY), new Area( 36, 113,  17, 16, "Z",     COLOR_WHITE,  COLOR_DARKGRAY), new Area( 33, 113,  17, 16, "Z",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Zキー 		{ Area:init(  2, 129,  31, 16, "SHIFT", COLOR_BLACK, COLOR_YELLOW)  , new Area(  2, 129,  31, 16, "SHIFT", COLOR_LIGHTYELLOW, COLOR_GRAY),new Area(  2, 113,  31, 16, "SHIFT", COLOR_WHITE,  COLOR_YELLOW)   }, -- SHIFTキー 		{ Area:init(172, 129,  17, 16, "→",    COLOR_WHITE, COLOR_GRAY),     new Area(172, 129,  17, 16, "→",    COLOR_WHITE,  COLOR_GRAY),     new Area(186, 129,  17, 16, "→",    COLOR_WHITE,  COLOR_GRAY)     }, -- →キー 		{ Area:init(121, 129,  17, 16, "↓",    COLOR_WHITE, COLOR_GRAY),     new Area(121, 129,  17, 16, "↓",    COLOR_WHITE,  COLOR_GRAY),     new Area(169, 129,  17, 16, "↓",    COLOR_WHITE,  COLOR_GRAY)     }, -- ↓キー 		{ Area:init(155, 129,  17, 16, "←",    COLOR_WHITE, COLOR_GRAY),     new Area(155, 129,  17, 16, "←",    COLOR_WHITE,  COLOR_GRAY),     new Area(152, 129,  17, 16, "←",    COLOR_WHITE,  COLOR_GRAY)     }, -- ←キー 		{ Area:init(189,  97,  22, 16, "INS",   COLOR_WHITE, COLOR_GRAY),     new Area(189,  97,  22, 16, "INS",   COLOR_WHITE,  COLOR_GRAY),     new Area(135, 129,  17, 16, "INS",   COLOR_WHITE,  COLOR_GRAY)     }, -- INSキー 		{ Area:init( 87, 129,  34, 16, "SPACE", COLOR_WHITE, COLOR_DARKGRAY), new Area( 87, 129,  34, 16, "SPACE", COLOR_WHITE,  COLOR_DARKGRAY), new Area( 50, 129,  85, 16, "",      COLOR_WHITE,  COLOR_DARKGRAY) }, -- SPACEキー 		{ Area:init( 50, 129,  17, 16, "カナ",  COLOR_WHITE, COLOR_GRAY),     new Area( 50, 129,  17, 16, "カナ",  COLOR_WHITE,  COLOR_GRAY),     new Area( 28, 129,  21, 16, "カナ",  COLOR_WHITE,  COLOR_GRAY)     }, -- カナキー 		{ Area:init( 19,  97,   7, 16, ""),                      new Area( 19,  97,   7, 16, ""),                      new Area( 14, 129,  12, 16, "")                      }, -- RESETボタン 		{ Area:init( 33,  31, 144, 32),                          new Area( 33,  31, 144, 32),                          new Area( 27,  20, 144, 48)                          }, -- LCDドットマトリクス部 		{ Area:init( 33,  25,  12,  5, "BUSY"),                  new Area( 33,  25,  12,  5, "BUSY"),                  null                                                 }, -- LCDステータス部0 		{ Area:init( 50,  25,  12,  5, "CAPS"),                  new Area( 45,  63,   9,  5, "RUN"),                   new Area(172,  19,   9,  5, "RUN")                   }, -- LCDステータス部1 		{ Area:init( 65,  25,   9,  5, "カナ"),                  new Area( 57,  63,   9,  5, "PRO"),                   null                                                 }, -- LCDステータス部2 		{ Area:init( 78,  25,   6,  5, "小"),                    new Area( 75,  63,  12,  5, "CASL"),                  new Area(181,  19,   9,  5, "PRO")                   }, -- LCDステータス部3 		{ Area:init( 98,  25,  12,  5, "2ndF"),                  null,                                                 null                                                 }, -- LCDステータス部4 		{ null,                                                 Area:init(138,  63,  12,  5, "STAT"),                  null                                                 }, -- LCDステータス部5 		{ null,                                                 Area:init( 88,  63,  12,  5, "TEXT"),                  new Area(172,  24,  12,  5, "TEXT")                  }, -- LCDステータス部6 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部7 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部8 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部9 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部10 		{ null,                                                 null,                                                 Area:init(172,  29,  12,  5, "CASL")                  }, -- LCDステータス部11 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部12 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部13 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部14 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部15 		{ null,                                                 null,                                                 Area:init(172,  34,  12,  5, "STAT")                  }, -- LCDステータス部16 		{ null,                                                 Area:init(161,  25,   3,  5, "E"),                     null                                                 }, -- LCDステータス部17 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部18 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部19 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部20 		{ null,                                                 null,                                                 Area:init(172,  39,  12,  5, "2ndF")                  }, -- LCDステータス部21 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部22 		{ null,                                                 null,                                                 Area:init(186,  39,   3,  5, "M")                     }, -- LCDステータス部23 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部24 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部25 		{ null,                                                 null,                                                 Area:init(172,  44,  12,  5, "CAPS")                  }, -- LCDステータス部26 		{ Area:init( 88,  63,  12,  5, "TEXT"),                  null,                                                 null                                                 }, -- LCDステータス部27 		{ Area:init( 75,  63,  12,  5, "CASL"),                  null,                                                 null                                                 }, -- LCDステータス部28 		{ Area:init( 57,  63,   9,  5, "PRO"),                   null,                                                 null                                                 }, -- LCDステータス部29 		{ Area:init( 45,  63,   9,  5, "RUN"),                   null,                                                 null                                                 }, -- LCDステータス部30 		{ null,                                                 null,                                                 Area:init(172,  49,   9,  5, "カナ")                  }, -- LCDステータス部31 		{ Area:init(165,  25,  12,  5, "BATT"),                  new Area( 78,  25,   6,  5, "小"),                    null                                                 }, -- LCDステータス部32 		{ Area:init(161,  25,   3,  5, "E"),                     new Area( 65,  25,   9,  5, "カナ"),                  new Area(182,  49,   6,  5, "小")                    }, -- LCDステータス部33 		{ Area:init(147,  25,   3,  5, "M"),                     new Area(130,  25,  15,  5, "CONST"),                 null                                                 }, -- LCDステータス部34 		{ Area:init(130,  25,  15,  5, "CONST"),                 new Area( 50,  25,  12,  5, "CAPS"),                  null                                                 }, -- LCDステータス部35 		{ Area:init(120,  25,   9,  5, "RAD"),                   new Area( 98,  25,  12,  5, "2ndF"),                  new Area(172,  54,   6,  5, "DE")                    }, -- LCDステータス部36 		{ Area:init(117,  25,   3,  5, "G"),                     null,                                                 null                                                 }, -- LCDステータス部37 		{ Area:init(111,  25,   6,  5, "DE"),                    null,                                                 new Area(178,  54,   3,  5, "G")                     }, -- LCDステータス部38 		{ null,                                                 Area:init(156,  63,  15,  5, "PRINT"),                 null                                                 }, -- LCDステータス部39 		{ null,                                                 Area:init(147,  25,   3,  5, "M"),                     new Area(181,  54,   9,  5, "RAD")                   }, -- LCDステータス部40 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部41 		{ null,                                                 Area:init(120,  25,   9,  5, "RAD"),                   new Area(172,  59,  15,  5, "CONST")                 }, -- LCDステータス部42 		{ null,                                                 Area:init(117,  25,   3,  5, "G"),                     null                                                 }, -- LCDステータス部43 		{ null,                                                 Area:init(111,  25,   6,  5, "DE"),                    new Area(172,  64,  15,  5, "PRINT")                 }, -- LCDステータス部44 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部45 		{ null,                                                 null,                                                 Area:init( 14,  59,  12,  5, "BUSY")                  }, -- LCDステータス部46 		{ null,                                                 null,                                                 Area:init( 14,  64,  12,  5, "BATT")                  }, -- LCDステータス部47 		{ null,                                                 Area:init(165,  25,  12,  5, "BATT"),                  null                                                 }, -- LCDステータス部48 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部49 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部50 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部51 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部52 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部53 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部54 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部55 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部56 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部57 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部58 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部59 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部60 		{ Area:init(138,  63,  12,  5, "STAT"),                  null,                                                 null                                                 }, -- LCDステータス部61 		{ Area:init(156,  63,  15,  5, "PRINT"),                 null,                                                 null                                                 }, -- LCDステータス部62 		{ null,                                                 null,                                                 null                                                 }, -- LCDステータス部63 		{ Area:init( 31,  24, 148, 46),                          new Area( 31,  24, 148, 46),                          new Area( 13,  17, 179, 54)                          }, -- LCD全体 		{ Area:init(  2,  17, 206, 60),                          new Area(  2,  17, 206, 60),                          new Area(  0,   4, 205, 74)                          }, -- 画面枠 		{ Area:init( 33,  18,   6,  5, "0",     COLOR_WHITE),    new Area( 33,  18,   6,  5, "0",     COLOR_WHITE),    new Area( 27,  71,   6,  5, "0",     COLOR_WHITE)    }, -- 0列目 		{ Area:init( 39,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 39,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 33,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 1列目 		{ Area:init( 45,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 45,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 39,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 2列目 		{ Area:init( 51,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 51,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 45,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 3列目 		{ Area:init( 57,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 57,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 51,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 4列目 		{ Area:init( 63,  18,   6,  5, "5",     COLOR_WHITE),    new Area( 63,  18,   6,  5, "5",     COLOR_WHITE),    new Area( 57,  71,   6,  5, "5",     COLOR_WHITE)    }, -- 5列目 		{ Area:init( 69,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 69,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 63,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 6列目 		{ Area:init( 75,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 75,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 69,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 7列目 		{ Area:init( 81,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 81,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 75,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 8列目 		{ Area:init( 87,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 87,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 81,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 9列目 		{ Area:init( 93,  18,   6,  5, "10",    COLOR_WHITE),    new Area( 93,  18,   6,  5, "10",    COLOR_WHITE),    new Area( 87,  71,   6,  5, "10",    COLOR_WHITE)    }, -- 10列目 		{ Area:init( 99,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 99,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 93,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 11列目 		{ Area:init(105,  18,   6,  5, "・",    COLOR_WHITE),    new Area(105,  18,   6,  5, "・",    COLOR_WHITE),    new Area( 99,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 12列目 		{ Area:init(111,  18,   6,  5, "・",    COLOR_WHITE),    new Area(111,  18,   6,  5, "・",    COLOR_WHITE),    new Area(105,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 13列目 		{ Area:init(117,  18,   6,  5, "・",    COLOR_WHITE),    new Area(117,  18,   6,  5, "・",    COLOR_WHITE),    new Area(111,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 14列目 		{ Area:init(123,  18,   6,  5, "15",    COLOR_WHITE),    new Area(123,  18,   6,  5, "15",    COLOR_WHITE),    new Area(117,  71,   6,  5, "15",    COLOR_WHITE)    }, -- 15列目 		{ Area:init(129,  18,   6,  5, "・",    COLOR_WHITE),    new Area(129,  18,   6,  5, "・",    COLOR_WHITE),    new Area(123,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 16列目 		{ Area:init(135,  18,   6,  5, "・",    COLOR_WHITE),    new Area(135,  18,   6,  5, "・",    COLOR_WHITE),    new Area(129,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 17列目 		{ Area:init(141,  18,   6,  5, "・",    COLOR_WHITE),    new Area(141,  18,   6,  5, "・",    COLOR_WHITE),    new Area(135,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 18列目 		{ Area:init(147,  18,   6,  5, "・",    COLOR_WHITE),    new Area(147,  18,   6,  5, "・",    COLOR_WHITE),    new Area(141,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 19列目 		{ Area:init(153,  18,   6,  5, "20",    COLOR_WHITE),    new Area(153,  18,   6,  5, "20",    COLOR_WHITE),    new Area(147,  71,   6,  5, "20",    COLOR_WHITE)    }, -- 20列目 		{ Area:init(159,  18,   6,  5, "・",    COLOR_WHITE),    new Area(159,  18,   6,  5, "・",    COLOR_WHITE),    new Area(153,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 21列目 		{ Area:init(165,  18,   6,  5, "・",    COLOR_WHITE),    new Area(165,  18,   6,  5, "・",    COLOR_WHITE),    new Area(159,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 22列目 		{ Area:init(171,  18,   6,  5, "・",    COLOR_WHITE),    new Area(171,  18,   6,  5, "・",    COLOR_WHITE),    new Area(165,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 23列目 		{ Area:init( 33,  71,   6,  5, "・",    COLOR_WHITE),    new Area( 33,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 0列目 		{ Area:init( 63,  71,   6,  5, "・",    COLOR_WHITE),    new Area( 63,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 5列目 		{ Area:init( 93,  71,   6,  5, "・",    COLOR_WHITE),    new Area( 93,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 10列目 		{ Area:init(123,  71,   6,  5, "・",    COLOR_WHITE),    new Area(123,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 15列目 		{ Area:init(153,  71,   6,  5, "・",    COLOR_WHITE),    new Area(153,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 20列目 		{ Area:init(179,  31,   8,  8, "－",    COLOR_WHITE),    new Area(179,  31,   8,  8, "－",    COLOR_WHITE),    new Area(191,  20,   8,  8, "－",    COLOR_WHITE)    }, -- 0行目(右) 		{ Area:init(179,  39,   8,  8, "－",    COLOR_WHITE),    new Area(179,  39,   8,  8, "－",    COLOR_WHITE),    new Area(191,  28,   8,  8, "－",    COLOR_WHITE)    }, -- 1行目(右) 		{ Area:init(179,  47,   8,  8, "－",    COLOR_WHITE),    new Area(179,  47,   8,  8, "－",    COLOR_WHITE),    new Area(191,  36,   8,  8, "－",    COLOR_WHITE)    }, -- 2行目(右) 		{ Area:init(179,  55,   8,  8, "－",    COLOR_WHITE),    new Area(179,  55,   8,  8, "－",    COLOR_WHITE),    new Area(191,  44,   8,  8, "－",    COLOR_WHITE)    }, -- 3行目(右) 		{ null,                                                 null,                                                 Area:init(191,  52,   8,  8, "－",    COLOR_WHITE)    }, -- 4行目(右) 		{ null,                                                 null,                                                 Area:init(191,  60,   8,  8, "－",    COLOR_WHITE)    }, -- 5行目(右) 		{ Area:init( 23,  31,   8,  8, "－",    COLOR_WHITE),    new Area( 23,  31,   8,  8, "－",    COLOR_WHITE),    new Area(  5,  20,   8,  8, "－",    COLOR_WHITE)    }, -- 0行目(左) 		{ Area:init( 23,  39,   8,  8, "－",    COLOR_WHITE),    new Area( 23,  39,   8,  8, "－",    COLOR_WHITE),    new Area(  5,  28,   8,  8, "－",    COLOR_WHITE)    }, -- 1行目(左) 		{ Area:init( 23,  47,   8,  8, "－",    COLOR_WHITE),    new Area( 23,  47,   8,  8, "－",    COLOR_WHITE),    new Area(  5,  36,   8,  8, "－",    COLOR_WHITE)    }, -- 2行目(左) 		{ Area:init( 23,  55,   8,  8, "－",    COLOR_WHITE),    new Area( 23,  55,   8,  8, "－",    COLOR_WHITE),    new Area(  5,  44,   8,  8, "－",    COLOR_WHITE)    }, -- 3行目(左) 		{ null,                                                 null,                                                 Area:init(  5,  52,   8,  8, "－",    COLOR_WHITE)    }, -- 4行目(左) 		{ null,                                                 null,                                                 Area:init(  5,  60,   8,  8, "－",    COLOR_WHITE)    }, -- 5行目(左) 		{ Area:init(312,  64,   4,  5, "」",    COLOR_WHITE),    new Area(312,  64,   4,  5, "」",    COLOR_WHITE),    new Area(309,  67,   4,  5, "」",    COLOR_WHITE)    }, -- 右カギカッコ 		{ Area:init(295,  64,   4,  5, "「",    COLOR_WHITE),    new Area(295,  64,   4,  5, "「",    COLOR_WHITE),    new Area(292,  67,   4,  5, "「",    COLOR_WHITE)    }, -- 左カギカッコ 		{ Area:init(293, 137,   4,  5, "・",    COLOR_WHITE),    new Area(293, 137,   4,  5, "・",    COLOR_WHITE),    new Area(290, 141,   4,  5, "・",    COLOR_WHITE)    }, -- 中点 		{ Area:init(251, 137,   4,  5, "。",    COLOR_WHITE),    new Area(251, 137,   4,  5, "。",    COLOR_WHITE),    new Area(248, 141,   4,  5, "。",    COLOR_WHITE)    }, -- 読点 		{ Area:init(170, 121,   4,  5, "、",    COLOR_WHITE),    new Area(170, 121,   4,  5, "、",    COLOR_WHITE),    new Area(167, 125,   4,  5, "、",    COLOR_WHITE)    }, -- 句点 		{ Area:init(  2,  79,  17,  5, "BREAK", COLOR_WHITE),    new Area(  2,  79,  17,  5, "BREAK", COLOR_WHITE),    new Area(294,   5,  17,  5, "BREAK", COLOR_WHITE)    }, -- BREAK 		{ null,                                                 null,                                                 Area:init(260,   5,  17,  5, "コントラスト", COLOR_YELLOW) }, -- コントラスト 		{ Area:init( 19, 111,  17,  5, "CASL",  COLOR_YELLOW),   new Area( 19, 111,  17,  5, "C",     COLOR_YELLOW),   new Area(226,   5,  17,  5, "C",     COLOR_YELLOW)   }, -- CASL/C 		{ null,                                                 Area:init(  2, 111,  17,  5, "ASMBL", COLOR_YELLOW),   new Area(209,   5,  17,  5, "ASMBL", COLOR_YELLOW)   }, -- ASMBL 		{ Area:init(297,  22,  16,  5, "CA",    COLOR_YELLOW),   new Area(297,  22,  16,  5, "CA",    COLOR_YELLOW),   new Area(294,  22,  17,  5, "CA",    COLOR_YELLOW)   }, -- CA 		{ Area:init(280,  22,  16,  5, "DIGIT", COLOR_YELLOW),   new Area(280,  22,  16,  5, "DIGIT", COLOR_YELLOW),   new Area(277,  22,  17,  5, "DIGIT", COLOR_YELLOW)   }, -- DIGIT 		{ Area:init(263,  22,  16,  5, "atan",  COLOR_YELLOW),   new Area(263,  22,  16,  5, "atan",  COLOR_YELLOW),   new Area(260,  22,  17,  5, "atan",  COLOR_YELLOW)   }, -- atan 		{ Area:init(246,  22,  16,  5, "acos",  COLOR_YELLOW),   new Area(246,  22,  16,  5, "acos",  COLOR_YELLOW),   new Area(243,  22,  17,  5, "acos",  COLOR_YELLOW)   }, -- acos 		{ Area:init(229,  22,  16,  5, "asin",  COLOR_YELLOW),   new Area(229,  22,  16,  5, "asin",  COLOR_YELLOW),   new Area(226,  22,  17,  5, "asin",  COLOR_YELLOW)   }, -- asin 		{ Area:init(297,  38,  16,  5, "STAT",  COLOR_YELLOW),   new Area(297,  38,  16,  5, "STAT",  COLOR_YELLOW),   new Area(294,  38,  17,  5, "STAT",  COLOR_YELLOW)   }, -- STAT 		{ Area:init(280,  38,  16,  5, "n!",    COLOR_YELLOW),   new Area(280,  38,  16,  5, "n!",    COLOR_YELLOW),   new Area(277,  38,  17,  5, "n!",    COLOR_YELLOW)   }, -- n! 		{ Area:init(263,  38,  16,  5, "10^x",  COLOR_YELLOW),   new Area(263,  38,  16,  5, "10^x",  COLOR_YELLOW),   new Area(260,  38,  17,  5, "10^x",  COLOR_YELLOW)   }, -- 10^x 		{ Area:init(246,  38,  16,  5, "e^x",   COLOR_YELLOW),   new Area(246,  38,  16,  5, "e^x",   COLOR_YELLOW),   new Area(243,  38,  17,  5, "e^x",   COLOR_YELLOW)   }, -- e^x 		{ Area:init(229,  38,  16,  5, "DMS",   COLOR_YELLOW),   new Area(229,  38,  16,  5, "DMS",   COLOR_YELLOW),   new Area(226,  38,  17,  5, "DMS",   COLOR_YELLOW)   }, -- DMS 		{ Area:init(212,  38,  16,  5, "nCr",   COLOR_YELLOW),   new Area(212,  38,  16,  5, "nCr",   COLOR_YELLOW),   new Area(209,  38,  17,  5, "nCr",   COLOR_YELLOW)   }, -- nCr 		{ null,                                                 Area:init(297,  54,  17,  5, "BASE-n",COLOR_YELLOW),   new Area(294,  54,  17,  5, "BASE-n",COLOR_YELLOW)   }, -- BASE-n 		{ Area:init(280,  54,  16,  5, "→xy",  COLOR_YELLOW),   new Area(280,  54,  16,  5, "→xy",  COLOR_YELLOW),   new Area(277,  54,  17,  5, "→xy",  COLOR_YELLOW)   }, -- →xy 		{ Area:init(263,  54,  16,  5, "→rθ", COLOR_YELLOW),   new Area(263,  54,  16,  5, "→rθ", COLOR_YELLOW),   new Area(260,  54,  17,  5, "→rθ", COLOR_YELLOW)   }, -- →rθ 		{ Area:init(246,  54,  16,  5, "x^3",   COLOR_YELLOW),   new Area(246,  54,  16,  5, "x^3",   COLOR_YELLOW),   new Area(243,  54,  17,  5, "x^3",   COLOR_YELLOW)   }, -- x^3 		{ Area:init(229,  54,  16,  5, "3√",   COLOR_YELLOW),   new Area(229,  54,  16,  5, "3√",   COLOR_YELLOW),   new Area(226,  54,  17,  5, "3√",   COLOR_YELLOW)   }, -- 3√ 		{ Area:init(212,  54,  16,  5, "RND",   COLOR_YELLOW),   new Area(212,  54,  16,  5, "RND",   COLOR_YELLOW),   new Area(209,  54,  17,  5, "RND",   COLOR_YELLOW)   }, -- RND 		{ null,                                                 null,                                                 Area:init(250,  71,  21,  5, "″",    COLOR_YELLOW)   }, -- ″ 		{ null,                                                 null,                                                 Area:init(229,  71,  21,  5, "′",    COLOR_YELLOW)   }, -- ′ 		{ null,                                                 null,                                                 Area:init(208,  71,  21,  5, "°",    COLOR_YELLOW)   }, -- ° 		{ Area:init(295,  89,  19,  5, "M-",    COLOR_YELLOW),   new Area(295,  89,  19,  5, "M-",    COLOR_YELLOW),   new Area(292,  89,  21,  5, "M-",    COLOR_YELLOW)   }, -- M- 		{ Area:init(295, 107,  19,  5, "P-NP",  COLOR_YELLOW),   new Area(295, 107,  19,  5, "P-NP",  COLOR_YELLOW),   new Area(292, 107,  21,  5, "P-NP",  COLOR_YELLOW)   }, -- P-NP 		{ Area:init(274, 107,  19,  5, "(-)",   COLOR_YELLOW),   new Area(274, 107,  19,  5, "(-)",   COLOR_YELLOW),   new Area(272, 107,  21,  5, "(-)",   COLOR_YELLOW)   }, -- (-) 		{ null,                                                 Area:init(253, 125,  19,  5, "Exp",   COLOR_YELLOW),   new Area(250, 125,  21,  5, "Exp",   COLOR_YELLOW)   }, -- Exp 		{ Area:init(232, 125,  19,  5, "DRG",   COLOR_YELLOW),   new Area(232, 125,  19,  5, "DRG",   COLOR_YELLOW),   new Area(229, 125,  21,  5, "DRG",   COLOR_YELLOW)   }, -- DRG 		{ Area:init(175,  79,  15,  5, "@",     COLOR_YELLOW),   new Area(175,  79,  15,  5, "@",     COLOR_YELLOW),   new Area(172,  79,  17,  5, "@",     COLOR_YELLOW)   }, -- @ 		{ Area:init(158,  79,  15,  5, ">",     COLOR_YELLOW),   new Area(158,  79,  15,  5, ">",     COLOR_YELLOW),   new Area(155,  79,  17,  5, ">",     COLOR_YELLOW)   }, -- > 		{ Area:init(141,  79,  15,  5, "<",     COLOR_YELLOW),   new Area(141,  79,  15,  5, "<",     COLOR_YELLOW),   new Area(138,  79,  17,  5, "<",     COLOR_YELLOW)   }, -- < 		{ Area:init(124,  79,  15,  5, "'",     COLOR_YELLOW),   new Area(124,  79,  15,  5, "'",     COLOR_YELLOW),   new Area(121,  79,  17,  5, "'",     COLOR_YELLOW)   }, -- ' 		{ Area:init(107,  79,  15,  5, "&",     COLOR_YELLOW),   new Area(107,  79,  15,  5, "&",     COLOR_YELLOW),   new Area(104,  79,  17,  5, "&",     COLOR_YELLOW)   }, -- & 		{ Area:init( 90,  79,  15,  5, "%",     COLOR_YELLOW),   new Area( 90,  79,  15,  5, "%",     COLOR_YELLOW),   new Area( 87,  79,  17,  5, "%",     COLOR_YELLOW)   }, -- % 		{ Area:init( 73,  79,  15,  5, "$",     COLOR_YELLOW),   new Area( 73,  79,  15,  5, "$",     COLOR_YELLOW),   new Area( 70,  79,  17,  5, "$",     COLOR_YELLOW)   }, -- $ 		{ Area:init( 56,  79,  15,  5, "#",     COLOR_YELLOW),   new Area( 56,  79,  15,  5, "#",     COLOR_YELLOW),   new Area( 53,  79,  17,  5, "#",     COLOR_YELLOW)   }, -- # 		{ Area:init( 39,  79,  15,  5, "\"",    COLOR_YELLOW),   new Area( 39,  79,  15,  5, "\"",    COLOR_YELLOW),   new Area( 36,  79,  17,  5, "\"",    COLOR_YELLOW)   }, -- " 		{ Area:init( 22,  79,  15,  5, "!",     COLOR_YELLOW),   new Area( 22,  79,  15,  5, "!",     COLOR_YELLOW),   new Area( 19,  79,  17,  5, "!",     COLOR_YELLOW)   }, -- ! 		{ null,                                                 null,                                                 Area:init(194,  95,  14,  5, "P-NP",  COLOR_YELLOW)   }, -- P-NP(アルファベットキー側) 		{ Area:init(172, 111,  15,  5, ":",     COLOR_YELLOW),   new Area(172, 111,  15,  5, ":",     COLOR_YELLOW),   new Area(176,  95,  17,  5, ":",     COLOR_YELLOW)   }, -- : 		{ Area:init(162,  95,  15,  5, "=",     COLOR_YELLOW),   new Area(162,  95,  15,  5, "=",     COLOR_YELLOW),   new Area(159,  95,  17,  5, "=",     COLOR_YELLOW)   }, -- = 		{ Area:init(145,  95,  15,  5, "_",     COLOR_YELLOW),   new Area(145,  95,  15,  5, "_",     COLOR_YELLOW),   new Area(142,  95,  17,  5, "_",     COLOR_YELLOW)   }, -- _ 		{ Area:init(128,  95,  15,  5, "~",     COLOR_YELLOW),   new Area(128,  95,  15,  5, "~",     COLOR_YELLOW),   new Area(125,  95,  17,  5, "~",     COLOR_YELLOW)   }, -- ~ 		{ Area:init(111,  95,  15,  5, "|",     COLOR_YELLOW),   new Area(111,  95,  15,  5, "|",     COLOR_YELLOW),   new Area(108,  95,  17,  5, "|",     COLOR_YELLOW)   }, -- | 		{ Area:init( 94,  95,  15,  5, "\\",    COLOR_YELLOW),   new Area( 94,  95,  15,  5, "\\",    COLOR_YELLOW),   new Area( 91,  95,  17,  5, "\\",    COLOR_YELLOW)   }, -- \ 		{ Area:init( 77,  95,  15,  5, "}",     COLOR_YELLOW),   new Area( 77,  95,  15,  5, "}",     COLOR_YELLOW),   new Area( 74,  95,  17,  5, "}",     COLOR_YELLOW)   }, -- } 		{ Area:init( 60,  95,  15,  5, "{",     COLOR_YELLOW),   new Area( 60,  95,  15,  5, "{",     COLOR_YELLOW),   new Area( 57,  95,  17,  5, "{",     COLOR_YELLOW)   }, -- { 		{ Area:init( 43,  95,  15,  5, "]",     COLOR_YELLOW),   new Area( 43,  95,  15,  5, "]",     COLOR_YELLOW),   new Area( 40,  95,  17,  5, "]",     COLOR_YELLOW)   }, -- ] 		{ Area:init( 26,  95,  15,  5, "[",     COLOR_YELLOW),   new Area( 26,  95,  15,  5, "[",     COLOR_YELLOW),   new Area( 23,  95,  17,  5, "[",     COLOR_YELLOW)   }, -- [ 		{ Area:init( 33, 127,  15,  5, "小文字",COLOR_WHITE),    new Area( 33, 127,  15,  5, "小文字",COLOR_WHITE),    new Area(  2,  95,  21,  5, "小文字",COLOR_WHITE)    }, -- 小文字 		{ Area:init(155, 111,  15,  5, "?",     COLOR_YELLOW),   new Area(155, 111,  15,  5, "?",     COLOR_YELLOW),   new Area(152, 111,  17,  5, "?",     COLOR_YELLOW)   }, -- ? 		{ Area:init(138, 111,  15,  5, "LOAD",  COLOR_YELLOW),   new Area(138, 111,  15,  5, "LOAD",  COLOR_YELLOW),   new Area(135, 111,  17,  5, "LOAD",  COLOR_YELLOW)   }, -- LOAD 		{ Area:init(121, 111,  15,  5, "SAVE",  COLOR_YELLOW),   new Area(121, 111,  15,  5, "SAVE",  COLOR_YELLOW),   new Area(118, 111,  17,  5, "SAVE",  COLOR_YELLOW)   }, -- SAVE 		{ Area:init(104, 111,  15,  5, "LIST",  COLOR_YELLOW),   new Area(104, 111,  15,  5, "LIST",  COLOR_YELLOW),   new Area(101, 111,  17,  5, "LIST",  COLOR_YELLOW)   }, -- LIST 		{ Area:init( 87, 111,  15,  5, "RUN",   COLOR_YELLOW),   new Area( 87, 111,  15,  5, "RUN",   COLOR_YELLOW),   new Area( 84, 111,  17,  5, "RUN",   COLOR_YELLOW)   }, -- RUN 		{ Area:init( 70, 111,  15,  5, "CONT",  COLOR_YELLOW),   new Area( 70, 111,  15,  5, "CONT",  COLOR_YELLOW),   new Area( 67, 111,  17,  5, "CONT",  COLOR_YELLOW)   }, -- CONT 		{ Area:init( 53, 111,  15,  5, "PRINT", COLOR_YELLOW),   new Area( 53, 111,  15,  5, "PRINT", COLOR_YELLOW),   new Area( 50, 111,  17,  5, "PRINT", COLOR_YELLOW)   }, -- PRINT 		{ Area:init( 36, 111,  15,  5, "INPUT", COLOR_YELLOW),   new Area( 36, 111,  15,  5, "INPUT", COLOR_YELLOW),   new Area( 33, 111,  17,  5, "INPUT", COLOR_YELLOW)   }, -- INPUT 		{ Area:init(189,  95,  20,  5, "DEL",   COLOR_YELLOW),   new Area(189,  95,  20,  5, "DEL",   COLOR_YELLOW),   new Area(135, 127,  17,  5, "DEL",   COLOR_YELLOW)   }, -- DEL 		{ Area:init( 50, 127,  15,  5, "ー",    COLOR_YELLOW),   new Area( 50, 127,  15,  5, "ー",    COLOR_YELLOW),   new Area( 28, 127,  21,  5, "ー",    COLOR_YELLOW)   }, -- ー 		{ Area:init( 19,  95,   7,  5, "RESET", COLOR_WHITE),    new Area( 19,  95,   7,  5, "RESET", COLOR_WHITE),    new Area( 14, 127,  12,  5, "RESET", COLOR_WHITE)    }, -- RESET 		{ null,                                                 null,                                                 null                                                 }, --  		{ null,                                                 null,                                                 null                                                 }, --  		{ null,                                                 null,                                                 null                                                 }, --  		{ null,                                                 null,                                                 null                                                 }, --  		{ Area:init( -4,   0, 328,148),                          new Area( -4,   0, 328,148),                          new Area(  0,   0, 320,148)                          }  -- 本体 	};
+	{ Area:init(  2,  81,  17, 16, "ON",    COLOR_WHITE, COLOR_GRAY),     Area:init(  2,  81,  17, 16, "ON",    COLOR_WHITE,  COLOR_GRAY),     Area:init(294,   7,  17, 16, "ON",    COLOR_WHITE,  COLOR_GRAY)     }, -- BREAK按键 */
+	{ Area:init(  2,  97,  17, 16, "OFF",   COLOR_WHITE, COLOR_GRAY),     Area:init(  2,  97,  17, 16, "OFF",   COLOR_WHITE,  COLOR_GRAY),     Area:init(277,   7,  17, 16, "OFF",   COLOR_WHITE,  COLOR_GRAY)     }, -- OFF按键 */
+	{ Area:init(189, 129,  22, 16, "ANS",   COLOR_WHITE, COLOR_GRAY),     Area:init(189, 129,  22, 16, "ANS",   COLOR_WHITE,  COLOR_GRAY),     Area:init(260,   7,  17, 16, "ANS",   COLOR_WHITE,  COLOR_GRAY)     }, -- ANS按键 */
+	{ Area:init(189, 113,  22, 16, "CONST", COLOR_WHITE, COLOR_GRAY),     Area:init(189, 113,  22, 16, "CONST", COLOR_WHITE,  COLOR_GRAY),     Area:init(243,   7,  17, 16, "CONST", COLOR_WHITE,  COLOR_GRAY)     }, -- CONST按键 */
+	{ Area:init( 19, 113,  17, 16, "TEXT",  COLOR_WHITE, COLOR_GREEN),    Area:init( 19, 113,  17, 16, "TEXT",  COLOR_LIGHTGREEN,  COLOR_GRAY),new Area(226,   7,  17, 16, "TEXT",  COLOR_WHITE,  COLOR_GREEN)    }, -- TEXT按键 */
+	{ Area:init(  2, 113,  17, 16, "BASIC", COLOR_WHITE, COLOR_GREEN),    Area:init(  2, 113,  17, 16, "BASIC", COLOR_LIGHTGREEN,  COLOR_GRAY),new Area(209,   7,  17, 16, "BASIC", COLOR_WHITE,  COLOR_GREEN)    }, -- BASIC按键 */
+	{ Area:init(297,  24,  17, 16, "CLS",   COLOR_WHITE, COLOR_RED),      Area:init(297,  24,  17, 16, "CLS",   COLOR_LIGHTRED,    COLOR_GRAY),new Area(294,  24,  17, 16, "CLS",   COLOR_WHITE,  COLOR_RED)      }, -- CLS按键 */
+	{ Area:init(280,  24,  17, 16, "F-E",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(280,  24,  17, 16, "F-E",   COLOR_WHITE,  COLOR_GRAY),     Area:init(277,  24,  17, 16, "F-E",   COLOR_WHITE,  COLOR_GRAY)     }, -- F←→E按键 */
+	{ Area:init(263,  24,  17, 16, "tan",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(263,  24,  17, 16, "tan",   COLOR_WHITE,  COLOR_GRAY),     Area:init(260,  24,  17, 16, "tan",   COLOR_WHITE,  COLOR_GRAY)     }, -- tan按键 */
+	{ Area:init(246,  24,  17, 16, "cos",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(246,  24,  17, 16, "cos",   COLOR_WHITE,  COLOR_GRAY),     Area:init(243,  24,  17, 16, "cos",   COLOR_WHITE,  COLOR_GRAY)     }, -- cos按键 */
+	{ Area:init(229,  24,  17, 16, "sin",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(229,  24,  17, 16, "sin",   COLOR_WHITE,  COLOR_GRAY),     Area:init(226,  24,  17, 16, "sin",   COLOR_WHITE,  COLOR_GRAY)     }, -- sin按键 */
+	{ Area:init(212,  24,  17, 16, "2ndF",  COLOR_BLACK, COLOR_YELLOW),   Area:init(212,  24,  17, 16, "2ndF",  COLOR_LIGHTYELLOW, COLOR_GRAY),new Area(209,  24,  17, 16, "2ndF",  COLOR_WHITE,  COLOR_YELLOW)   }, -- 2ndF按键 */
+	{ Area:init(297,  40,  17, 16, "MDF",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(297,  40,  17, 16, "MDF",   COLOR_WHITE,  COLOR_GRAY),     Area:init(294,  40,  17, 16, "MDF",   COLOR_WHITE,  COLOR_GRAY)     }, -- MDF按键 */
+	{ Area:init(280,  40,  17, 16, "1/x",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(280,  40,  17, 16, "1/x",   COLOR_WHITE,  COLOR_GRAY),     Area:init(277,  40,  17, 16, "1/x",   COLOR_WHITE,  COLOR_GRAY)     }, -- 1/x按键 */
+	{ Area:init(263,  40,  17, 16, "log",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(263,  40,  17, 16, "log",   COLOR_WHITE,  COLOR_GRAY),     Area:init(260,  40,  17, 16, "log",   COLOR_WHITE,  COLOR_GRAY)     }, -- log按键 */
+	{ Area:init(246,  40,  17, 16, "ln",    COLOR_WHITE, COLOR_DARKGRAY), Area:init(246,  40,  17, 16, "ln",    COLOR_WHITE,  COLOR_GRAY),     Area:init(243,  40,  17, 16, "ln",    COLOR_WHITE,  COLOR_GRAY)     }, -- ln按键 */
+	{ Area:init(229,  40,  17, 16, "→DEG", COLOR_WHITE, COLOR_DARKGRAY), Area:init(229,  40,  17, 16, "→DEG", COLOR_WHITE,  COLOR_GRAY),     Area:init(226,  40,  17, 16, "→DEG", COLOR_WHITE,  COLOR_GRAY)     }, -- →DEG按键 */
+	{ Area:init(212,  40,  17, 16, "nPr",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(212,  40,  17, 16, "nPr",   COLOR_WHITE,  COLOR_GRAY),     Area:init(209,  40,  17, 16, "nPr",   COLOR_WHITE,  COLOR_GRAY)     }, -- nPr按键 */
+	{ Area:init(297,  56,  17, 16, ")",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(297,  56,  17, 16, ")",     COLOR_WHITE,  COLOR_GRAY),     Area:init(294,  56,  17, 16, ")",     COLOR_WHITE,  COLOR_GRAY)     }, -- )按键 */
+	{ Area:init(280,  56,  17, 16, "(",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(280,  56,  17, 16, "(",     COLOR_WHITE,  COLOR_GRAY),     Area:init(277,  56,  17, 16, "(",     COLOR_WHITE,  COLOR_GRAY)     }, -- (按键 */
+	{ Area:init(263,  56,  17, 16, "^",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(263,  56,  17, 16, "^",     COLOR_WHITE,  COLOR_GRAY),     Area:init(260,  56,  17, 16, "^",     COLOR_WHITE,  COLOR_GRAY)     }, -- ^按键 */
+	{ Area:init(246,  56,  17, 16, "x^2",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(246,  56,  17, 16, "x^2",   COLOR_WHITE,  COLOR_GRAY),     Area:init(243,  56,  17, 16, "x^2",   COLOR_WHITE,  COLOR_GRAY)     }, -- x^2按键 */
+	{ Area:init(229,  56,  17, 16, "√",    COLOR_WHITE, COLOR_DARKGRAY), Area:init(229,  56,  17, 16, "√",    COLOR_WHITE,  COLOR_GRAY),     Area:init(226,  56,  17, 16, "√",    COLOR_WHITE,  COLOR_GRAY)     }, -- √按键 */
+	{ Area:init(212,  56,  17, 16, "π",    COLOR_WHITE, COLOR_DARKGRAY), Area:init(212,  56,  17, 16, "π",    COLOR_WHITE,  COLOR_GRAY),     Area:init(209,  56,  17, 16, "π",    COLOR_WHITE,  COLOR_GRAY)     }, -- π按键 */
+	{ Area:init(295,  73,  21, 18, "R・CM", COLOR_BLUE,  COLOR_DARKGRAY), Area:init(295,  73,  21, 18, "R・CM", COLOR_WHITE,  COLOR_DARKGRAY), Area:init(292,  73,  21, 18, "R・CM", COLOR_WHITE,  COLOR_DARKGRAY) }, -- R・CM按键 */
+	{ Area:init(274,  73,  21, 18, "/",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(274,  73,  21, 18, "/",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(271,  73,  21, 18, "/",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- /按键 */
+	{ Area:init(253,  73,  21, 18, "9",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(253,  73,  21, 18, "9",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(250,  73,  21, 18, "9",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 9按键 */
+	{ Area:init(232,  73,  21, 18, "8",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(232,  73,  21, 18, "8",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(229,  73,  21, 18, "8",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 8按键 */
+	{ Area:init(211,  73,  21, 18, "7",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(211,  73,  21, 18, "7",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(208,  73,  21, 18, "7",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 7按键 */
+	{ Area:init(295,  91,  21, 18, "M+",    COLOR_BLUE,  COLOR_DARKGRAY), Area:init(295,  91,  21, 18, "M+",    COLOR_WHITE,  COLOR_DARKGRAY), Area:init(292,  91,  21, 18, "M+",    COLOR_WHITE,  COLOR_DARKGRAY) }, -- M+按键 */
+	{ Area:init(274,  91,  21, 18, "*",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(274,  91,  21, 18, "*",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(271,  91,  21, 18, "*",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- *按键 */
+	{ Area:init(253,  91,  21, 18, "6",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(253,  91,  21, 18, "6",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(250,  91,  21, 18, "6",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 6按键 */
+	{ Area:init(232,  91,  21, 18, "5",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(232,  91,  21, 18, "5",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(229,  91,  21, 18, "5",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 5按键 */
+	{ Area:init(211,  91,  21, 18, "4",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(211,  91,  21, 18, "4",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(208,  91,  21, 18, "4",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 4按键 */
+	{ Area:init(295, 109,  21, 36, "",      COLOR_WHITE, COLOR_DARKGRAY), Area:init(295, 109,  21, 36, "",      COLOR_WHITE,  COLOR_DARKGRAY), Area:init(292, 109,  21, 36, "",      COLOR_WHITE,  COLOR_DARKGRAY) }, -- RETURN按键(テン按键側) */
+	{ Area:init(274, 109,  21, 18, "-",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(274, 109,  21, 18, "-",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(271, 109,  21, 18, "-",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- -按键 */
+	{ Area:init(253, 109,  21, 18, "3",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(253, 109,  21, 18, "3",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(250, 109,  21, 18, "3",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 3按键 */
+	{ Area:init(232, 109,  21, 18, "2",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(232, 109,  21, 18, "2",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(229, 109,  21, 18, "2",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 2按键 */
+	{ Area:init(211, 109,  21, 18, "1",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(211, 109,  21, 18, "1",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(208, 109,  21, 18, "1",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 1按键 */
+	{ Area:init(274, 127,  21, 18, "+",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(274, 127,  21, 18, "+",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(271, 127,  21, 18, "+",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- +按键 */
+	{ Area:init(253, 127,  21, 18, "Exp",   COLOR_WHITE, COLOR_DARKGRAY), Area:init(253, 127,  21, 18, "=",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(250, 127,  21, 18, "=",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- =按键 */
+	{ Area:init(232, 127,  21, 18, ".",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(232, 127,  21, 18, ".",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(229, 127,  21, 18, ".",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- .按键 */
+	{ Area:init(211, 127,  21, 18, "0",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(211, 127,  21, 18, "0",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(208, 127,  21, 18, "0",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- 0按键 */
+	{ Area:init(192,  81,  19, 16, "BS",    COLOR_WHITE, COLOR_GRAY),     Area:init(192,  81,  19, 16, "BS",    COLOR_WHITE,  COLOR_GRAY),     Area:init(189,  81,  19, 16, "BS",    COLOR_WHITE,  COLOR_GRAY)     }, -- BS按键 */
+	{ Area:init(175,  81,  17, 16, "P",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(175,  81,  17, 16, "P",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(172,  81,  17, 16, "P",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- P按键 */
+	{ Area:init(158,  81,  17, 16, "O",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(158,  81,  17, 16, "O",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(155,  81,  17, 16, "O",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- O按键 */
+	{ Area:init(141,  81,  17, 16, "I",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(141,  81,  17, 16, "I",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(138,  81,  17, 16, "I",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- I按键 */
+	{ Area:init(124,  81,  17, 16, "U",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(124,  81,  17, 16, "U",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(121,  81,  17, 16, "U",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- U按键 */
+	{ Area:init(107,  81,  17, 16, "Y",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(107,  81,  17, 16, "Y",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(104,  81,  17, 16, "Y",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Y按键 */
+	{ Area:init( 90,  81,  17, 16, "T",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 90,  81,  17, 16, "T",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 87,  81,  17, 16, "T",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- T按键 */
+	{ Area:init( 73,  81,  17, 16, "R",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 73,  81,  17, 16, "R",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 70,  81,  17, 16, "R",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- R按键 */
+	{ Area:init( 56,  81,  17, 16, "E",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 56,  81,  17, 16, "E",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 53,  81,  17, 16, "E",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- E按键 */
+	{ Area:init( 39,  81,  17, 16, "W",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 39,  81,  17, 16, "W",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 36,  81,  17, 16, "W",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- W按键 */
+	{ Area:init( 22,  81,  17, 16, "Q",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 22,  81,  17, 16, "Q",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 19,  81,  17, 16, "Q",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Q按键 */
+	{ Area:init( 67, 129,  20, 16, "TAB",   COLOR_WHITE, COLOR_GRAY),     Area:init( 67, 129,  20, 16, "TAB",   COLOR_WHITE,  COLOR_GRAY),     Area:init(  2,  81,  17, 16, "TAB",   COLOR_WHITE,  COLOR_GRAY)     }, -- TAB按键 */
+	{ nil,                                                 nil,                                                                            Area:init(186,  97,  22, 32, "",      COLOR_WHITE,  COLOR_GRAY)     }, -- RETURN按键(アルファベット按键側) */
+	{ Area:init(172, 113,  17, 16, ";",     COLOR_WHITE, COLOR_GRAY),     Area:init(172, 113,  17, 16, ";",     COLOR_WHITE,  COLOR_GRAY),     Area:init(176,  97,  17, 16, ";",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- ;按键 */
+	{ Area:init(162,  97,  17, 16, "L",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(162,  97,  17, 16, "L",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(159,  97,  17, 16, "L",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- L按键 */
+	{ Area:init(145,  97,  17, 16, "K",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(145,  97,  17, 16, "K",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(142,  97,  17, 16, "K",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- K按键 */
+	{ Area:init(128,  97,  17, 16, "J",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(128,  97,  17, 16, "J",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(125,  97,  17, 16, "J",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- J按键 */
+	{ Area:init(111,  97,  17, 16, "H",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(111,  97,  17, 16, "H",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(108,  97,  17, 16, "H",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- H按键 */
+	{ Area:init( 94,  97,  17, 16, "G",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 94,  97,  17, 16, "G",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 91,  97,  17, 16, "G",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- G按键 */
+	{ Area:init( 77,  97,  17, 16, "F",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 77,  97,  17, 16, "F",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 74,  97,  17, 16, "F",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- F按键 */
+	{ Area:init( 60,  97,  17, 16, "D",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 60,  97,  17, 16, "D",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 57,  97,  17, 16, "D",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- D按键 */
+	{ Area:init( 43,  97,  17, 16, "S",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 43,  97,  17, 16, "S",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 40,  97,  17, 16, "S",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- S按键 */
+	{ Area:init( 26,  97,  17, 16, "A",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 26,  97,  17, 16, "A",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 23,  97,  17, 16, "A",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- A按键 */
+	{ Area:init( 33, 129,  17, 16, "CAPS",  COLOR_WHITE, COLOR_GRAY),     Area:init( 33, 129,  17, 16, "CAPS",  COLOR_WHITE,  COLOR_GRAY),     Area:init(  2,  97,  21, 16, "CAPS",  COLOR_WHITE,  COLOR_GRAY)     }, -- CAPS按键 */
+	{ Area:init(138, 129,  17, 16, "↑",    COLOR_WHITE, COLOR_GRAY),     Area:init(138, 129,  17, 16, "↑",    COLOR_WHITE,  COLOR_GRAY),     Area:init(169, 113,  17, 16, "↑",    COLOR_WHITE,  COLOR_GRAY)     }, -- ↑按键 */
+	{ Area:init(155, 113,  17, 16, ",",     COLOR_WHITE, COLOR_GRAY),     Area:init(155, 113,  17, 16, ",",     COLOR_WHITE,  COLOR_GRAY),     Area:init(152, 113,  17, 16, ",",     COLOR_WHITE,  COLOR_GRAY)     }, -- ,按键 */
+	{ Area:init(138, 113,  17, 16, "M",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(138, 113,  17, 16, "M",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(135, 113,  17, 16, "M",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- M按键 */
+	{ Area:init(121, 113,  17, 16, "N",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(121, 113,  17, 16, "N",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(118, 113,  17, 16, "N",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- N按键 */
+	{ Area:init(104, 113,  17, 16, "B",     COLOR_WHITE, COLOR_DARKGRAY), Area:init(104, 113,  17, 16, "B",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init(101, 113,  17, 16, "B",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- B按键 */
+	{ Area:init( 87, 113,  17, 16, "V",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 87, 113,  17, 16, "V",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 84, 113,  17, 16, "V",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- V按键 */
+	{ Area:init( 70, 113,  17, 16, "C",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 70, 113,  17, 16, "C",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 67, 113,  17, 16, "C",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- C按键 */
+	{ Area:init( 53, 113,  17, 16, "X",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 53, 113,  17, 16, "X",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 50, 113,  17, 16, "X",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- X按键 */
+	{ Area:init( 36, 113,  17, 16, "Z",     COLOR_WHITE, COLOR_DARKGRAY), Area:init( 36, 113,  17, 16, "Z",     COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 33, 113,  17, 16, "Z",     COLOR_WHITE,  COLOR_DARKGRAY) }, -- Z按键 */
+	{ Area:init(  2, 129,  31, 16, "SHIFT", COLOR_BLACK, COLOR_YELLOW)  , Area:init(  2, 129,  31, 16, "SHIFT", COLOR_LIGHTYELLOW, COLOR_GRAY),new Area(  2, 113,  31, 16, "SHIFT", COLOR_WHITE,  COLOR_YELLOW)   }, -- SHIFT按键 */
+	{ Area:init(172, 129,  17, 16, "→",    COLOR_WHITE, COLOR_GRAY),     Area:init(172, 129,  17, 16, "→",    COLOR_WHITE,  COLOR_GRAY),     Area:init(186, 129,  17, 16, "→",    COLOR_WHITE,  COLOR_GRAY)     }, -- →按键 */
+	{ Area:init(121, 129,  17, 16, "↓",    COLOR_WHITE, COLOR_GRAY),     Area:init(121, 129,  17, 16, "↓",    COLOR_WHITE,  COLOR_GRAY),     Area:init(169, 129,  17, 16, "↓",    COLOR_WHITE,  COLOR_GRAY)     }, -- ↓按键 */
+	{ Area:init(155, 129,  17, 16, "←",    COLOR_WHITE, COLOR_GRAY),     Area:init(155, 129,  17, 16, "←",    COLOR_WHITE,  COLOR_GRAY),     Area:init(152, 129,  17, 16, "←",    COLOR_WHITE,  COLOR_GRAY)     }, -- ←按键 */
+	{ Area:init(189,  97,  22, 16, "INS",   COLOR_WHITE, COLOR_GRAY),     Area:init(189,  97,  22, 16, "INS",   COLOR_WHITE,  COLOR_GRAY),     Area:init(135, 129,  17, 16, "INS",   COLOR_WHITE,  COLOR_GRAY)     }, -- INS按键 */
+	{ Area:init( 87, 129,  34, 16, "SPACE", COLOR_WHITE, COLOR_DARKGRAY), Area:init( 87, 129,  34, 16, "SPACE", COLOR_WHITE,  COLOR_DARKGRAY), Area:init( 50, 129,  85, 16, "",      COLOR_WHITE,  COLOR_DARKGRAY) }, -- SPACE按键 */
+	{ Area:init( 50, 129,  17, 16, "カナ",  COLOR_WHITE, COLOR_GRAY),     Area:init( 50, 129,  17, 16, "カナ",  COLOR_WHITE,  COLOR_GRAY),     Area:init( 28, 129,  21, 16, "カナ",  COLOR_WHITE,  COLOR_GRAY)     }, -- カナ按键 */
+	{ Area:init( 19,  97,   7, 16, ""),                      Area:init( 19,  97,   7, 16, ""),                      Area:init( 14, 129,  12, 16, "")                      }, -- RESETボタン */
+	{ Area:init( 33,  31, 144, 32),                          Area:init( 33,  31, 144, 32),                          Area:init( 27,  20, 144, 48)                          }, -- LCDドットマトリクス部 */
+	{ Area:init( 33,  25,  12,  5, "BUSY"),                  Area:init( 33,  25,  12,  5, "BUSY"),                  null                                                 }, -- LCDステータス部0 */
+	{ Area:init( 50,  25,  12,  5, "CAPS"),                  Area:init( 45,  63,   9,  5, "RUN"),                   Area:init(172,  19,   9,  5, "RUN")                   }, -- LCDステータス部1 */
+	{ Area:init( 65,  25,   9,  5, "カナ"),                  Area:init( 57,  63,   9,  5, "PRO"),                   null                                                 }, -- LCDステータス部2 */
+	{ Area:init( 78,  25,   6,  5, "小"),                    Area:init( 75,  63,  12,  5, "CASL"),                  Area:init(181,  19,   9,  5, "PRO")                   }, -- LCDステータス部3 */
+	{ Area:init( 98,  25,  12,  5, "2ndF"),                  nil,                                                 null                                                 }, -- LCDステータス部4 */
+	{ nil,                                                 Area:init(138,  63,  12,  5, "STAT"),                  null                                                 }, -- LCDステータス部5 */
+	{ nil,                                                 Area:init( 88,  63,  12,  5, "TEXT"),                  Area:init(172,  24,  12,  5, "TEXT")                  }, -- LCDステータス部6 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部7 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部8 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部9 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部10 */
+	{ nil,                                                 nil,                                                 Area:init(172,  29,  12,  5, "CASL")                  }, -- LCDステータス部11 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部12 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部13 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部14 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部15 */
+	{ nil,                                                 nil,                                                 Area:init(172,  34,  12,  5, "STAT")                  }, -- LCDステータス部16 */
+	{ nil,                                                 Area:init(161,  25,   3,  5, "E"),                     null                                                 }, -- LCDステータス部17 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部18 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部19 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部20 */
+	{ nil,                                                 nil,                                                 Area:init(172,  39,  12,  5, "2ndF")                  }, -- LCDステータス部21 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部22 */
+	{ nil,                                                 nil,                                                 Area:init(186,  39,   3,  5, "M")                     }, -- LCDステータス部23 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部24 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部25 */
+	{ nil,                                                 nil,                                                 Area:init(172,  44,  12,  5, "CAPS")                  }, -- LCDステータス部26 */
+	{ Area:init( 88,  63,  12,  5, "TEXT"),                  nil,                                                 null                                                 }, -- LCDステータス部27 */
+	{ Area:init( 75,  63,  12,  5, "CASL"),                  nil,                                                 null                                                 }, -- LCDステータス部28 */
+	{ Area:init( 57,  63,   9,  5, "PRO"),                   nil,                                                 null                                                 }, -- LCDステータス部29 */
+	{ Area:init( 45,  63,   9,  5, "RUN"),                   nil,                                                 null                                                 }, -- LCDステータス部30 */
+	{ nil,                                                 nil,                                                 Area:init(172,  49,   9,  5, "カナ")                  }, -- LCDステータス部31 */
+	{ Area:init(165,  25,  12,  5, "BATT"),                  Area:init( 78,  25,   6,  5, "小"),                    null                                                 }, -- LCDステータス部32 */
+	{ Area:init(161,  25,   3,  5, "E"),                     Area:init( 65,  25,   9,  5, "カナ"),                  Area:init(182,  49,   6,  5, "小")                    }, -- LCDステータス部33 */
+	{ Area:init(147,  25,   3,  5, "M"),                     Area:init(130,  25,  15,  5, "CONST"),                 null                                                 }, -- LCDステータス部34 */
+	{ Area:init(130,  25,  15,  5, "CONST"),                 Area:init( 50,  25,  12,  5, "CAPS"),                  null                                                 }, -- LCDステータス部35 */
+	{ Area:init(120,  25,   9,  5, "RAD"),                   Area:init( 98,  25,  12,  5, "2ndF"),                  Area:init(172,  54,   6,  5, "DE")                    }, -- LCDステータス部36 */
+	{ Area:init(117,  25,   3,  5, "G"),                     nil,                                                 null                                                 }, -- LCDステータス部37 */
+	{ Area:init(111,  25,   6,  5, "DE"),                    nil,                                                 Area:init(178,  54,   3,  5, "G")                     }, -- LCDステータス部38 */
+	{ nil,                                                 Area:init(156,  63,  15,  5, "PRINT"),                 null                                                 }, -- LCDステータス部39 */
+	{ nil,                                                 Area:init(147,  25,   3,  5, "M"),                     Area:init(181,  54,   9,  5, "RAD")                   }, -- LCDステータス部40 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部41 */
+	{ nil,                                                 Area:init(120,  25,   9,  5, "RAD"),                   Area:init(172,  59,  15,  5, "CONST")                 }, -- LCDステータス部42 */
+	{ nil,                                                 Area:init(117,  25,   3,  5, "G"),                     null                                                 }, -- LCDステータス部43 */
+	{ nil,                                                 Area:init(111,  25,   6,  5, "DE"),                    Area:init(172,  64,  15,  5, "PRINT")                 }, -- LCDステータス部44 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部45 */
+	{ nil,                                                 nil,                                                 Area:init( 14,  59,  12,  5, "BUSY")                  }, -- LCDステータス部46 */
+	{ nil,                                                 nil,                                                 Area:init( 14,  64,  12,  5, "BATT")                  }, -- LCDステータス部47 */
+	{ nil,                                                 Area:init(165,  25,  12,  5, "BATT"),                  null                                                 }, -- LCDステータス部48 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部49 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部50 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部51 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部52 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部53 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部54 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部55 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部56 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部57 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部58 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部59 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部60 */
+	{ Area:init(138,  63,  12,  5, "STAT"),                  nil,                                                 null                                                 }, -- LCDステータス部61 */
+	{ Area:init(156,  63,  15,  5, "PRINT"),                 nil,                                                 null                                                 }, -- LCDステータス部62 */
+	{ nil,                                                 nil,                                                 null                                                 }, -- LCDステータス部63 */
+	{ Area:init( 31,  24, 148, 46),                          Area:init( 31,  24, 148, 46),                          Area:init( 13,  17, 179, 54)                          }, -- LCD全体 */
+	{ Area:init(  2,  17, 206, 60),                          Area:init(  2,  17, 206, 60),                          Area:init(  0,   4, 205, 74)                          }, -- 画面枠 */
+	{ Area:init( 33,  18,   6,  5, "0",     COLOR_WHITE),    Area:init( 33,  18,   6,  5, "0",     COLOR_WHITE),    Area:init( 27,  71,   6,  5, "0",     COLOR_WHITE)    }, -- 0列目 */
+	{ Area:init( 39,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 39,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 33,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 1列目 */
+	{ Area:init( 45,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 45,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 39,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 2列目 */
+	{ Area:init( 51,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 51,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 45,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 3列目 */
+	{ Area:init( 57,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 57,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 51,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 4列目 */
+	{ Area:init( 63,  18,   6,  5, "5",     COLOR_WHITE),    Area:init( 63,  18,   6,  5, "5",     COLOR_WHITE),    Area:init( 57,  71,   6,  5, "5",     COLOR_WHITE)    }, -- 5列目 */
+	{ Area:init( 69,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 69,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 63,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 6列目 */
+	{ Area:init( 75,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 75,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 69,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 7列目 */
+	{ Area:init( 81,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 81,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 75,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 8列目 */
+	{ Area:init( 87,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 87,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 81,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 9列目 */
+	{ Area:init( 93,  18,   6,  5, "10",    COLOR_WHITE),    Area:init( 93,  18,   6,  5, "10",    COLOR_WHITE),    Area:init( 87,  71,   6,  5, "10",    COLOR_WHITE)    }, -- 10列目 */
+	{ Area:init( 99,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 99,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 93,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 11列目 */
+	{ Area:init(105,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(105,  18,   6,  5, "・",    COLOR_WHITE),    Area:init( 99,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 12列目 */
+	{ Area:init(111,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(111,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(105,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 13列目 */
+	{ Area:init(117,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(117,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(111,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 14列目 */
+	{ Area:init(123,  18,   6,  5, "15",    COLOR_WHITE),    Area:init(123,  18,   6,  5, "15",    COLOR_WHITE),    Area:init(117,  71,   6,  5, "15",    COLOR_WHITE)    }, -- 15列目 */
+	{ Area:init(129,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(129,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(123,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 16列目 */
+	{ Area:init(135,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(135,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(129,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 17列目 */
+	{ Area:init(141,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(141,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(135,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 18列目 */
+	{ Area:init(147,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(147,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(141,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 19列目 */
+	{ Area:init(153,  18,   6,  5, "20",    COLOR_WHITE),    Area:init(153,  18,   6,  5, "20",    COLOR_WHITE),    Area:init(147,  71,   6,  5, "20",    COLOR_WHITE)    }, -- 20列目 */
+	{ Area:init(159,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(159,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(153,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 21列目 */
+	{ Area:init(165,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(165,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(159,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 22列目 */
+	{ Area:init(171,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(171,  18,   6,  5, "・",    COLOR_WHITE),    Area:init(165,  71,   6,  5, "・",    COLOR_WHITE)    }, -- 23列目 */
+	{ Area:init( 33,  71,   6,  5, "・",    COLOR_WHITE),    Area:init( 33,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 0列目 */
+	{ Area:init( 63,  71,   6,  5, "・",    COLOR_WHITE),    Area:init( 63,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 5列目 */
+	{ Area:init( 93,  71,   6,  5, "・",    COLOR_WHITE),    Area:init( 93,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 10列目 */
+	{ Area:init(123,  71,   6,  5, "・",    COLOR_WHITE),    Area:init(123,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 15列目 */
+	{ Area:init(153,  71,   6,  5, "・",    COLOR_WHITE),    Area:init(153,  71,   6,  5, "・",    COLOR_WHITE),    null                                                 }, -- 20列目 */
+	{ Area:init(179,  31,   8,  8, "－",    COLOR_WHITE),    Area:init(179,  31,   8,  8, "－",    COLOR_WHITE),    Area:init(191,  20,   8,  8, "－",    COLOR_WHITE)    }, -- 0行目(右) */
+	{ Area:init(179,  39,   8,  8, "－",    COLOR_WHITE),    Area:init(179,  39,   8,  8, "－",    COLOR_WHITE),    Area:init(191,  28,   8,  8, "－",    COLOR_WHITE)    }, -- 1行目(右) */
+	{ Area:init(179,  47,   8,  8, "－",    COLOR_WHITE),    Area:init(179,  47,   8,  8, "－",    COLOR_WHITE),    Area:init(191,  36,   8,  8, "－",    COLOR_WHITE)    }, -- 2行目(右) */
+	{ Area:init(179,  55,   8,  8, "－",    COLOR_WHITE),    Area:init(179,  55,   8,  8, "－",    COLOR_WHITE),    Area:init(191,  44,   8,  8, "－",    COLOR_WHITE)    }, -- 3行目(右) */
+	{ nil,                                                 nil,                                                 Area:init(191,  52,   8,  8, "－",    COLOR_WHITE)    }, -- 4行目(右) */
+	{ nil,                                                 nil,                                                 Area:init(191,  60,   8,  8, "－",    COLOR_WHITE)    }, -- 5行目(右) */
+	{ Area:init( 23,  31,   8,  8, "－",    COLOR_WHITE),    Area:init( 23,  31,   8,  8, "－",    COLOR_WHITE),    Area:init(  5,  20,   8,  8, "－",    COLOR_WHITE)    }, -- 0行目(左) */
+	{ Area:init( 23,  39,   8,  8, "－",    COLOR_WHITE),    Area:init( 23,  39,   8,  8, "－",    COLOR_WHITE),    Area:init(  5,  28,   8,  8, "－",    COLOR_WHITE)    }, -- 1行目(左) */
+	{ Area:init( 23,  47,   8,  8, "－",    COLOR_WHITE),    Area:init( 23,  47,   8,  8, "－",    COLOR_WHITE),    Area:init(  5,  36,   8,  8, "－",    COLOR_WHITE)    }, -- 2行目(左) */
+	{ Area:init( 23,  55,   8,  8, "－",    COLOR_WHITE),    Area:init( 23,  55,   8,  8, "－",    COLOR_WHITE),    Area:init(  5,  44,   8,  8, "－",    COLOR_WHITE)    }, -- 3行目(左) */
+	{ nil,                                                 nil,                                                 Area:init(  5,  52,   8,  8, "－",    COLOR_WHITE)    }, -- 4行目(左) */
+	{ nil,                                                 nil,                                                 Area:init(  5,  60,   8,  8, "－",    COLOR_WHITE)    }, -- 5行目(左) */
+	{ Area:init(312,  64,   4,  5, "」",    COLOR_WHITE),    Area:init(312,  64,   4,  5, "」",    COLOR_WHITE),    Area:init(309,  67,   4,  5, "」",    COLOR_WHITE)    }, -- 右カギカッコ */
+	{ Area:init(295,  64,   4,  5, "「",    COLOR_WHITE),    Area:init(295,  64,   4,  5, "「",    COLOR_WHITE),    Area:init(292,  67,   4,  5, "「",    COLOR_WHITE)    }, -- 左カギカッコ */
+	{ Area:init(293, 137,   4,  5, "・",    COLOR_WHITE),    Area:init(293, 137,   4,  5, "・",    COLOR_WHITE),    Area:init(290, 141,   4,  5, "・",    COLOR_WHITE)    }, -- 中点 */
+	{ Area:init(251, 137,   4,  5, "。",    COLOR_WHITE),    Area:init(251, 137,   4,  5, "。",    COLOR_WHITE),    Area:init(248, 141,   4,  5, "。",    COLOR_WHITE)    }, -- 読点 */
+	{ Area:init(170, 121,   4,  5, "、",    COLOR_WHITE),    Area:init(170, 121,   4,  5, "、",    COLOR_WHITE),    Area:init(167, 125,   4,  5, "、",    COLOR_WHITE)    }, -- 句点 */
+	{ Area:init(  2,  79,  17,  5, "BREAK", COLOR_WHITE),    Area:init(  2,  79,  17,  5, "BREAK", COLOR_WHITE),    Area:init(294,   5,  17,  5, "BREAK", COLOR_WHITE)    }, -- BREAK */
+	{ nil,                                                 nil,                                                 Area:init(260,   5,  17,  5, "コントラスト", COLOR_YELLOW) }, -- コントラスト */
+	{ Area:init( 19, 111,  17,  5, "CASL",  COLOR_YELLOW),   Area:init( 19, 111,  17,  5, "C",     COLOR_YELLOW),   Area:init(226,   5,  17,  5, "C",     COLOR_YELLOW)   }, -- CASL/C */
+	{ nil,                                                 Area:init(  2, 111,  17,  5, "ASMBL", COLOR_YELLOW),   Area:init(209,   5,  17,  5, "ASMBL", COLOR_YELLOW)   }, -- ASMBL */
+	{ Area:init(297,  22,  16,  5, "CA",    COLOR_YELLOW),   Area:init(297,  22,  16,  5, "CA",    COLOR_YELLOW),   Area:init(294,  22,  17,  5, "CA",    COLOR_YELLOW)   }, -- CA */
+	{ Area:init(280,  22,  16,  5, "DIGIT", COLOR_YELLOW),   Area:init(280,  22,  16,  5, "DIGIT", COLOR_YELLOW),   Area:init(277,  22,  17,  5, "DIGIT", COLOR_YELLOW)   }, -- DIGIT */
+	{ Area:init(263,  22,  16,  5, "atan",  COLOR_YELLOW),   Area:init(263,  22,  16,  5, "atan",  COLOR_YELLOW),   Area:init(260,  22,  17,  5, "atan",  COLOR_YELLOW)   }, -- atan */
+	{ Area:init(246,  22,  16,  5, "acos",  COLOR_YELLOW),   Area:init(246,  22,  16,  5, "acos",  COLOR_YELLOW),   Area:init(243,  22,  17,  5, "acos",  COLOR_YELLOW)   }, -- acos */
+	{ Area:init(229,  22,  16,  5, "asin",  COLOR_YELLOW),   Area:init(229,  22,  16,  5, "asin",  COLOR_YELLOW),   Area:init(226,  22,  17,  5, "asin",  COLOR_YELLOW)   }, -- asin */
+	{ Area:init(297,  38,  16,  5, "STAT",  COLOR_YELLOW),   Area:init(297,  38,  16,  5, "STAT",  COLOR_YELLOW),   Area:init(294,  38,  17,  5, "STAT",  COLOR_YELLOW)   }, -- STAT */
+	{ Area:init(280,  38,  16,  5, "n!",    COLOR_YELLOW),   Area:init(280,  38,  16,  5, "n!",    COLOR_YELLOW),   Area:init(277,  38,  17,  5, "n!",    COLOR_YELLOW)   }, -- n! */
+	{ Area:init(263,  38,  16,  5, "10^x",  COLOR_YELLOW),   Area:init(263,  38,  16,  5, "10^x",  COLOR_YELLOW),   Area:init(260,  38,  17,  5, "10^x",  COLOR_YELLOW)   }, -- 10^x */
+	{ Area:init(246,  38,  16,  5, "e^x",   COLOR_YELLOW),   Area:init(246,  38,  16,  5, "e^x",   COLOR_YELLOW),   Area:init(243,  38,  17,  5, "e^x",   COLOR_YELLOW)   }, -- e^x */
+	{ Area:init(229,  38,  16,  5, "DMS",   COLOR_YELLOW),   Area:init(229,  38,  16,  5, "DMS",   COLOR_YELLOW),   Area:init(226,  38,  17,  5, "DMS",   COLOR_YELLOW)   }, -- DMS */
+	{ Area:init(212,  38,  16,  5, "nCr",   COLOR_YELLOW),   Area:init(212,  38,  16,  5, "nCr",   COLOR_YELLOW),   Area:init(209,  38,  17,  5, "nCr",   COLOR_YELLOW)   }, -- nCr */
+	{ nil,                                                 Area:init(297,  54,  17,  5, "BASE-n",COLOR_YELLOW),   Area:init(294,  54,  17,  5, "BASE-n",COLOR_YELLOW)   }, -- BASE-n */
+	{ Area:init(280,  54,  16,  5, "→xy",  COLOR_YELLOW),   Area:init(280,  54,  16,  5, "→xy",  COLOR_YELLOW),   Area:init(277,  54,  17,  5, "→xy",  COLOR_YELLOW)   }, -- →xy */
+	{ Area:init(263,  54,  16,  5, "→rθ", COLOR_YELLOW),   Area:init(263,  54,  16,  5, "→rθ", COLOR_YELLOW),   Area:init(260,  54,  17,  5, "→rθ", COLOR_YELLOW)   }, -- →rθ */
+	{ Area:init(246,  54,  16,  5, "x^3",   COLOR_YELLOW),   Area:init(246,  54,  16,  5, "x^3",   COLOR_YELLOW),   Area:init(243,  54,  17,  5, "x^3",   COLOR_YELLOW)   }, -- x^3 */
+	{ Area:init(229,  54,  16,  5, "3√",   COLOR_YELLOW),   Area:init(229,  54,  16,  5, "3√",   COLOR_YELLOW),   Area:init(226,  54,  17,  5, "3√",   COLOR_YELLOW)   }, -- 3√ */
+	{ Area:init(212,  54,  16,  5, "RND",   COLOR_YELLOW),   Area:init(212,  54,  16,  5, "RND",   COLOR_YELLOW),   Area:init(209,  54,  17,  5, "RND",   COLOR_YELLOW)   }, -- RND */
+	{ nil,                                                 nil,                                                 Area:init(250,  71,  21,  5, "″",    COLOR_YELLOW)   }, -- ″ */
+	{ nil,                                                 nil,                                                 Area:init(229,  71,  21,  5, "′",    COLOR_YELLOW)   }, -- ′ */
+	{ nil,                                                 nil,                                                 Area:init(208,  71,  21,  5, "°",    COLOR_YELLOW)   }, -- ° */
+	{ Area:init(295,  89,  19,  5, "M-",    COLOR_YELLOW),   Area:init(295,  89,  19,  5, "M-",    COLOR_YELLOW),   Area:init(292,  89,  21,  5, "M-",    COLOR_YELLOW)   }, -- M- */
+	{ Area:init(295, 107,  19,  5, "P-NP",  COLOR_YELLOW),   Area:init(295, 107,  19,  5, "P-NP",  COLOR_YELLOW),   Area:init(292, 107,  21,  5, "P-NP",  COLOR_YELLOW)   }, -- P-NP */
+	{ Area:init(274, 107,  19,  5, "(-)",   COLOR_YELLOW),   Area:init(274, 107,  19,  5, "(-)",   COLOR_YELLOW),   Area:init(272, 107,  21,  5, "(-)",   COLOR_YELLOW)   }, -- (-) */
+	{ nil,                                                 Area:init(253, 125,  19,  5, "Exp",   COLOR_YELLOW),   Area:init(250, 125,  21,  5, "Exp",   COLOR_YELLOW)   }, -- Exp */
+	{ Area:init(232, 125,  19,  5, "DRG",   COLOR_YELLOW),   Area:init(232, 125,  19,  5, "DRG",   COLOR_YELLOW),   Area:init(229, 125,  21,  5, "DRG",   COLOR_YELLOW)   }, -- DRG */
+	{ Area:init(175,  79,  15,  5, "@",     COLOR_YELLOW),   Area:init(175,  79,  15,  5, "@",     COLOR_YELLOW),   Area:init(172,  79,  17,  5, "@",     COLOR_YELLOW)   }, -- @ */
+	{ Area:init(158,  79,  15,  5, ">",     COLOR_YELLOW),   Area:init(158,  79,  15,  5, ">",     COLOR_YELLOW),   Area:init(155,  79,  17,  5, ">",     COLOR_YELLOW)   }, -- > */
+	{ Area:init(141,  79,  15,  5, "<",     COLOR_YELLOW),   Area:init(141,  79,  15,  5, "<",     COLOR_YELLOW),   Area:init(138,  79,  17,  5, "<",     COLOR_YELLOW)   }, -- < */
+	{ Area:init(124,  79,  15,  5, "'",     COLOR_YELLOW),   Area:init(124,  79,  15,  5, "'",     COLOR_YELLOW),   Area:init(121,  79,  17,  5, "'",     COLOR_YELLOW)   }, -- ' */
+	{ Area:init(107,  79,  15,  5, "&",     COLOR_YELLOW),   Area:init(107,  79,  15,  5, "&",     COLOR_YELLOW),   Area:init(104,  79,  17,  5, "&",     COLOR_YELLOW)   }, -- & */
+	{ Area:init( 90,  79,  15,  5, "%",     COLOR_YELLOW),   Area:init( 90,  79,  15,  5, "%",     COLOR_YELLOW),   Area:init( 87,  79,  17,  5, "%",     COLOR_YELLOW)   }, -- % */
+	{ Area:init( 73,  79,  15,  5, "$",     COLOR_YELLOW),   Area:init( 73,  79,  15,  5, "$",     COLOR_YELLOW),   Area:init( 70,  79,  17,  5, "$",     COLOR_YELLOW)   }, -- $ */
+	{ Area:init( 56,  79,  15,  5, "#",     COLOR_YELLOW),   Area:init( 56,  79,  15,  5, "#",     COLOR_YELLOW),   Area:init( 53,  79,  17,  5, "#",     COLOR_YELLOW)   }, -- # */
+	{ Area:init( 39,  79,  15,  5, "\"",    COLOR_YELLOW),   Area:init( 39,  79,  15,  5, "\"",    COLOR_YELLOW),   Area:init( 36,  79,  17,  5, "\"",    COLOR_YELLOW)   }, -- " */
+	{ Area:init( 22,  79,  15,  5, "!",     COLOR_YELLOW),   Area:init( 22,  79,  15,  5, "!",     COLOR_YELLOW),   Area:init( 19,  79,  17,  5, "!",     COLOR_YELLOW)   }, -- ! */
+	{ nil,                                                 nil,                                                 Area:init(194,  95,  14,  5, "P-NP",  COLOR_YELLOW)   }, -- P-NP(アルファベット按键側) */
+	{ Area:init(172, 111,  15,  5, ":",     COLOR_YELLOW),   Area:init(172, 111,  15,  5, ":",     COLOR_YELLOW),   Area:init(176,  95,  17,  5, ":",     COLOR_YELLOW)   }, -- : */
+	{ Area:init(162,  95,  15,  5, "=",     COLOR_YELLOW),   Area:init(162,  95,  15,  5, "=",     COLOR_YELLOW),   Area:init(159,  95,  17,  5, "=",     COLOR_YELLOW)   }, -- = */
+	{ Area:init(145,  95,  15,  5, "_",     COLOR_YELLOW),   Area:init(145,  95,  15,  5, "_",     COLOR_YELLOW),   Area:init(142,  95,  17,  5, "_",     COLOR_YELLOW)   }, -- _ */
+	{ Area:init(128,  95,  15,  5, "~",     COLOR_YELLOW),   Area:init(128,  95,  15,  5, "~",     COLOR_YELLOW),   Area:init(125,  95,  17,  5, "~",     COLOR_YELLOW)   }, -- ~ */
+	{ Area:init(111,  95,  15,  5, "|",     COLOR_YELLOW),   Area:init(111,  95,  15,  5, "|",     COLOR_YELLOW),   Area:init(108,  95,  17,  5, "|",     COLOR_YELLOW)   }, -- | */
+	{ Area:init( 94,  95,  15,  5, "\\",    COLOR_YELLOW),   Area:init( 94,  95,  15,  5, "\\",    COLOR_YELLOW),   Area:init( 91,  95,  17,  5, "\\",    COLOR_YELLOW)   }, -- \ */
+	{ Area:init( 77,  95,  15,  5, "}",     COLOR_YELLOW),   Area:init( 77,  95,  15,  5, "}",     COLOR_YELLOW),   Area:init( 74,  95,  17,  5, "}",     COLOR_YELLOW)   }, -- } */
+	{ Area:init( 60,  95,  15,  5, "{",     COLOR_YELLOW),   Area:init( 60,  95,  15,  5, "{",     COLOR_YELLOW),   Area:init( 57,  95,  17,  5, "{",     COLOR_YELLOW)   }, -- { */
+	{ Area:init( 43,  95,  15,  5, "]",     COLOR_YELLOW),   Area:init( 43,  95,  15,  5, "]",     COLOR_YELLOW),   Area:init( 40,  95,  17,  5, "]",     COLOR_YELLOW)   }, -- ] */
+	{ Area:init( 26,  95,  15,  5, "[",     COLOR_YELLOW),   Area:init( 26,  95,  15,  5, "[",     COLOR_YELLOW),   Area:init( 23,  95,  17,  5, "[",     COLOR_YELLOW)   }, -- [ */
+	{ Area:init( 33, 127,  15,  5, "小文字",COLOR_WHITE),    Area:init( 33, 127,  15,  5, "小文字",COLOR_WHITE),    Area:init(  2,  95,  21,  5, "小文字",COLOR_WHITE)    }, -- 小文字 */
+	{ Area:init(155, 111,  15,  5, "?",     COLOR_YELLOW),   Area:init(155, 111,  15,  5, "?",     COLOR_YELLOW),   Area:init(152, 111,  17,  5, "?",     COLOR_YELLOW)   }, -- ? */
+	{ Area:init(138, 111,  15,  5, "LOAD",  COLOR_YELLOW),   Area:init(138, 111,  15,  5, "LOAD",  COLOR_YELLOW),   Area:init(135, 111,  17,  5, "LOAD",  COLOR_YELLOW)   }, -- LOAD */
+	{ Area:init(121, 111,  15,  5, "SAVE",  COLOR_YELLOW),   Area:init(121, 111,  15,  5, "SAVE",  COLOR_YELLOW),   Area:init(118, 111,  17,  5, "SAVE",  COLOR_YELLOW)   }, -- SAVE */
+	{ Area:init(104, 111,  15,  5, "LIST",  COLOR_YELLOW),   Area:init(104, 111,  15,  5, "LIST",  COLOR_YELLOW),   Area:init(101, 111,  17,  5, "LIST",  COLOR_YELLOW)   }, -- LIST */
+	{ Area:init( 87, 111,  15,  5, "RUN",   COLOR_YELLOW),   Area:init( 87, 111,  15,  5, "RUN",   COLOR_YELLOW),   Area:init( 84, 111,  17,  5, "RUN",   COLOR_YELLOW)   }, -- RUN */
+	{ Area:init( 70, 111,  15,  5, "CONT",  COLOR_YELLOW),   Area:init( 70, 111,  15,  5, "CONT",  COLOR_YELLOW),   Area:init( 67, 111,  17,  5, "CONT",  COLOR_YELLOW)   }, -- CONT */
+	{ Area:init( 53, 111,  15,  5, "PRINT", COLOR_YELLOW),   Area:init( 53, 111,  15,  5, "PRINT", COLOR_YELLOW),   Area:init( 50, 111,  17,  5, "PRINT", COLOR_YELLOW)   }, -- PRINT */
+	{ Area:init( 36, 111,  15,  5, "INPUT", COLOR_YELLOW),   Area:init( 36, 111,  15,  5, "INPUT", COLOR_YELLOW),   Area:init( 33, 111,  17,  5, "INPUT", COLOR_YELLOW)   }, -- INPUT */
+	{ Area:init(189,  95,  20,  5, "DEL",   COLOR_YELLOW),   Area:init(189,  95,  20,  5, "DEL",   COLOR_YELLOW),   Area:init(135, 127,  17,  5, "DEL",   COLOR_YELLOW)   }, -- DEL */
+	{ Area:init( 50, 127,  15,  5, "ー",    COLOR_YELLOW),   Area:init( 50, 127,  15,  5, "ー",    COLOR_YELLOW),   Area:init( 28, 127,  21,  5, "ー",    COLOR_YELLOW)   }, -- ー */
+	{ Area:init( 19,  95,   7,  5, "RESET", COLOR_WHITE),    Area:init( 19,  95,   7,  5, "RESET", COLOR_WHITE),    Area:init( 14, 127,  12,  5, "RESET", COLOR_WHITE)    }, -- RESET */
+	{ nil,                                                 nil,                                                 null                                                 }, --  */
+	{ nil,                                                 nil,                                                 null                                                 }, --  */
+	{ nil,                                                 nil,                                                 null                                                 }, --  */
+	{ nil,                                                 nil,                                                 null                                                 }, --  */
+	{ Area:init( -4,   0, 328,148),                          Area:init( -4,   0, 328,148),                          Area:init(  0,   0, 320,148)                          }   -- 本体 */
+}
 
---  レイアウト: BREAKキー static public final int 
+
+---[===[
+
+--  按键布局 BREAK按键 static public final int 
 G8xx.LAYOUT_KEY_BREAK = 0;
 
--- レイアウト: OFFキー static public final int 
+-- 按键布局 OFF按键 static public final int 
 G8xxx.LAYOUT_KEY_OFF = 1;
 
--- レイアウト: ANSキー static public final int 
+-- 按键布局 ANS按键 static public final int 
 G8xx.LAYOUT_KEY_ANS = 2;
 
--- レイアウト: CONSTキー static public final int 
+-- 按键布局 CONST按键 static public final int 
 G8xx.LAYOUT_KEY_CONST = 3;
 
--- レイアウト: TEXTキー static public final int 
+-- 按键布局 TEXT按键 static public final int 
 G8xx.LAYOUT_KEY_TEXT = 4;
 
--- レイアウト: BASICキー static public final int 
+-- 按键布局 BASIC按键 static public final int 
 G8xx.LAYOUT_KEY_BASIC = 5;
 
-	-- レイアウト: CLSキー static public final int 
-LAYOUT_KEY_CLS = 6;
+-- 按键布局 CLS按键 static public final int 
+G8xx.LAYOUT_KEY_CLS = 6;
 
-	-- レイアウト: F←→Eキー 	static public final int LAYOUT_KEY_FE = 7;
+-- 按键布局 F←→E按键 	static public final int 
+G8xx.LAYOUT_KEY_FE = 7;
 
-	-- レイアウト: tanキー 	static public final int LAYOUT_KEY_TAN = 8;
+-- 按键布局 tan按键 	static public final int LAYOUT_KEY_TAN = 8;
 
-	-- レイアウト: cosキー 	static public final int LAYOUT_KEY_COS = 9;
+-- 按键布局 cos按键 	static public final int LAYOUT_KEY_COS = 9;
 
-	-- レイアウト: sinキー 	static public final int LAYOUT_KEY_SIN = 10;
+-- 按键布局 sin按键 	static public final int LAYOUT_KEY_SIN = 10;
 
-	-- レイアウト: 2ndFキー 	static public final int LAYOUT_KEY_2NDF = 11;
+-- 按键布局 2ndF按键 	static public final int LAYOUT_KEY_2NDF = 11;
 
-	-- レイアウト: MDFキー 	static public final int LAYOUT_KEY_MDF = 12;
+-- 按键布局 MDF按键 	static public final int LAYOUT_KEY_MDF = 12;
 
-	-- レイアウト: 1/xキー 	static public final int LAYOUT_KEY_RCP = 13;
+-- 按键布局 1/x按键 	static public final int LAYOUT_KEY_RCP = 13;
 
-	-- レイアウト: logキー 	static public final int LAYOUT_KEY_LOG = 14;
+-- 按键布局 log按键 	static public final int LAYOUT_KEY_LOG = 14;
 
-	-- レイアウト: lnキー 	static public final int LAYOUT_KEY_LN = 15;
+-- 按键布局 ln按键 	static public final int LAYOUT_KEY_LN = 15;
 
-	-- レイアウト: →DEGキー 	static public final int LAYOUT_KEY_DEG = 16;
+-- 按键布局 →DEG按键 	static public final int LAYOUT_KEY_DEG = 16;
 
-	-- レイアウト: nPrキー 	static public final int LAYOUT_KEY_NPR = 17;
+-- 按键布局 nPr按键 	static public final int LAYOUT_KEY_NPR = 17;
 
-	-- レイアウト: )キー 	static public final int LAYOUT_KEY_RKAKKO = 18;
+-- 按键布局 )按键 	static public final int LAYOUT_KEY_RKAKKO = 18;
 
-	-- レイアウト: (キー 	static public final int LAYOUT_KEY_LKAKKO = 19;
+-- 按键布局 (按键 	static public final int LAYOUT_KEY_LKAKKO = 19;
 
-	-- レイアウト: ^キー 	static public final int LAYOUT_KEY_HAT = 20;
+-- 按键布局 ^按键 	static public final int LAYOUT_KEY_HAT = 20;
 
-	-- レイアウト: x^2キー 	static public final int LAYOUT_KEY_SQU = 21;
+-- 按键布局 x^2按键 	static public final int LAYOUT_KEY_SQU = 21;
 
-	-- レイアウト: √キー 	static public final int LAYOUT_KEY_SQR = 22;
+-- 按键布局 √按键 	static public final int LAYOUT_KEY_SQR = 22;
 
-	-- レイアウト: πキー 	static public final int LAYOUT_KEY_PI = 23;
+-- 按键布局 π按键 	static public final int LAYOUT_KEY_PI = 23;
 
-	-- レイアウト: R・CMキー 	static public final int LAYOUT_KEY_RCM = 24;
+-- 按键布局 R・CM按键 	static public final int LAYOUT_KEY_RCM = 24;
 
-	-- レイアウト: /キー 	static public final int LAYOUT_KEY_SLASH = 25;
+-- 按键布局 /按键 	static public final int LAYOUT_KEY_SLASH = 25;
 
-	-- レイアウト: 9キー 	static public final int LAYOUT_KEY_9 = 26;
+-- 按键布局 9按键 	static public final int LAYOUT_KEY_9 = 26;
 
-	-- レイアウト: 8キー 	static public final int LAYOUT_KEY_8 = 27;
+-- 按键布局 8按键 	static public final int LAYOUT_KEY_8 = 27;
 
-	-- レイアウト: 7キー 	static public final int LAYOUT_KEY_7 = 28;
+-- 按键布局 7按键 	static public final int LAYOUT_KEY_7 = 28;
 
-	-- レイアウト: M+キー 	static public final int LAYOUT_KEY_MPLUS = 29;
+-- 按键布局 M+按键 	static public final int LAYOUT_KEY_MPLUS = 29;
 
-	-- レイアウト: *キー 	static public final int LAYOUT_KEY_ASTER = 30;
+-- 按键布局 *按键 	static public final int LAYOUT_KEY_ASTER = 30;
 
-	-- レイアウト: 6キー 	static public final int LAYOUT_KEY_6 = 31;
+-- 按键布局 6按键 	static public final int LAYOUT_KEY_6 = 31;
 
-	-- レイアウト: 5キー 	static public final int LAYOUT_KEY_5 = 32;
+-- 按键布局 5按键 	static public final int LAYOUT_KEY_5 = 32;
 
-	-- レイアウト: 4キー 	static public final int LAYOUT_KEY_4 = 33;
+-- 按键布局 4按键 	static public final int LAYOUT_KEY_4 = 33;
 
-	-- レイアウト: RETURNキー(テンキー側) 	static public final int LAYOUT_KEY_RETURN2 = 34;
+-- 按键布局 RETURN按键(テン按键側) 	static public final int LAYOUT_KEY_RETURN2 = 34;
 
-	-- レイアウト: -キー 	static public final int LAYOUT_KEY_MINUS = 35;
+-- 按键布局 -按键 	static public final int LAYOUT_KEY_MINUS = 35;
 
-	-- レイアウト: 3キー 	static public final int LAYOUT_KEY_3 = 36;
+-- 按键布局 3按键 	static public final int LAYOUT_KEY_3 = 36;
 
-	-- レイアウト: 2キー 	static public final int LAYOUT_KEY_2 = 37;
+-- 按键布局 2按键 	static public final int LAYOUT_KEY_2 = 37;
 
-	-- レイアウト: 1キー 	static public final int LAYOUT_KEY_1 = 38;
+-- 按键布局 1按键 	static public final int LAYOUT_KEY_1 = 38;
 
-	-- レイアウト: +キー 	static public final int LAYOUT_KEY_PLUS = 39;
+-- 按键布局 +按键 	static public final int LAYOUT_KEY_PLUS = 39;
 
-	-- レイアウト: =キー 	static public final int LAYOUT_KEY_EQUAL = 40;
+-- 按键布局 =按键 	static public final int LAYOUT_KEY_EQUAL = 40;
 
-	-- レイアウト: .キー 	static public final int LAYOUT_KEY_PERIOD = 41;
+-- 按键布局 .按键 	static public final int LAYOUT_KEY_PERIOD = 41;
 
-	-- レイアウト: 0キー 	static public final int LAYOUT_KEY_0 = 42;
+-- 按键布局 0按键 	static public final int LAYOUT_KEY_0 = 42;
 
-	-- レイアウト: BS 	static public final int LAYOUT_KEY_BACKSPACE = 43;
+-- 按键布局 BS 	static public final int LAYOUT_KEY_BACKSPACE = 43;
 
-	-- レイアウト: Pキー 	static public final int LAYOUT_KEY_P = 44;
+-- 按键布局 P按键 	static public final int LAYOUT_KEY_P = 44;
 
-	-- レイアウト: Oキー 	static public final int LAYOUT_KEY_O = 45;
+-- 按键布局 O按键 	static public final int LAYOUT_KEY_O = 45;
 
-	-- レイアウト: Iキー 	static public final int LAYOUT_KEY_I = 46;
+-- 按键布局 I按键 	static public final int LAYOUT_KEY_I = 46;
 
-	-- レイアウト: Uキー 	static public final int LAYOUT_KEY_U = 47;
+-- 按键布局 U按键 	static public final int LAYOUT_KEY_U = 47;
 
-	-- レイアウト: Yキー 	static public final int LAYOUT_KEY_Y = 48;
+-- 按键布局 Y按键 	static public final int LAYOUT_KEY_Y = 48;
 
-	-- レイアウト: Tキー 	static public final int LAYOUT_KEY_T = 49;
+-- 按键布局 T按键 	static public final int LAYOUT_KEY_T = 49;
 
-	-- レイアウト: Rキー 	static public final int LAYOUT_KEY_R = 50;
+-- 按键布局 R按键 	static public final int LAYOUT_KEY_R = 50;
 
-	-- レイアウト: Eキー 	static public final int LAYOUT_KEY_E = 51;
+-- 按键布局 E按键 	static public final int LAYOUT_KEY_E = 51;
 
-	-- レイアウト: Wキー 	static public final int LAYOUT_KEY_W = 52;
+-- 按键布局 W按键 	static public final int LAYOUT_KEY_W = 52;
 
-	-- レイアウト: Qキー 	static public final int LAYOUT_KEY_Q = 53;
+-- 按键布局 Q按键 	static public final int LAYOUT_KEY_Q = 53;
 
-	-- レイアウト: TABキー 	static public final int LAYOUT_KEY_TAB = 54;
+-- 按键布局 TAB按键 	static public final int LAYOUT_KEY_TAB = 54;
 
-	-- レイアウト: RETURNキー 	static public final int LAYOUT_KEY_RETURN = 55;
+-- 按键布局 RETURN按键 	static public final int LAYOUT_KEY_RETURN = 55;
 
-	-- レイアウト: ;キー 	static public final int LAYOUT_KEY_SEMICOLON = 56;
+-- 按键布局 ;按键 	static public final int LAYOUT_KEY_SEMICOLON = 56;
 
-	-- レイアウト: Lキー 	static public final int LAYOUT_KEY_L = 57;
+-- 按键布局 L按键 	static public final int LAYOUT_KEY_L = 57;
 
-	-- レイアウト: Kキー 	static public final int LAYOUT_KEY_K = 58;
+-- 按键布局 K按键 	static public final int LAYOUT_KEY_K = 58;
 
-	-- レイアウト: Jキー 	static public final int LAYOUT_KEY_J = 59;
+-- 按键布局 J按键 	static public final int LAYOUT_KEY_J = 59;
 
-	-- レイアウト: Hキー 	static public final int LAYOUT_KEY_H = 60;
+-- 按键布局 H按键 	static public final int LAYOUT_KEY_H = 60;
 
-	-- レイアウト: Gキー 	static public final int LAYOUT_KEY_G = 61;
+-- 按键布局 G按键 	static public final int LAYOUT_KEY_G = 61;
 
-	-- レイアウト: Fキー 	static public final int LAYOUT_KEY_F = 62;
+-- 按键布局 F按键 	static public final int LAYOUT_KEY_F = 62;
 
-	-- レイアウト: Dキー 	static public final int LAYOUT_KEY_D = 63;
+-- 按键布局 D按键 	static public final int LAYOUT_KEY_D = 63;
 
-	-- レイアウト: Sキー 	static public final int LAYOUT_KEY_S = 64;
+-- 按键布局 S按键 	static public final int LAYOUT_KEY_S = 64;
 
-	-- レイアウト: Aキー 	static public final int LAYOUT_KEY_A = 65;
+-- 按键布局 A按键 	static public final int LAYOUT_KEY_A = 65;
 
-	-- レイアウト: CAPSキー 	static public final int LAYOUT_KEY_CAPS = 66;
+-- 按键布局 CAPS按键 	static public final int LAYOUT_KEY_CAPS = 66;
 
-	-- レイアウト: ↑キー 	static public final int LAYOUT_KEY_UP = 67;
+-- 按键布局 ↑按键 	static public final int LAYOUT_KEY_UP = 67;
 
-	-- レイアウト: ,キー 	static public final int LAYOUT_KEY_COMMA = 68;
+-- 按键布局 ,按键 	static public final int LAYOUT_KEY_COMMA = 68;
 
-	-- レイアウト: Mキー 	static public final int LAYOUT_KEY_M = 69;
+-- 按键布局 M按键 	static public final int LAYOUT_KEY_M = 69;
 
-	-- レイアウト: Nキー 	static public final int LAYOUT_KEY_N = 70;
+-- 按键布局 N按键 	static public final int LAYOUT_KEY_N = 70;
 
-	-- レイアウト: Bキー 	static public final int LAYOUT_KEY_B = 71;
+-- 按键布局 B按键 	static public final int LAYOUT_KEY_B = 71;
 
-	-- レイアウト: Vキー 	static public final int LAYOUT_KEY_V = 72;
+-- 按键布局 V按键 	static public final int LAYOUT_KEY_V = 72;
 
-	-- レイアウト: Cキー 	static public final int LAYOUT_KEY_C = 73;
+-- 按键布局 C按键 	static public final int LAYOUT_KEY_C = 73;
 
-	-- レイアウト: Xキー 	static public final int LAYOUT_KEY_X = 74;
+-- 按键布局 X按键 	static public final int LAYOUT_KEY_X = 74;
 
-	-- レイアウト: Zキー 	static public final int LAYOUT_KEY_Z = 75;
+-- 按键布局 Z按键 	static public final int LAYOUT_KEY_Z = 75;
 
-	-- レイアウト: SHIFTキー 	static public final int LAYOUT_KEY_SHIFT = 76;
+-- 按键布局 SHIFT按键 	static public final int LAYOUT_KEY_SHIFT = 76;
 
-	-- レイアウト: →キー 	static public final int LAYOUT_KEY_RIGHT = 77;
+-- 按键布局 →按键 	static public final int LAYOUT_KEY_RIGHT = 77;
 
-	-- レイアウト: ↓キー 	static public final int LAYOUT_KEY_DOWN = 78;
+-- 按键布局 ↓按键 	static public final int LAYOUT_KEY_DOWN = 78;
 
-	-- レイアウト: ←キー 	static public final int LAYOUT_KEY_LEFT = 79;
+-- 按键布局 ←按键 	static public final int LAYOUT_KEY_LEFT = 79;
 
-	-- レイアウト: INSキー 	static public final int LAYOUT_KEY_INSERT = 80;
+-- 按键布局 INS按键 	static public final int LAYOUT_KEY_INSERT = 80;
 
-	-- レイアウト: SPACEキー 	static public final int LAYOUT_KEY_SPACE = 81;
+-- 按键布局 SPACE按键 	static public final int LAYOUT_KEY_SPACE = 81;
 
-	-- レイアウト: カナキー 	static public final int LAYOUT_KEY_KANA = 82;
+-- 按键布局 カナ按键 	static public final int LAYOUT_KEY_KANA = 82;
 
-	-- レイアウト: RESETボタン 	static public final int LAYOUT_KEY_RESET = 83;
+-- 按键布局 RESETボタン 	static public final int LAYOUT_KEY_RESET = 83;
 
-	-- レイアウト: キーの最後のレイアウト番号 	static public final int LAYOUT_KEY_LAST = 83;
+-- 按键布局 按键の最後のレイアウト番号 	static public final int LAYOUT_KEY_LAST = 83;
 
-	-- レイアウト: LCDドットマトリクス部 	static public final int LAYOUT_LCD_MATRIX = 84;
+-- 按键布局 LCDドットマトリクス部 	static public final int LAYOUT_LCD_MATRIX = 84;
 
-	-- レイアウト: LCDステータス部の最初のレイアウト番号 	static public final int LAYOUT_LCD_STATUS_FIRST = 85;
+-- 按键布局 LCDステータス部の最初のレイアウト番号 	static public final int LAYOUT_LCD_STATUS_FIRST = 85;
 
-	-- レイアウト: LCDステータス部の最後のレイアウト番号 	static public final int LAYOUT_LCD_STATUS_LAST = 148;
+-- 按键布局 LCDステータス部の最後のレイアウト番号 	static public final int LAYOUT_LCD_STATUS_LAST = 148;
 
-	-- レイアウト: LCD全体 	static public final int LAYOUT_LCD = 149;
+-- 按键布局 LCD全体 	static public final int LAYOUT_LCD = 149;
 
-	-- レイアウト: LCD画面枠 	static public final int LAYOUT_FRAME = 150;
+-- 按键布局 LCD画面枠 	static public final int LAYOUT_FRAME = 150;
 
-	-- レイアウト: 0列目 	static public final int LAYOUT_LABEL_COL0 = 151;
+-- 按键布局 0列目 	static public final int LAYOUT_LABEL_COL0 = 151;
 
-	-- レイアウト: 1列目 	static public final int LAYOUT_LABEL_COL1 = 152;
+-- 按键布局 1列目 	static public final int LAYOUT_LABEL_COL1 = 152;
 
-	-- レイアウト: 2列目 	static public final int LAYOUT_LABEL_COL2 = 153;
+-- 按键布局 2列目 	static public final int LAYOUT_LABEL_COL2 = 153;
 
-	-- レイアウト: 3列目 	static public final int LAYOUT_LABEL_COL3 = 154;
+-- 按键布局 3列目 	static public final int LAYOUT_LABEL_COL3 = 154;
 
-	-- レイアウト: 4列目 	static public final int LAYOUT_LABEL_COL4 = 155;
+-- 按键布局 4列目 	static public final int LAYOUT_LABEL_COL4 = 155;
 
-	-- レイアウト: 5列目 	static public final int LAYOUT_LABEL_COL5 = 156;
+-- 按键布局 5列目 	static public final int LAYOUT_LABEL_COL5 = 156;
 
-	-- レイアウト: 6列目 	static public final int LAYOUT_LABEL_COL6 = 157;
+-- 按键布局 6列目 	static public final int LAYOUT_LABEL_COL6 = 157;
 
-	-- レイアウト: 7列目 	static public final int LAYOUT_LABEL_COL7 = 158;
+-- 按键布局 7列目 	static public final int LAYOUT_LABEL_COL7 = 158;
 
-	-- レイアウト: 8列目 	static public final int LAYOUT_LABEL_COL8 = 159;
+-- 按键布局 8列目 	static public final int LAYOUT_LABEL_COL8 = 159;
 
-	-- レイアウト: 9列目 	static public final int LAYOUT_LABEL_COL9 = 160;
+-- 按键布局 9列目 	static public final int LAYOUT_LABEL_COL9 = 160;
 
-	-- レイアウト: 10列目 	static public final int LAYOUT_LABEL_COL10 = 161;
+-- 按键布局 10列目 	static public final int LAYOUT_LABEL_COL10 = 161;
 
-	-- レイアウト: 11列目 	static public final int LAYOUT_LABEL_COL11 = 162;
+-- 按键布局 11列目 	static public final int LAYOUT_LABEL_COL11 = 162;
 
-	-- レイアウト: 12列目 	static public final int LAYOUT_LABEL_COL12 = 163;
+-- 按键布局 12列目 	static public final int LAYOUT_LABEL_COL12 = 163;
 
-	-- レイアウト: 13列目 	static public final int LAYOUT_LABEL_COL13 = 164;
+-- 按键布局 13列目 	static public final int LAYOUT_LABEL_COL13 = 164;
 
-	-- レイアウト: 14列目 	static public final int LAYOUT_LABEL_COL14 = 165;
+-- 按键布局 14列目 	static public final int LAYOUT_LABEL_COL14 = 165;
 
-	-- レイアウト: 15列目 	static public final int LAYOUT_LABEL_COL15 = 166;
+-- 按键布局 15列目 	static public final int LAYOUT_LABEL_COL15 = 166;
 
-	-- レイアウト: 16列目 	static public final int LAYOUT_LABEL_COL16 = 167;
+-- 按键布局 16列目 	static public final int LAYOUT_LABEL_COL16 = 167;
 
-	-- レイアウト: 17列目 	static public final int LAYOUT_LABEL_COL17 = 168;
+-- 按键布局 17列目 	static public final int LAYOUT_LABEL_COL17 = 168;
 
-	-- レイアウト: 18列目 	static public final int LAYOUT_LABEL_COL18 = 169;
+-- 按键布局 18列目 	static public final int LAYOUT_LABEL_COL18 = 169;
 
-	-- レイアウト: 19列目 	static public final int LAYOUT_LABEL_COL19 = 170;
+-- 按键布局 19列目 	static public final int LAYOUT_LABEL_COL19 = 170;
 
-	-- レイアウト: 20列目 	static public final int LAYOUT_LABEL_COL20 = 171;
+-- 按键布局 20列目 	static public final int LAYOUT_LABEL_COL20 = 171;
 
-	-- レイアウト: 21列目 	static public final int LAYOUT_LABEL_COL21 = 172;
+-- 按键布局 21列目 	static public final int LAYOUT_LABEL_COL21 = 172;
 
-	-- レイアウト: 22列目 	static public final int LAYOUT_LABEL_COL22 = 173;
+-- 按键布局 22列目 	static public final int LAYOUT_LABEL_COL22 = 173;
 
-	-- レイアウト: 23列目 	static public final int LAYOUT_LABEL_COL23 = 174;
+-- 按键布局 23列目 	static public final int LAYOUT_LABEL_COL23 = 174;
 
-	-- レイアウト: 0列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL0 = 175;
+-- 按键布局 0列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL0 = 175;
 
-	-- レイアウト: 5列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL5 = 176;
+-- 按键布局 5列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL5 = 176;
 
-	-- レイアウト: 10列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL10 = 177;
+-- 按键布局 10列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL10 = 177;
 
-	-- レイアウト: 15列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL15 = 178;
+-- 按键布局 15列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL15 = 178;
 
-	-- レイアウト: 20列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL20 = 179;
+-- 按键布局 20列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL20 = 179;
 
-	-- レイアウト: 0行目(右) 	static public final int LAYOUT_LABEL_RROW0 = 180;
+-- 按键布局 0行目(右) 	static public final int LAYOUT_LABEL_RROW0 = 180;
 
-	-- レイアウト: 1行目(右) 	static public final int LAYOUT_LABEL_RROW1 = 181;
+-- 按键布局 1行目(右) 	static public final int LAYOUT_LABEL_RROW1 = 181;
 
-	-- レイアウト: 2行目(右) 	static public final int LAYOUT_LABEL_RROW2 = 182;
+-- 按键布局 2行目(右) 	static public final int LAYOUT_LABEL_RROW2 = 182;
 
-	-- レイアウト: 3行目(右) 	static public final int LAYOUT_LABEL_RROW3 = 183;
+-- 按键布局 3行目(右) 	static public final int LAYOUT_LABEL_RROW3 = 183;
 
-	-- レイアウト: 4行目(右) 	static public final int LAYOUT_LABEL_RROW4 = 184;
+-- 按键布局 4行目(右) 	static public final int LAYOUT_LABEL_RROW4 = 184;
 
-	-- レイアウト: 5行目(右) 	static public final int LAYOUT_LABEL_RROW5 = 185;
+-- 按键布局 5行目(右) 	static public final int LAYOUT_LABEL_RROW5 = 185;
 
-	-- レイアウト: 0行目(左) 	static public final int LAYOUT_LABEL_LROW0 = 186;
+-- 按键布局 0行目(左) 	static public final int LAYOUT_LABEL_LROW0 = 186;
 
-	-- レイアウト: 1行目(左) 	static public final int LAYOUT_LABEL_LROW1 = 187;
+-- 按键布局 1行目(左) 	static public final int LAYOUT_LABEL_LROW1 = 187;
 
-	-- レイアウト: 2行目(左) 	static public final int LAYOUT_LABEL_LROW2 = 188;
+-- 按键布局 2行目(左) 	static public final int LAYOUT_LABEL_LROW2 = 188;
 
-	-- レイアウト: 3行目(左) 	static public final int LAYOUT_LABEL_LROW3 = 189;
+-- 按键布局 3行目(左) 	static public final int LAYOUT_LABEL_LROW3 = 189;
 
-	-- レイアウト: 4行目(左) 	static public final int LAYOUT_LABEL_LROW4 = 190;
+-- 按键布局 4行目(左) 	static public final int LAYOUT_LABEL_LROW4 = 190;
 
-	-- レイアウト: 5行目(左) 	static public final int LAYOUT_LABEL_LROW5 = 191;
+-- 按键布局 5行目(左) 	static public final int LAYOUT_LABEL_LROW5 = 191;
 
-	-- レイアウト: 右カギカッコ 	static public final int LAYOUT_LABEL_RKAGIKAKKO = 192;
+-- 按键布局 右カギカッコ 	static public final int LAYOUT_LABEL_RKAGIKAKKO = 192;
 
-	-- レイアウト: 左カギカッコ 	static public final int LAYOUT_LABEL_LKAGIKAKKO = 193;
+-- 按键布局 左カギカッコ 	static public final int LAYOUT_LABEL_LKAGIKAKKO = 193;
 
-	-- レイアウト: 中点 	static public final int LAYOUT_LABEL_NAKATEN = 194;
+-- 按键布局 中点 	static public final int LAYOUT_LABEL_NAKATEN = 194;
 
-	-- レイアウト: 句点 	static public final int LAYOUT_LABEL_KUTEN = 195;
+-- 按键布局 句点 	static public final int LAYOUT_LABEL_KUTEN = 195;
 
-	-- レイアウト: 読点 	static public final int LAYOUT_LABEL_TOUTEN = 196;
+-- 按键布局 読点 	static public final int LAYOUT_LABEL_TOUTEN = 196;
 
-	-- レイアウト: BREAK 	static public final int LAYOUT_LABEL_BREAK = 197;
+-- 按键布局 BREAK 	static public final int LAYOUT_LABEL_BREAK = 197;
 
-	-- レイアウト: コントラスト 	static public final int LAYOUT_LABEL_CONTRAST = 198;
+-- 按键布局 コントラスト 	static public final int LAYOUT_LABEL_CONTRAST = 198;
 
-	-- レイアウト: C 	static public final int LAYOUT_LABEL_C = 199;
+-- 按键布局 C 	static public final int LAYOUT_LABEL_C = 199;
 
-	-- レイアウト: ASMBL 	static public final int LAYOUT_LABEL_ASMBL = 200;
+-- 按键布局 ASMBL 	static public final int LAYOUT_LABEL_ASMBL = 200;
 
-	-- レイアウト: CA 	static public final int LAYOUT_LABEL_CA = 201;
+-- 按键布局 CA 	static public final int LAYOUT_LABEL_CA = 201;
 
-	-- レイアウト: DIGIT 	static public final int LAYOUT_LABEL_DIGIT = 202;
+-- 按键布局 DIGIT 	static public final int LAYOUT_LABEL_DIGIT = 202;
 
-	-- レイアウト: atan 	static public final int LAYOUT_LABEL_ATAN = 203;
+-- 按键布局 atan 	static public final int LAYOUT_LABEL_ATAN = 203;
 
-	-- レイアウト: acos 	static public final int LAYOUT_LABEL_ACOS = 204;
+-- 按键布局 acos 	static public final int LAYOUT_LABEL_ACOS = 204;
 
-	-- レイアウト: asin 	static public final int LAYOUT_LABEL_ASIN = 205;
+-- 按键布局 asin 	static public final int LAYOUT_LABEL_ASIN = 205;
 
-	-- レイアウト: STAT 	static public final int LAYOUT_LABEL_STAT = 206;
+-- 按键布局 STAT 	static public final int LAYOUT_LABEL_STAT = 206;
 
-	-- レイアウト: n! 	static public final int LAYOUT_LABEL_FACT = 207;
+-- 按键布局 n! 	static public final int LAYOUT_LABEL_FACT = 207;
 
-	-- レイアウト: 10^x 	static public final int LAYOUT_LABEL_TEN = 208;
+-- 按键布局 10^x 	static public final int LAYOUT_LABEL_TEN = 208;
 
-	-- レイアウト: e^x 	static public final int LAYOUT_LABEL_EXP = 209;
+-- 按键布局 e^x 	static public final int LAYOUT_LABEL_EXP = 209;
 
-	-- レイアウト: →DMS 	static public final int LAYOUT_LABEL_DMS = 210;
+-- 按键布局 →DMS 	static public final int LAYOUT_LABEL_DMS = 210;
 
-	-- レイアウト: nCr 	static public final int LAYOUT_LABEL_NCR = 211;
+-- 按键布局 nCr 	static public final int LAYOUT_LABEL_NCR = 211;
 
-	-- レイアウト: BASE-n 	static public final int LAYOUT_LABEL_BASEN = 212;
+-- 按键布局 BASE-n 	static public final int LAYOUT_LABEL_BASEN = 212;
 
-	-- レイアウト: →xy 	static public final int LAYOUT_LABEL_XY = 213;
+-- 按键布局 →xy 	static public final int LAYOUT_LABEL_XY = 213;
 
-	-- レイアウト: →rθ 	static public final int LAYOUT_LABEL_POL = 214;
+-- 按键布局 →rθ 	static public final int LAYOUT_LABEL_POL = 214;
 
-	-- レイアウト: x^3 	static public final int LAYOUT_LABEL_CUB = 215;
+-- 按键布局 x^3 	static public final int LAYOUT_LABEL_CUB = 215;
 
-	-- レイアウト: 3√ 	static public final int LAYOUT_LABEL_CUR = 216;
+-- 按键布局 3√ 	static public final int LAYOUT_LABEL_CUR = 216;
 
-	-- レイアウト: RND 	static public final int LAYOUT_LABEL_RND = 217;
+-- 按键布局 RND 	static public final int LAYOUT_LABEL_RND = 217;
 
-	-- レイアウト: ″ 	static public final int LAYOUT_LABEL_SECOND = 218;
+-- 按键布局 ″ 	static public final int LAYOUT_LABEL_SECOND = 218;
 
-	-- レイアウト: ′ 	static public final int LAYOUT_LABEL_MINUTE = 219;
+-- 按键布局 ′ 	static public final int LAYOUT_LABEL_MINUTE = 219;
 
-	-- レイアウト: ° 	static public final int LAYOUT_LABEL_DEGREE = 220;
+-- 按键布局 ° 	static public final int LAYOUT_LABEL_DEGREE = 220;
 
-	-- レイアウト: M- 	static public final int LAYOUT_LABEL_MMINUS = 221;
+-- 按键布局 M- 	static public final int LAYOUT_LABEL_MMINUS = 221;
 
-	-- レイアウト: P-NP 	static public final int LAYOUT_LABEL_PNP2 = 222;
+-- 按键布局 P-NP 	static public final int LAYOUT_LABEL_PNP2 = 222;
 
-	-- レイアウト: (-) 	static public final int LAYOUT_LABEL_NEG = 223;
+-- 按键布局 (-) 	static public final int LAYOUT_LABEL_NEG = 223;
 
-	-- レイアウト: Exp 	static public final int LAYOUT_LABEL_E = 224;
+-- 按键布局 Exp 	static public final int LAYOUT_LABEL_E = 224;
 
-	-- レイアウト: DRG 	static public final int LAYOUT_LABEL_DRG = 225;
+-- 按键布局 DRG 	static public final int LAYOUT_LABEL_DRG = 225;
 
-	-- レイアウト: @ 	static public final int LAYOUT_LABEL_AT = 226;
+-- 按键布局 @ 	static public final int LAYOUT_LABEL_AT = 226;
 
-	-- レイアウト: > 	static public final int LAYOUT_LABEL_GREATER = 227;
+-- 按键布局 > 	static public final int LAYOUT_LABEL_GREATER = 227;
 
-	-- レイアウト: < 	static public final int LAYOUT_LABEL_LESS = 228;
+-- 按键布局 < 	static public final int LAYOUT_LABEL_LESS = 228;
 
-	-- レイアウト: ' 	static public final int LAYOUT_LABEL_APOSTROPHE = 229;
+-- 按键布局 ' 	static public final int LAYOUT_LABEL_APOSTROPHE = 229;
 
-	-- レイアウト: & 	static public final int LAYOUT_LABEL_AMPERSAND = 230;
+-- 按键布局 & 	static public final int LAYOUT_LABEL_AMPERSAND = 230;
 
-	-- レイアウト: % 	static public final int LAYOUT_LABEL_PERCENT = 231;
+-- 按键布局 % 	static public final int LAYOUT_LABEL_PERCENT = 231;
 
-	-- レイアウト: $ 	static public final int LAYOUT_LABEL_DOLLAR = 232;
+-- 按键布局 $ 	static public final int LAYOUT_LABEL_DOLLAR = 232;
 
-	-- レイアウト: # 	static public final int LAYOUT_LABEL_HASH = 233;
+-- 按键布局 # 	static public final int LAYOUT_LABEL_HASH = 233;
 
-	-- レイアウト: " 	static public final int LAYOUT_LABEL_DQUARTATION = 234;
+-- 按键布局 " 	static public final int LAYOUT_LABEL_DQUARTATION = 234;
 
-	-- レイアウト: ! 	static public final int LAYOUT_LABEL_EXCLAMATION = 235;
+-- 按键布局 ! 	static public final int LAYOUT_LABEL_EXCLAMATION = 235;
 
-	-- レイアウト: P-NP(アルファベットキー側) 	static public final int LAYOUT_LABEL_PNP = 236;
+-- 按键布局 P-NP(アルファベット按键側) 	static public final int LAYOUT_LABEL_PNP = 236;
 
-	-- レイアウト: : 	static public final int LAYOUT_LABEL_COLON = 237;
+-- 按键布局 : 	static public final int LAYOUT_LABEL_COLON = 237;
 
-	-- レイアウト: = 	static public final int LAYOUT_LABEL_EQUAL = 238;
+-- 按键布局 = 	static public final int LAYOUT_LABEL_EQUAL = 238;
 
-	-- レイアウト: _ 	static public final int LAYOUT_LABEL_UNDERBAR = 239;
+-- 按键布局 _ 	static public final int LAYOUT_LABEL_UNDERBAR = 239;
 
-	-- レイアウト: 	static public final int LAYOUT_LABEL_TILDE = 240;
+-- 按键布局 	static public final int LAYOUT_LABEL_TILDE = 240;
 
-	-- レイアウト: | 	static public final int LAYOUT_LABEL_PIPE = 241;
+-- 按键布局 | 	static public final int LAYOUT_LABEL_PIPE = 241;
 
-	-- レイアウト: \ 	static public final int LAYOUT_LABEL_YEN = 242;
+-- 按键布局 \ 	static public final int LAYOUT_LABEL_YEN = 242;
 
-	-- レイアウト: } 	static public final int LAYOUT_LABEL_RBRACE = 243;
+-- 按键布局 } 	static public final int LAYOUT_LABEL_RBRACE = 243;
 
-	-- レイアウト: { 	static public final int LAYOUT_LABEL_LBRACE = 244;
+-- 按键布局 { 	static public final int LAYOUT_LABEL_LBRACE = 244;
 
-	-- レイアウト: ] 	static public final int LAYOUT_LABEL_RBRACKET = 245;
+-- 按键布局 ] 	static public final int LAYOUT_LABEL_RBRACKET = 245;
 
-	-- レイアウト: [ 	static public final int LAYOUT_LABEL_LBRACKET = 246;
+-- 按键布局 [ 	static public final int LAYOUT_LABEL_LBRACKET = 246;
 
-	-- レイアウト: 小文字 	static public final int LAYOUT_LABEL_KOMOZI = 247;
+-- 按键布局 小文字 	static public final int LAYOUT_LABEL_KOMOZI = 247;
 
-	-- レイアウト: ? 	static public final int LAYOUT_LABEL_QUESTION = 248;
+-- 按键布局 ? 	static public final int LAYOUT_LABEL_QUESTION = 248;
 
-	-- レイアウト: LOAD 	static public final int LAYOUT_LABEL_LOAD = 249;
+-- 按键布局 LOAD 	static public final int LAYOUT_LABEL_LOAD = 249;
 
-	-- レイアウト: SAVE 	static public final int LAYOUT_LABEL_SAVE = 250;
+-- 按键布局 SAVE 	static public final int LAYOUT_LABEL_SAVE = 250;
 
-	-- レイアウト: LIST 	static public final int LAYOUT_LABEL_LIST = 251;
+-- 按键布局 LIST 	static public final int LAYOUT_LABEL_LIST = 251;
 
-	-- レイアウト: RUN 	static public final int LAYOUT_LABEL_RUN = 252;
+-- 按键布局 RUN 	static public final int LAYOUT_LABEL_RUN = 252;
 
-	-- レイアウト: CONT 	static public final int LAYOUT_LABEL_CONT = 253;
+-- 按键布局 CONT 	static public final int LAYOUT_LABEL_CONT = 253;
 
-	-- レイアウト: PRINT 	static public final int LAYOUT_LABEL_PRINT = 254;
+-- 按键布局 PRINT 	static public final int LAYOUT_LABEL_PRINT = 254;
 
-	-- レイアウト: INPUT 	static public final int LAYOUT_LABEL_INPUT = 255;
+-- 按键布局 INPUT 	static public final int LAYOUT_LABEL_INPUT = 255;
 
-	-- レイアウト: DEL 	static public final int LAYOUT_LABEL_DELETE = 256;
+-- 按键布局 DEL 	static public final int LAYOUT_LABEL_DELETE = 256;
 
-	-- レイアウト: ー 	static public final int LAYOUT_LABEL_CHOON = 257;
+-- 按键布局 ー 	static public final int LAYOUT_LABEL_CHOON = 257;
 
-	-- レイアウト: RESET 	static public final int LAYOUT_LABEL_RESET = 258;
+-- 按键布局 RESET 	static public final int LAYOUT_LABEL_RESET = 258;
 
-	-- レイアウト: GRAPHIC 	static public final int LAYOUT_LABEL_LOGO1 = 259;
+-- 按键布局 GRAPHIC 	static public final int LAYOUT_LABEL_LOGO1 = 259;
 
-	-- レイアウト: C-LANGUAGE 	static public final int LAYOUT_LABEL_LOGO2 = 260;
+-- 按键布局 C-LANGUAGE 	static public final int LAYOUT_LABEL_LOGO2 = 260;
 
-	-- レイアウト: POCKET COMPUTER PC-G850/S/V/VS 	static public final int LAYOUT_LABEL_LOGO3 = 261;
+-- 按键布局 POCKET COMPUTER PC-G850/S/V/VS 	static public final int LAYOUT_LABEL_LOGO3 = 261;
 
-	-- レイアウト: SHARP 	static public final int LAYOUT_LABEL_LOGO4 = 262;
+-- 按键布局 SHARP 	static public final int LAYOUT_LABEL_LOGO4 = 262;
 
-	-- レイアウト: 本体 	static public final int LAYOUT_BODY = 263;
+-- 按键布局 本体 	static public final int LAYOUT_BODY = 263;
 
-	-- レイアウト: 最後の番号 	static public final int LAYOUT_LAST = 263;
+-- 按键布局 最後の番号 	static public final int LAYOUT_LAST = 263;
 
-	-- 色: 黒 	static public final int COLOR_BLACK = 0;
+-- 色: 黒 	static public final int COLOR_BLACK = 0;
 
-	-- 色: 暗い灰色 	static public final int COLOR_DARKGRAY = 1;
+-- 色: 暗い灰色 	static public final int COLOR_DARKGRAY = 1;
 
-	-- 色: 灰色 	static public final int COLOR_GRAY = 2;
+-- 色: 灰色 	static public final int COLOR_GRAY = 2;
 
-	-- 色: 明るい灰色 	static public final int COLOR_LIGHTGRAY = 3;
+-- 色: 明るい灰色 	static public final int COLOR_LIGHTGRAY = 3;
 
-	-- 色: 白 	static public final int COLOR_WHITE = 4;
+-- 色: 白 	static public final int COLOR_WHITE = 4;
 
-	-- 色: 赤 	static public final int COLOR_RED = 5;
+-- 色: 赤 	static public final int COLOR_RED = 5;
 
-	-- 色: 明るい赤 	static public final int COLOR_LIGHTRED = 6;
+-- 色: 明るい赤 	static public final int COLOR_LIGHTRED = 6;
 
-	-- 色: 緑 	static public final int COLOR_GREEN = 7;
+-- 色: 緑 	static public final int COLOR_GREEN = 7;
 
-	-- 色: 明るい緑 	static public final int COLOR_LIGHTGREEN = 8;
+-- 色: 明るい緑 	static public final int COLOR_LIGHTGREEN = 8;
 
-	-- 色: 黄 	static public final int COLOR_YELLOW = 9;
+-- 色: 黄 	static public final int COLOR_YELLOW = 9;
 
-	-- 色: 明るい黄 	static public final int COLOR_LIGHTYELLOW = 10;
+-- 色: 明るい黄 	static public final int COLOR_LIGHTYELLOW = 10;
 
-	-- 色: 青 	static public final int COLOR_BLUE = 11;
+-- 色: 青 	static public final int COLOR_BLUE = 11;
 
-	-- 動作モード: エミュレート 	static public final int MODE_EMULATOR = 0;
+-- 動作モード: エミュレート 	static public final int MODE_EMULATOR = 0;
 
-	-- 動作モード: メニュー 	static public final int MODE_MENU = 1;
+-- 動作モード: メニュー 	static public final int MODE_MENU = 1;
 
-	-- エミュレートの対象: PC-G801/PC-G802/PC-G803/PC-G805/PC-G811/PC-G813/PC-G820/PC-G830/PC-E200/PC-E220 	static public final int MACHINE_E200 = 0;
+-- エミュレートの対象: PC-G801/PC-G802/PC-G803/PC-G805/PC-G811/PC-G813/PC-G820/PC-G830/PC-E200/PC-E220 	static public final int MACHINE_E200 = 0;
 
-	-- エミュレートの対象: PC-G815 	static public final int MACHINE_G815 = 1;
+-- エミュレートの対象: PC-G815 	static public final int MACHINE_G815 = 1;
 
-	-- エミュレートの対象: PC-G850/PC-G850S/PC-G850V/PC-G850VS 	static public final int MACHINE_G850 = 2;
+-- エミュレートの対象: PC-G850/PC-G850S/PC-G850V/PC-G850VS 	static public final int MACHINE_G850 = 2;
 
-	-- 1文字横ドット数 (PC-E200) 	static private final int E200_CELL_WIDTH = 5;
+-- 1文字横ドット数 (PC-E200) 	static private final int E200_CELL_WIDTH = 5;
 
-	-- 1文字縦ドット数 (PC-E200) 	static private final int E200_CELL_HEIGHT = 7;
+-- 1文字縦ドット数 (PC-E200) 	static private final int E200_CELL_HEIGHT = 7;
 
-	-- 表示横文字数 (PC-E200) 	static private final int E200_LCD_COLS = 24;
+-- 表示横文字数 (PC-E200) 	static private final int E200_LCD_COLS = 24;
 
-	-- 表示縦文字数 (PC-E200) 	static private final int E200_LCD_ROWS = 4;
+-- 表示縦文字数 (PC-E200) 	static private final int E200_LCD_ROWS = 4;
 
-	-- VRAM横文字数 (PC-E200) 	static private final int E200_VRAM_COLS = 24;
+-- VRAM横文字数 (PC-E200) 	static private final int E200_VRAM_COLS = 24;
 
-	-- VRAM縦文字数 (PC-E200) 	static private final int E200_VRAM_ROWS = 4;
+-- VRAM縦文字数 (PC-E200) 	static private final int E200_VRAM_ROWS = 4;
 
-	-- VRAM横ドット数 (PC-E200) 	static private final int E200_VRAM_WIDTH = E200_VRAM_COLS * E200_CELL_WIDTH + 1;
+-- VRAM横ドット数 (PC-E200) 	static private final int E200_VRAM_WIDTH = E200_VRAM_COLS * E200_CELL_WIDTH + 1;
 
-	-- VRAM縦ドット数 (PC-E200) 	static private final int E200_VRAM_HEIGHT = E200_VRAM_ROWS * 8;
+-- VRAM縦ドット数 (PC-E200) 	static private final int E200_VRAM_HEIGHT = E200_VRAM_ROWS * 8;
 
-	-- 1文字横ドット数 (PC-G815) 	static private final int G815_CELL_WIDTH = 6;
+-- 1文字横ドット数 (PC-G815) 	static private final int G815_CELL_WIDTH = 6;
 
-	-- 1文字縦ドット数 (PC-G815) 	static private final int G815_CELL_HEIGHT = 8;
+-- 1文字縦ドット数 (PC-G815) 	static private final int G815_CELL_HEIGHT = 8;
 
-	-- 表示横文字数 (PC-G815) 	static private final int G815_LCD_COLS = 24;
+-- 表示横文字数 (PC-G815) 	static private final int G815_LCD_COLS = 24;
 
-	-- 表示縦文字数 (PC-G815) 	static private final int G815_LCD_ROWS = 4;
+-- 表示縦文字数 (PC-G815) 	static private final int G815_LCD_ROWS = 4;
 
-	-- VRAM横文字数 (PC-G815) 	static private final int G815_VRAM_COLS = 24;
+-- VRAM横文字数 (PC-G815) 	static private final int G815_VRAM_COLS = 24;
 
-	-- VRAM縦文字数 (PC-G815) 	static private final int G815_VRAM_ROWS = 4;
+-- VRAM縦文字数 (PC-G815) 	static private final int G815_VRAM_ROWS = 4;
 
-	-- VRAM横ドット数 (PC-G815) 	static private final int G815_VRAM_WIDTH = G815_VRAM_COLS * G815_CELL_WIDTH + 1;
+-- VRAM横ドット数 (PC-G815) 	static private final int G815_VRAM_WIDTH = G815_VRAM_COLS * G815_CELL_WIDTH + 1;
 
-	-- VRAM縦ドット数 (PC-G815) 	static private final int G815_VRAM_HEIGHT = G815_VRAM_ROWS * 8;
+-- VRAM縦ドット数 (PC-G815) 	static private final int G815_VRAM_HEIGHT = G815_VRAM_ROWS * 8;
 
-	-- 1文字横ドット数 (PC-G850) 	static private final int G850_CELL_WIDTH = 6;
+-- 1文字横ドット数 (PC-G850) 	static private final int G850_CELL_WIDTH = 6;
 
-	-- 1文字縦ドット数 (PC-G850) 	static private final int G850_CELL_HEIGHT = 8;
+-- 1文字縦ドット数 (PC-G850) 	static private final int G850_CELL_HEIGHT = 8;
 
-	-- 画面横文字数 (PC-G850) 	static private final int G850_LCD_COLS = 24;
+-- 画面横文字数 (PC-G850) 	static private final int G850_LCD_COLS = 24;
 
-	-- 画面縦文字数 (PC-G850) 	static private final int G850_LCD_ROWS = 6;
+-- 画面縦文字数 (PC-G850) 	static private final int G850_LCD_ROWS = 6;
 
-	-- VRAM横文字数 (PC-G850) 	static private final int G850_VRAM_COLS = 24;
+-- VRAM横文字数 (PC-G850) 	static private final int G850_VRAM_COLS = 24;
 
-	-- VRAM縦文字数 (PC-G850) 	static private final int G850_VRAM_ROWS = 8;
+-- VRAM縦文字数 (PC-G850) 	static private final int G850_VRAM_ROWS = 8;
 
-	-- VRAM横ドット数 (PC-G850) 	static private final int G850_VRAM_WIDTH = G850_VRAM_COLS * G850_CELL_WIDTH + 1;
+-- VRAM横ドット数 (PC-G850) 	static private final int G850_VRAM_WIDTH = G850_VRAM_COLS * G850_CELL_WIDTH + 1;
 
-	-- VRAM縦ドット数 (PC-G850) 	static private final int G850_VRAM_HEIGHT = G850_VRAM_ROWS * 8;
+-- VRAM縦ドット数 (PC-G850) 	static private final int G850_VRAM_HEIGHT = G850_VRAM_ROWS * 8;
 
-	-- SIOモード: 入出力なし 	static public final int SIO_MODE_STOP = 0;
+-- SIOモード: 入出力なし 	static public final int SIO_MODE_STOP = 0;
 
-	-- SIOモード: 入力 	static public final int SIO_MODE_IN = 1;
+-- SIOモード: 入力 	static public final int SIO_MODE_IN = 1;
 
-	-- SIOモード: 出力 	static public final int SIO_MODE_OUT = 2;
+-- SIOモード: 出力 	static public final int SIO_MODE_OUT = 2;
 
-	-- キー割り込み 	static private final int INTERRUPT_IA = 0x01;
+-- 按键割り込み 	static private final int INTERRUPT_IA = 0x01;
 
-	-- キー割り込み 	static private final int INTERRUPT_KON = 0x02;
+-- 按键割り込み 	static private final int INTERRUPT_KON = 0x02;
 
-	-- タイマ割り込み 	static private final int INTERRUPT_1S = 0x04;
+-- タイマ割り込み 	static private final int INTERRUPT_1S = 0x04;
 
-	-- 11ピン割り込み 	static private final int INTERRUPT_INT1 = 0x08;
+-- 11ピン割り込み 	static private final int INTERRUPT_INT1 = 0x08;
 
-	-- キーコード: なし 	static public final int GKEY_NONE = 0x00;
+-- 按键コード: なし 	static public final int GKEY_NONE = 0x00;
 
-	-- キーコード: OFFキー 	static public final int GKEY_OFF = 0x01;
+-- 按键コード: OFF按键 	static public final int GKEY_OFF = 0x01;
 
-	-- キーコード: Qキー 	static public final int GKEY_Q = 0x02;
+-- 按键コード: Q按键 	static public final int GKEY_Q = 0x02;
 
-	-- キーコード: Wキー 	static public final int GKEY_W = 0x03;
+-- 按键コード: W按键 	static public final int GKEY_W = 0x03;
 
-	-- キーコード: Eキー 	static public final int GKEY_E = 0x04;
+-- 按键コード: E按键 	static public final int GKEY_E = 0x04;
 
-	-- キーコード: Rキー 	static public final int GKEY_R = 0x05;
+-- 按键コード: R按键 	static public final int GKEY_R = 0x05;
 
-	-- キーコード: Tキー 	static public final int GKEY_T = 0x06;
+-- 按键コード: T按键 	static public final int GKEY_T = 0x06;
 
-	-- キーコード: Yキー 	static public final int GKEY_Y = 0x07;
+-- 按键コード: Y按键 	static public final int GKEY_Y = 0x07;
 
-	-- キーコード: Uキー 	static public final int GKEY_U = 0x08;
+-- 按键コード: U按键 	static public final int GKEY_U = 0x08;
 
-	-- キーコード: Aキー 	static public final int GKEY_A = 0x09;
+-- 按键コード: A按键 	static public final int GKEY_A = 0x09;
 
-	-- キーコード: Sキー 	static public final int GKEY_S = 0x0a;
+-- 按键コード: S按键 	static public final int GKEY_S = 0x0a;
 
-	-- キーコード: Dキー 	static public final int GKEY_D = 0x0b;
+-- 按键コード: D按键 	static public final int GKEY_D = 0x0b;
 
-	-- キーコード: Fキー 	static public final int GKEY_F = 0x0c;
+-- 按键コード: F按键 	static public final int GKEY_F = 0x0c;
 
-	-- キーコード: Gキー 	static public final int GKEY_G = 0x0d;
+-- 按键コード: G按键 	static public final int GKEY_G = 0x0d;
 
-	-- キーコード: Hキー 	static public final int GKEY_H = 0x0e;
+-- 按键コード: H按键 	static public final int GKEY_H = 0x0e;
 
-	-- キーコード: Jキー 	static public final int GKEY_J = 0x0f;
+-- 按键コード: J按键 	static public final int GKEY_J = 0x0f;
 
-	-- キーコード: Kキー 	static public final int GKEY_K = 0x10;
+-- 按键コード: K按键 	static public final int GKEY_K = 0x10;
 
-	-- キーコード: Zキー 	static public final int GKEY_Z = 0x11;
+-- 按键コード: Z按键 	static public final int GKEY_Z = 0x11;
 
-	-- キーコード: Xキー 	static public final int GKEY_X = 0x12;
+-- 按键コード: X按键 	static public final int GKEY_X = 0x12;
 
-	-- キーコード: Cキー 	static public final int GKEY_C = 0x13;
+-- 按键コード: C按键 	static public final int GKEY_C = 0x13;
 
-	-- キーコード: Vキー 	static public final int GKEY_V = 0x14;
+-- 按键コード: V按键 	static public final int GKEY_V = 0x14;
 
-	-- キーコード: Bキー 	static public final int GKEY_B = 0x15;
+-- 按键コード: B按键 	static public final int GKEY_B = 0x15;
 
-	-- キーコード: Nキー 	static public final int GKEY_N = 0x16;
+-- 按键コード: N按键 	static public final int GKEY_N = 0x16;
 
-	-- キーコード: Mキー 	static public final int GKEY_M = 0x17;
+-- 按键コード: M按键 	static public final int GKEY_M = 0x17;
 
-	-- キーコード: ,キー 	static public final int GKEY_COMMA = 0x18;
+-- 按键コード: ,按键 	static public final int GKEY_COMMA = 0x18;
 
-	-- キーコード: BASICキー 	static public final int GKEY_BASIC = 0x19;
+-- 按键コード: BASIC按键 	static public final int GKEY_BASIC = 0x19;
 
-	-- キーコード: TEXTキー 	static public final int GKEY_TEXT = 0x1a;
+-- 按键コード: TEXT按键 	static public final int GKEY_TEXT = 0x1a;
 
-	-- キーコード: CAPSキー 	static public final int GKEY_CAPS = 0x1b;
+-- 按键コード: CAPS按键 	static public final int GKEY_CAPS = 0x1b;
 
-	-- キーコード: カナキー 	static public final int GKEY_KANA = 0x1c;
+-- 按键コード: カナ按键 	static public final int GKEY_KANA = 0x1c;
 
-	-- キーコード: TABキー 	static public final int GKEY_TAB = 0x1d;
+-- 按键コード: TAB按键 	static public final int GKEY_TAB = 0x1d;
 
-	-- キーコード: SPACEキー 	static public final int GKEY_SPACE = 0x1e;
+-- 按键コード: SPACE按键 	static public final int GKEY_SPACE = 0x1e;
 
-	-- キーコード: ↓キー 	static public final int GKEY_DOWN = 0x1f;
+-- 按键コード: ↓按键 	static public final int GKEY_DOWN = 0x1f;
 
-	-- キーコード: ↑キー 	static public final int GKEY_UP = 0x20;
+-- 按键コード: ↑按键 	static public final int GKEY_UP = 0x20;
 
-	-- キーコード: ←キー 	static public final int GKEY_LEFT = 0x21;
+-- 按键コード: ←按键 	static public final int GKEY_LEFT = 0x21;
 
-	-- キーコード: →キー 	static public final int GKEY_RIGHT = 0x22;
+-- 按键コード: →按键 	static public final int GKEY_RIGHT = 0x22;
 
-	-- キーコード: ANSキー 	static public final int GKEY_ANS = 0x23;
+-- 按键コード: ANS按键 	static public final int GKEY_ANS = 0x23;
 
-	-- キーコード: 0キー 	static public final int GKEY_0 = 0x24;
+-- 按键コード: 0按键 	static public final int GKEY_0 = 0x24;
 
-	-- キーコード: .キー 	static public final int GKEY_PERIOD = 0x25;
+-- 按键コード: .按键 	static public final int GKEY_PERIOD = 0x25;
 
-	-- キーコード: =キー 	static public final int GKEY_EQUAL = 0x26;
+-- 按键コード: =按键 	static public final int GKEY_EQUAL = 0x26;
 
-	-- キーコード: +キー 	static public final int GKEY_PLUS = 0x27;
+-- 按键コード: +按键 	static public final int GKEY_PLUS = 0x27;
 
-	-- キーコード: RETURNキー 	static public final int GKEY_RETURN = 0x28;
+-- 按键コード: RETURN按键 	static public final int GKEY_RETURN = 0x28;
 
-	-- キーコード: Lキー 	static public final int GKEY_L = 0x29;
+-- 按键コード: L按键 	static public final int GKEY_L = 0x29;
 
-	-- キーコード: ;キー 	static public final int GKEY_SEMICOLON = 0x2a;
+-- 按键コード: ;按键 	static public final int GKEY_SEMICOLON = 0x2a;
 
-	-- キーコード: CONSTキー 	static public final int GKEY_CONST = 0x2b;
+-- 按键コード: CONST按键 	static public final int GKEY_CONST = 0x2b;
 
-	-- キーコード: 1キー 	static public final int GKEY_1 = 0x2c;
+-- 按键コード: 1按键 	static public final int GKEY_1 = 0x2c;
 
-	-- キーコード: 2キー 	static public final int GKEY_2 = 0x2d;
+-- 按键コード: 2按键 	static public final int GKEY_2 = 0x2d;
 
-	-- キーコード: 3キー 	static public final int GKEY_3 = 0x2e;
+-- 按键コード: 3按键 	static public final int GKEY_3 = 0x2e;
 
-	-- キーコード: -キー 	static public final int GKEY_MINUS = 0x2f;
+-- 按键コード: -按键 	static public final int GKEY_MINUS = 0x2f;
 
-	-- キーコード: M+キー 	static public final int GKEY_MPLUS = 0x30;
+-- 按键コード: M+按键 	static public final int GKEY_MPLUS = 0x30;
 
-	-- キーコード: Iキー 	static public final int GKEY_I = 0x31;
+-- 按键コード: I按键 	static public final int GKEY_I = 0x31;
 
-	-- キーコード: Oキー 	static public final int GKEY_O = 0x32;
+-- 按键コード: O按键 	static public final int GKEY_O = 0x32;
 
-	-- キーコード: INSキー 	static public final int GKEY_INSERT = 0x33;
+-- 按键コード: INS按键 	static public final int GKEY_INSERT = 0x33;
 
-	-- キーコード: 4キー 	static public final int GKEY_4 = 0x34;
+-- 按键コード: 4按键 	static public final int GKEY_4 = 0x34;
 
-	-- キーコード: 5キー 	static public final int GKEY_5 = 0x35;
+-- 按键コード: 5按键 	static public final int GKEY_5 = 0x35;
 
-	-- キーコード: 6キー 	static public final int GKEY_6 = 0x36;
+-- 按键コード: 6按键 	static public final int GKEY_6 = 0x36;
 
-	-- キーコード: *キー 	static public final int GKEY_ASTER = 0x37;
+-- 按键コード: *按键 	static public final int GKEY_ASTER = 0x37;
 
-	-- キーコード: R・CMキー 	static public final int GKEY_RCM = 0x38;
+-- 按键コード: R・CM按键 	static public final int GKEY_RCM = 0x38;
 
-	-- キーコード: Pキー 	static public final int GKEY_P = 0x39;
+-- 按键コード: P按键 	static public final int GKEY_P = 0x39;
 
-	-- キーコード: BSキー 	static public final int GKEY_BACKSPACE = 0x3a;
+-- 按键コード: BS按键 	static public final int GKEY_BACKSPACE = 0x3a;
 
-	-- キーコード: πキー 	static public final int GKEY_PI = 0x3b;
+-- 按键コード: π按键 	static public final int GKEY_PI = 0x3b;
 
-	-- キーコード: 7キー 	static public final int GKEY_7 = 0x3c;
+-- 按键コード: 7按键 	static public final int GKEY_7 = 0x3c;
 
-	-- キーコード: 8キー 	static public final int GKEY_8 = 0x3d;
+-- 按键コード: 8按键 	static public final int GKEY_8 = 0x3d;
 
-	-- キーコード: 9キー 	static public final int GKEY_9 = 0x3e;
+-- 按键コード: 9按键 	static public final int GKEY_9 = 0x3e;
 
-	-- キーコード: /キー 	static public final int GKEY_SLASH = 0x3f;
+-- 按键コード: /按键 	static public final int GKEY_SLASH = 0x3f;
 
-	-- キーコード: )キー 	static public final int GKEY_RKAKKO = 0x40;
+-- 按键コード: )按键 	static public final int GKEY_RKAKKO = 0x40;
 
-	-- キーコード: nPrキー 	static public final int GKEY_NPR = 0x41;
+-- 按键コード: nPr按键 	static public final int GKEY_NPR = 0x41;
 
-	-- キーコード: →DEGキー 	static public final int GKEY_DEG = 0x42;
+-- 按键コード: →DEG按键 	static public final int GKEY_DEG = 0x42;
 
-	-- キーコード: √キー 	static public final int GKEY_SQR = 0x43;
+-- 按键コード: √按键 	static public final int GKEY_SQR = 0x43;
 
-	-- キーコード: x^2キー 	static public final int GKEY_SQU = 0x44;
+-- 按键コード: x^2按键 	static public final int GKEY_SQU = 0x44;
 
-	-- キーコード: ^キー 	static public final int GKEY_HAT = 0x45;
+-- 按键コード: ^按键 	static public final int GKEY_HAT = 0x45;
 
-	-- キーコード: (キー 	static public final int GKEY_LKAKKO = 0x46;
+-- 按键コード: (按键 	static public final int GKEY_LKAKKO = 0x46;
 
-	-- キーコード: 1/xキー 	static public final int GKEY_RCP = 0x47;
+-- 按键コード: 1/x按键 	static public final int GKEY_RCP = 0x47;
 
-	-- キーコード: MDFキー 	static public final int GKEY_MDF = 0x48;
+-- 按键コード: MDF按键 	static public final int GKEY_MDF = 0x48;
 
-	-- キーコード: 2ndFキー 	static public final int GKEY_2NDF = 0x49;
+-- 按键コード: 2ndF按键 	static public final int GKEY_2NDF = 0x49;
 
-	-- キーコード: sinキー 	static public final int GKEY_SIN = 0x4a;
+-- 按键コード: sin按键 	static public final int GKEY_SIN = 0x4a;
 
-	-- キーコード: cosキー 	static public final int GKEY_COS = 0x4b;
+-- 按键コード: cos按键 	static public final int GKEY_COS = 0x4b;
 
-	-- キーコード: lnキー 	static public final int GKEY_LN = 0x4c;
+-- 按键コード: ln按键 	static public final int GKEY_LN = 0x4c;
 
-	-- キーコード: logキー 	static public final int GKEY_LOG = 0x4d;
+-- 按键コード: log按键 	static public final int GKEY_LOG = 0x4d;
 
-	-- キーコード: tanキー 	static public final int GKEY_TAN = 0x4e;
+-- 按键コード: tan按键 	static public final int GKEY_TAN = 0x4e;
 
-	-- キーコード: F←→Eキー 	static public final int GKEY_FE = 0x4f;
+-- 按键コード: F←→E按键 	static public final int GKEY_FE = 0x4f;
 
-	-- キーコード: CLSキー 	static public final int GKEY_CLS = 0x50;
+-- 按键コード: CLS按键 	static public final int GKEY_CLS = 0x50;
 
-	-- キーコード: ONキー 	static public final int GKEY_BREAK = 0x51;
+-- 按键コード: ON按键 	static public final int GKEY_BREAK = 0x51;
 
-	-- キーコード: 同時押し 	static public final int GKEY_DOUBLE = 0x52;
+-- 按键コード: 同時押し 	static public final int GKEY_DOUBLE = 0x52;
 
-	-- 仮想キーコード: SHIFTキー 	static public final int GKEY_SHIFT = 0x1000;
+-- 仮想按键コード: SHIFT按键 	static public final int GKEY_SHIFT = 0x1000;
 
-	-- 仮想キーコード: RESETキー 	static public final int GKEY_RESET = 0x2000;
+-- 仮想按键コード: RESET按键 	static public final int GKEY_RESET = 0x2000;
 
-	-- 11ピン出力: Fo1 	static private final int PIN11_OUT_FO1 = 0x01;
+-- 11ピン出力: Fo1 	static private final int PIN11_OUT_FO1 = 0x01;
 
-	-- 11ピン出力: Fo2 	static private final int PIN11_OUT_FO2 = 0x02;
+-- 11ピン出力: Fo2 	static private final int PIN11_OUT_FO2 = 0x02;
 
-	-- 11ピン出力: BEEP 	static private final int PIN11_OUT_BEEP = 0x40;
+-- 11ピン出力: BEEP 	static private final int PIN11_OUT_BEEP = 0x40;
 
-	-- 11ピン出力: Xout 	static private final int PIN11_OUT_XOUT = 0x80;
+-- 11ピン出力: Xout 	static private final int PIN11_OUT_XOUT = 0x80;
 
-	-- 11ピン入力: IB1 	static private final int PIN11_IN_IB1 = 0x01;
+-- 11ピン入力: IB1 	static private final int PIN11_IN_IB1 = 0x01;
 
-	-- 11ピン入力: IB2 	static private final int PIN11_IN_IB2 = 0x02;
+-- 11ピン入力: IB2 	static private final int PIN11_IN_IB2 = 0x02;
 
-	-- 11ピン入力: Xin 	static private final int PIN11_IN_XIN = 0x04;
+-- 11ピン入力: Xin 	static private final int PIN11_IN_XIN = 0x04;
 
-	-- 最初の実行か? 	private boolean first = true;
+-- 最初の実行か? 	private boolean first = true;
 
-	-- 動作モード 	private int mode = 0;
+-- 動作モード 	private int mode = 0;
 
-	-- エミュレートするマシン 	private int machine;
+-- エミュレートするマシン 	private int machine;
 
-	-- VRAM横ドット数 	private int vramWidth;
+-- VRAM横ドット数 	private int vramWidth;
 
-	-- VRAM縦文字数 	private int vramRows;
+-- VRAM縦文字数 	private int vramRows;
 
-	-- VRAM横文字数 	private int vramCols;
+-- VRAM横文字数 	private int vramCols;
 
-	-- 1文字横ドット数 	private int cellWidth;
+-- 1文字横ドット数 	private int cellWidth;
 
-	-- 1文字縦ドット数 	private int cellHeight;
+-- 1文字縦ドット数 	private int cellHeight;
 
-	-- LCD横ドット数 	private int lcdWidth;
+-- LCD横ドット数 	private int lcdWidth;
 
-	-- LCD縦ドット数 	private int lcdHeight;
+-- LCD縦ドット数 	private int lcdHeight;
 
-	-- LCD横文字数 	private int lcdCols;
+-- LCD横文字数 	private int lcdCols;
 
-	-- LCD縦文字数 	private int lcdRows;
+-- LCD縦文字数 	private int lcdRows;
 
-	-- メモリ (0x0000~0xffff) 	private byte[] memory;
+-- メモリ (0x0000~0xffff) 	private byte[] memory;
 
 -- RAMの初期値 (0x0000~0x003f) private byte[] base = new byte[] {i}
 local base = {
-		(byte )0xc3, (byte )0xf4, (byte )0xbf, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00,
-		(byte )0xc9, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00,
-		(byte )0xc9, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00,
-		(byte )0xc9, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00,
-		(byte )0xc9, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00,
-		(byte )0xc9, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00,
-		(byte )0xc9, (byte )0x03, (byte )0xbd, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00,
-		(byte )0xc9, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00, (byte )0x00
+		0xc3, 0xf4, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xc9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xc9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xc9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xc9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xc9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xc9, 0x03, 0xbd, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xc9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	};
 
 -- ROM (0x8000~0xffff) private byte[][] rom;
@@ -1107,120 +1397,120 @@ local rom = {{}}
 -- 現在のRAMページ番号 private int ramBank;
 local ramBank
 
-	-- ROMの総ページ数 	private int romBanks;
+-- ROMの総ページ数 	private int romBanks;
 
-	-- 現在のROMページ番号 	private int romBank;
+-- 現在のROMページ番号 	private int romBank;
 
-	-- 現在のEXROMページ番号 	private int exBank;
+-- 現在のEXROMページ番号 	private int exBank;
 
-	-- 周辺機器用リセット信号 	private int ioReset;
+-- 周辺機器用リセット信号 	private int ioReset;
 
-	-- 割り込み要因 	private int interruptType;
+-- 割り込み要因 	private int interruptType;
 
-	-- 割り込みマスク 	private int interruptMask;
+-- 割り込みマスク 	private int interruptMask;
 
-	-- タイマ 	private int timer;
+-- タイマ 	private int timer;
 
-	-- タイマカウンタ 	private int timerCount;
+-- タイマカウンタ 	private int timerCount;
 
-	-- タイマ周期 	private int timerInterval;
+-- タイマ周期 	private int timerInterval;
 
-	-- キーストローブ 	private int keyStrobe;
+-- 按键ストローブ 	private int keyStrobe;
 
-	-- 最後に設定したキーストローブ 	private int keyStrobeLast;
+-- 最後に設定した按键ストローブ 	private int keyStrobeLast;
 
-	-- キー状態 	private int[] keyMatrix;
+-- 按键状態 	private int[] keyMatrix;
 
-	-- ONキー状態 	private int keyBreak;
+-- ON按键状態 	private int keyBreak;
 
-	-- シフトキー状態 	private int keyShift;
+-- シフト按键状態 	private int keyShift;
 
-	-- リセットボタン状態 	private boolean keyReset;
+-- リセットボタン状態 	private boolean keyReset;
 
-	-- キー割り込みを発生させるか? 	private boolean intIA;
+-- 按键割り込みを発生させるか? 	private boolean intIA;
 
-	-- キー割り込みを発生させるか? 	private boolean intKON;
+-- 按键割り込みを発生させるか? 	private boolean intKON;
 
-	-- キーストローブを設定したときの累積ステート数 	private int keyStrobeLastStates;
+-- 按键ストローブを設定したときの累積ステート数 	private int keyStrobeLastStates;
 
-	-- キーストローブがクリアされるステート数 	private int keyStrobeClearStates;
+-- 按键ストローブがクリアされるステート数 	private int keyStrobeClearStates;
 
-	-- LCD 横アドレス 	private int lcdX;
+-- LCD 横アドレス 	private int lcdX;
 
-	-- LCD 縦アドレス 	private int lcdY;
+-- LCD 縦アドレス 	private int lcdY;
 
-	-- LCD 横アドレス2 (PC-G815) 	private int lcdX2;
+-- LCD 横アドレス2 (PC-G815) 	private int lcdX2;
 
-	-- 縦アドレス2 (PC-G815) 	private int lcdY2;
+-- 縦アドレス2 (PC-G815) 	private int lcdY2;
 
-	-- 表示開始アドレス(PC-E200/PC-G815) 	private int lcdBegin;
+-- 表示開始アドレス(PC-E200/PC-G815) 	private int lcdBegin;
 
-	-- LCD OFF(PC-G850) 	private boolean lcdDisabled;
+-- LCD OFF(PC-G850) 	private boolean lcdDisabled;
 
-	-- 表示開始位置(PC-G850) 	private int lcdTop;
+-- 表示開始位置(PC-G850) 	private int lcdTop;
 
-	-- コントラスト(PC-G850) 	private int lcdContrast;
+-- コントラスト(PC-G850) 	private int lcdContrast;
 
-	-- ミラーモード(PC-G850) 	private boolean lcdEffectMirror;
+-- ミラーモード(PC-G850) 	private boolean lcdEffectMirror;
 
-	-- 黒塗りつぶし(PC-G850) 	private boolean lcdEffectBlack;
+-- 黒塗りつぶし(PC-G850) 	private boolean lcdEffectBlack;
 
-	-- 反転(PC-G850) 	private boolean lcdEffectReverse;
+-- 反転(PC-G850) 	private boolean lcdEffectReverse;
 
-	-- LCD電圧増加(PC-G850) 	private boolean lcdEffectDark;
+-- LCD電圧増加(PC-G850) 	private boolean lcdEffectDark;
 
-	-- 白塗りつぶし(PC-G850) 	private boolean lcdEffectWhite;
+-- 白塗りつぶし(PC-G850) 	private boolean lcdEffectWhite;
 
-	-- トリム(PC-G850) 	private int lcdTrim;
+-- トリム(PC-G850) 	private int lcdTrim;
 
-	-- VRAM 	private byte[] vram;
+-- VRAM 	private byte[] vram;
 
-	-- 作業領域 	private byte[] tmpVram;
+-- 作業領域 	private byte[] tmpVram;
 
 -- レジスタ破壊用乱数 private int random 
 local random  = 0xffffffff;
 
-	-- 文字表示列 	private int curCol;
+-- 文字表示列 	private int curCol;
 
-	-- 文字表示行 	private int curRow;
+-- 文字表示行 	private int curRow;
 
-	-- 押されているキー 	private int pressedKey;
+-- 押されている按键 	private int pressedKey;
 
-	-- LCDパターン 	private boolean[][][] lcdPattern;
+-- LCDパターン 	private boolean[][][] lcdPattern;
 
-	-- LCDが変化したか? 	private boolean[][] lcdChanged;
+-- LCDが変化したか? 	private boolean[][] lcdChanged;
 
-	-- LCDの点灯数 	private int[][] lcdCount;
+-- LCDの点灯数 	private int[][] lcdCount;
 
-	-- LCD階調 	private int[][] lcdScale;
+-- LCD階調 	private int[][] lcdScale;
 
-	-- 前のフレームのLCD階調 	private int[][] lcdScalePrev;
+-- 前のフレームのLCD階調 	private int[][] lcdScalePrev;
 
-	-- LCDページ数 	private int lcdPages;
+-- LCDページ数 	private int lcdPages;
 
-	-- SIO入出力モード 	private int sioMode = SIO_MODE_STOP;
+-- SIO入出力モード 	private int sioMode = SIO_MODE_STOP;
 
-	-- SIO入力ファイル名 	private String sioInPathname = "";
+-- SIO入力ファイル名 	private String sioInPathname = "";
 
-	-- SIO出力ファイル名 	private String sioOutPathname = "";
+-- SIO出力ファイル名 	private String sioOutPathname = "";
 
-	-- SIOバッファ 	private byte sioBuffer[];
+-- SIOバッファ 	private byte sioBuffer[];
 
-	-- SIO入出力カウンタ 	private int sioCount;
+-- SIO入出力カウンタ 	private int sioCount;
 
-	-- SIOへの出力 	private int pin11Out;
+-- SIOへの出力 	private int pin11Out;
 
-	-- SIOからの入力(仮想の通信相手の送信データ) 	private int pin11In;
+-- SIOからの入力(仮想の通信相手の送信データ) 	private int pin11In;
 
-	-- CPUクロック周波数(Hz) 	private int cpuClocks;
+-- CPUクロック周波数(Hz) 	private int cpuClocks;
 
-	-- I/O更新周期(Hz) 	private int fps;
+-- I/O更新周期(Hz) 	private int fps;
 
-	-- LCD階調数 	private int lcdScales;
+-- LCD階調数 	private int lcdScales;
 
-	-- ブザー出力 	private byte[] wave0;
+-- ブザー出力 	private byte[] wave0;
 
-	-- ブザー出力 	private byte[] wave;
+-- ブザー出力 	private byte[] wave;
 
 -- レイアウトのX方向の倍率 private int zoomX = 1;
 local zoomX = 1
@@ -1318,414 +1608,458 @@ function G8xx:G800Emulator(m, cpu_clocks, freq, lcd_scales)
 		wave = new byte[wave0.length];
 end
 
-			ログを出力する (オーバーライド)
-		@Override public void log(String message)
-	{
-	}
+--输出日志 (覆盖)
+--@Override public void log(String message)
+function log(message)
 
-			メモリを読み込む (オーバーライド)
-		@Override public byte read(int address)
-	{
-		return memory[address];
-	}
+end
 
-			メモリに書き込む (オーバーライド)
-		@Override public void write(int address, byte value)
-	{
-		if(address < 0x8000)
-			memory[address] = value;
-	}
+--メモリを読み込む (オーバーライド)
+--@Override public byte read(int address)
+function read(adress)	return memory[address];	end
 
-			キーの状態 (inportの下請け)
-		private int in10()
-	{
-		int key;
+--メモリに書き込む (オーバーライド)
+--@Override public void write(int address, byte value)
+function write(adress, value)
+	if(address < 0x8000) then
+		memory[address] = value;
+	end
+end
 
-		if(keyStrobeLastStates - restStates > keyStrobeClearStates)
-			keyStrobe = keyStrobeLast;
+--按键の状態 (inportの下請け)
+--private int in10()
+local function int10()
+	int key;
 
-		key =
-		((keyStrobe & 0x001) != 0 ? keyMatrix[0] : 0) |
-		((keyStrobe & 0x002) != 0 ? keyMatrix[1] : 0) |
-		((keyStrobe & 0x004) != 0 ? keyMatrix[2] : 0) |
-		((keyStrobe & 0x008) != 0 ? keyMatrix[3] : 0) |
-		((keyStrobe & 0x010) != 0 ? keyMatrix[4] : 0) |
-		((keyStrobe & 0x020) != 0 ? keyMatrix[5] : 0) |
-		((keyStrobe & 0x040) != 0 ? keyMatrix[6] : 0) |
-		((keyStrobe & 0x080) != 0 ? keyMatrix[7] : 0) |
-		((keyStrobe & 0x100) != 0 ? keyMatrix[8] : 0) |
-		((keyStrobe & 0x200) != 0 ? keyMatrix[9] : 0);
-
+	if(keyStrobeLastStates - restStates > keyStrobeClearStates) then
 		keyStrobe = keyStrobeLast;
-		return key;
-	}
+	end
 
-			キーの状態 (outportの下請け)
-		private void out10(int x)
-	{
-	}
+	key =
+	((keyStrobe & 0x001) != 0 and {keyMatrix[0]} or { 0})[1] |
+	((keyStrobe & 0x002) != 0 and {keyMatrix[1]} or { 0})[1] |
+	((keyStrobe & 0x004) != 0 and {keyMatrix[2]} or { 0})[1] |
+	((keyStrobe & 0x008) != 0 and {keyMatrix[3]} or { 0})[1] |
+	((keyStrobe & 0x010) != 0 and {keyMatrix[4]} or { 0})[1] |
+	((keyStrobe & 0x020) != 0 and {keyMatrix[5]} or { 0})[1] |
+	((keyStrobe & 0x040) != 0 and {keyMatrix[6]} or { 0})[1] |
+	((keyStrobe & 0x080) != 0 and {keyMatrix[7]} or { 0})[1] |
+	((keyStrobe & 0x100) != 0 and {keyMatrix[8]} or { 0})[1] |
+	((keyStrobe & 0x200) != 0 and {keyMatrix[9]} or { 0})[1];
 
-			キーストローブ(下位) (inportの下請け)
-		private int in11()
-	{
-		return 0;
-	}
+	keyStrobe = keyStrobeLast;
+	return key;
+end	
 
-			キーストローブ(下位) (outportの下請け)
-		private void out11(int x)
-	{
-		if(keyStrobeLastStates - restStates > keyStrobeClearStates)
-			keyStrobe = 0;
+--按键の状態 (outportの下請け)
+--private void out10(int x)
+local function out10()
 
-		keyStrobeLast = x;
-		keyStrobe |= keyStrobeLast;
-		keyStrobeLastStates = restStates;
+end
 
-		if((x & 0x10) != 0)
-			interruptType |= INTERRUPT_IA;
-	}
 
-			キーストローブ(上位) (inportの下請け)
-		private int in12()
-	{
-		return 0;
-	}
+--按键ストローブ(下位) (inportの下請け)
+--private int in11()
+local function in11()	
+	return 0;
+end
 
-			キーストローブ(上位) (outportの下請け)
-		private void out12(int x)
-	{
-		if(keyStrobeLastStates - restStates > keyStrobeClearStates)
-			keyStrobe = 0;
+--按键ストローブ(下位) (outportの下請け)
+--private void out11(int x)
+local function out11(x)	
+	if(keyStrobeLastStates - restStates > keyStrobeClearStates) then
+		keyStrobe = 0;
+	end
 
-		keyStrobeLast = x << 8;
-		keyStrobe |= keyStrobeLast;
-		keyStrobeLastStates = restStates;
-	}
+	keyStrobeLast = x;
+	keyStrobe |= keyStrobeLast;
+	keyStrobeLastStates = restStates;
 
-			シフトキーの状態 (inportの下請け)
-		private int in13()
-	{
-		return ((keyStrobe & 0x08) != 0 ? keyShift : 0);
-	}
+	if((x & 0x10) != 0) then
+		interruptType |= INTERRUPT_IA;
+	end
+end
 
-			シフトキーの状態 (outportの下請け)
-		private void out13(int x)
-	{
-	}
+--按键ストローブ(上位) (inportの下請け)
+--private int in12()
+local function in12
+	return 0;
+end
 
-			タイマ (inportの下請け)
-		private int in14()
-	{
-		return timer;
-	}
+--按键ストローブ(上位) (outportの下請け)
+--private void out12(int x)
+local function out12(x)
+	if(keyStrobeLastStates - restStates > keyStrobeClearStates) then
+		keyStrobe = 0;
+	end
 
-			タイマ (outportの下請け)
-		private void out14(int x)
-	{
-		timer = 0;
-	}
+	keyStrobeLast = x << 8;
+	keyStrobe |= keyStrobeLast;
+	keyStrobeLastStates = restStates;
+end
 
-			Xin入力端子の入力可否状態 (inportの下請け)
-		private int in15()
-	{
+--シフト按键の状態 (inportの下請け)
+--private int in13()
+local function in13()
+	return ((keyStrobe & 0x08) != 0 and {keyShift} or {0})[1];
+end
+
+--シフト按键の状態 (outportの下請け)
+--private void out13(int x)
+local function out13(x) end
+	
+
+--タイマ (inportの下請け)
+--private int in14()
+local function in14()
+	return timer;
+end
+
+--タイマ (outportの下請け)
+--private void out14(int x)
+local function out14(x)
+	timer = 0;
+end
+
+--Xin入力端子の入力可否状態 (inportの下請け)
+--private int in15()
+local function in15()
 		-- 未対応 		return 0;
-	}
+end
 
-			Xin入力端子の入力可否状態 (outportの下請け)
-		private void out15(int x)
-	{
-		-- 未対応 	}
+--Xin入力端子の入力可否状態 (outportの下請け)
+--private void out15(int x)
+local function out15()	
+		-- 未対応 	
+end
 
-			割り込み要因 (inportの下請け)
-		private int in16()
-	{
-		return interruptType;
-	}
+--割り込み要因 (inportの下請け)
+--private int in16()
+local function in16()
+	return interruptType;
+end
 
-			割り込み要因 (outportの下請け)
-		private void out16(int x)
-	{
-		interruptType &= ~x & 0x0f;
-	}
+--割り込み要因 (outportの下請け)
+--private void out16(int x)
+local function out16(x)
+	interruptType &= ~x & 0x0f;
+end
 
-			割り込みマスク (inportの下請け)
-		private int in17()
-	{
-		return interruptMask;
-	}
+--割り込みマスク (inportの下請け)
+--private int in17()
+local function in17()
+	return interruptMask;
+end
 
-			割り込みマスク (outportの下請け)
-		private void out17(int x)
-	{
-		interruptMask = x;
-	}
+--割り込みマスク (outportの下請け)
+--private void out17(int x)
+local function out17(x)
+	interruptMask = x;
+end
 
-			11pinI/Fの出力制御 (inportの下請け)
-		private int in18()
-	{
-		return pin11Out;
-	}
+--11pinI/Fの出力制御 (inportの下請け)
+--private int in18()
+local function in18()
+	return pin11Out;
+end
 
-			SIOバッファに書き込む (out18の下請け)
-		private void out18Write(int pin11_out)
-	{
-		if((pin11In & PIN11_IN_IB2) != 0) {
-			int pos = sioCount / 10;
+--Lua 版的 try...catch...finally
+function tryCatch(fun1,fun2)
+	if fun2 == nil then 
+		local ret,errMessage = pcall(fun1);
+	elseif func2 ~= nil then
+		local ret,errMessage = xpcall(fun1,fun2);
+	end
+end
 
-			if((pin11_out & PIN11_OUT_FO2) != 0 && sioBuffer != null && pos < sioBuffer.length) {
-				int n = sioCount % 10;
+--SIOバッファに書き込む (out18の下請け)
+--private void out18Write(int pin11_out)
+local function out18Write(pin11_out)
+	if((pin11In & PIN11_IN_IB2) != 0) then
 
-				-- 送信中 				switch(n) {
-				case 0: -- スタートビット 					break;
-				case 1:
-				case 2:
-				case 3:
-				case 4:
-				case 5:
-				case 6:
-				case 7:
-				case 8: -- データビット 					int bit = 1 << (n - 1);
+		int pos = sioCount / 10;
 
-					if((pin11_out & PIN11_OUT_XOUT) == 0)
-						sioBuffer[pos] |= bit;
-					else
-						sioBuffer[pos] &= ~bit;
-					break;
-				case 9: -- ストップビット 					break;
-				}
+		if((pin11_out & PIN11_OUT_FO2) != 0 && sioBuffer != null && pos < sioBuffer.length) then 
 
-				sioCount++;
-			} else {
-				-- 送信終了 				pin11In = 0;
-				if(sioCount > 3 && sioBuffer != null && sioOutPathname != null) {
-					FileOutputStream out = null;
+			int n = sioCount % 10;
+		
+			-- 送信中 switch(n) {
+			if n ==  0 then break;   -- スタートビット
+			elseif n == 1 then 
+			elseif n == 2 then
+			elseif n == 3 then 
+			elseif n == 4 then
+			elseif n == 5 then
+			elseif n == 6 then
+			elseif n == 7 then
+			elseif n == 8 then -- データビット 					
+				bit = 1 << (n - 1);
 
-					try {
-						try {
-							out = new FileOutputStream(sioOutPathname);
-							if(sioBuffer[pos - 1] == 0x1a)
-								out.write(sioBuffer, 0, pos - 1);
-							else
-								out.write(sioBuffer, 0, pos);
-						} finally {
-							if(out != null)
-								out.close();
-						}
-					} catch(Exception e) {
-					}
-				}
-			}
-		} else {
-			if((pin11_out & PIN11_OUT_FO2) != 0) {
-				-- 送信開始 				pin11In = PIN11_IN_IB2;
-				sioCount = 0;
-			}
-		}
-	}
-
-			ブザーから音を出力する (out18の下請け)
-		private void out18Buzzer(int pin11_out)
-	{
-		int pos;
-
-		pos = (executeStates - restStates) * (44100 / fps) / executeStates;
-		if(pos < 0)
-			pos = 0;
-		else if(pos > wave.length - 1)
-			return;
-
-		if((pin11_out & (PIN11_OUT_BEEP | PIN11_OUT_XOUT)) != 0) {
-			if(pos >= wave0.length)
-				return;
-			if(wave0[pos] != (byte) 0)
-				return;
-			Arrays.fill(wave0, pos, wave0.length - 1, (byte) 0x3f);
-		} else {
-			if(pos >= wave0.length)
-				return;
-			if(wave0[pos] == (byte) 0)
-				return;
-			Arrays.fill(wave0, pos, wave0.length - 1, (byte) 0);
-		}
-	}
-
-			11pinI/Fの出力制御 (outportの下請け)
-		private void out18(int x)
-	{
-		pin11Out = x & (PIN11_OUT_FO1 | PIN11_OUT_FO2 | PIN11_OUT_BEEP | PIN11_OUT_XOUT);
-
-		if(executeStates == 0)
-			return;
-
-		if(sioMode == SIO_MODE_OUT)
-			out18Write(x);
-		else
-			out18Buzzer(x);
-	}
-
-			ROMバンク切り替え (inportの下請け)
-		private int in19()
-	{
-		return ((exBank & 0x07) << 4) | (romBank & 0x0f);
-	}
-
-			ROMバンク切り替え (outportの下請け)
-		private void out19(int x)
-	{
-		if(romBanks > 0) {
-			romBank = (x & 0x0f) % romBanks;
-			if(rom[romBank] != null)
-				System.arraycopy(rom[romBank], 0, memory, 0xc000, 0x4000);
-			else
-				Arrays.fill(memory, 0xc000, 0x4000, (byte) 0xff);
-		}
-		exBank = (x & 0x70) >> 4;
-	}
-
-			BOOT ROM ON/OFF (inportの下請け)
-		private int in1a()
-	{
-		return 0;
-	}
-
-			BOOT ROM ON/OFF (outportの下請け)
-		private void out1a(int x)
-	{
-		-- 未対応 	}
-
-			RAMバンク切り替え (inportの下請け)
-		private int in1b()
-	{
-		return ramBank;
-	}
-
-			RAMバンク切り替え (outportの下請け)
-		private void out1b(int x)
-	{
-		ramBank = x & 0x04;
-	}
-
-			I/Oリセット (inportの下請け)
-		private int in1c()
-	{
-		return 0;
-	}
-
-			I/Oリセット (outportの下請け)
-		private void out1c(int x)
-	{
-		ioReset = x;
-	}
-
-			バッテリー状態 (inportの下請け)
-		private int in1d()
-	{
-		return 0x08;
-	}
-
-			バッテリー状態 (outportの下請け)
-		private void out1d(int x)
-	{
-	}
-
-			? (inportの下請け)
-		private int in1e()
-	{
-		return 0;
-	}
-
-			? (outportの下請け)
-		private void out1e(int x)
-	{
-	}
-
-			SIOバッファから読み込む (in1fの下請け)
-		private int in1fRead()
-	{
-		final int bit_count[] = new int[] {
-			0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
-		};
-		int pos = sioCount / 14;
-		int pin11_in;
-
-		if((pin11Out & PIN11_OUT_FO1) != 0) { -- 送信要求 			if(sioCount == 0) {
-				-- 初回ならバッファに書き込む 				FileInputStream in = null;
-				int size;
-
-				try {
-					File file = new File(sioInPathname);
-
-					if(0 < file.length() && file.length() < 0x100000) {
-						sioBuffer = new byte[(int )file.length() + 1];
-
-						try {
-							in = new FileInputStream(sioInPathname);
-							size = in.read(sioBuffer, 0, sioBuffer.length);
-							sioBuffer[size] = 0x1a;
-						} finally {
-							if(in != null)
-								in.close();
-						}
-					} else
-						sioBuffer = null;
-				} catch(Exception e) {
-					sioBuffer = null;
-				}
-			}
-
-			if(sioBuffer == null || pos >= sioBuffer.length)
-				pin11_in = 0;
-			else {
-				int n = sioCount % 14;
-
-				switch(n) {
-				case 0:
-				case 1:
-				case 2: -- スタートビット 					pin11_in = PIN11_IN_XIN | PIN11_IN_IB2;
-					break;
-				case 3:
-				case 4:
-				case 5:
-				case 6:
-				case 7:
-				case 8:
-				case 9:
-				case 10: -- データビット 					if((sioBuffer[pos] & (1 << (n - 3))) == 0)
-						pin11_in = PIN11_IN_XIN;
-					else
-						pin11_in = 0;
-					break;
-				case 11: -- パリティビット 					if(((bit_count[sioBuffer[pos] & 0x0f] + bit_count[(sioBuffer[pos] >>> 4) & 0x0f]) & 1) == 0)
-						pin11_in = 0;
-					else
-						pin11_in = PIN11_IN_XIN;
-					break;
-				case 12:
-				case 13: -- エンドビット 					pin11_in = PIN11_IN_IB2;
-					break;
-				default:
-					pin11_in = 0;
-					break;
-				}
-			}
+				if((pin11_out & PIN11_OUT_XOUT) == 0) then
+					sioBuffer[pos] |= bit;
+				else
+					sioBuffer[pos] &= ~bit;
+				end
+				break;
+			elseif n == 9 then -- ストップビット 					
+				break;
+			end
 
 			sioCount++;
-		} else if((pin11Out & PIN11_OUT_FO2) != 0) { -- 送信一時停止 			pin11_in = 0;
-		} else { -- 送信停止 			pin11_in = 0;
+		else 
+			-- 送信終了 				
+			pin11In = 0;
+			if(sioCount > 3 && sioBuffer != null && sioOutPathname != null) then
+				FileOutputStream out = null;
+
+				--  用 Lua 模仿 try...catch...finally 结构
+				local fun1=function ( ... )
+					
+						out = new FileOutputStream(sioOutPathname);
+						if (sioBuffer[pos - 1] == 0x1a) then
+							out.write(sioBuffer, 0, pos - 1);
+						else
+							out.write(sioBuffer, 0, pos);
+						end
+					
+						if(out != nil) then
+							out.close();
+						end
+				end
+
+				--local tryCatch=function(fun) local ret,errMessage = pcall(fun); end
+
+				tryCatch(fun1);
+			end
+		end
+	else 
+		if((pin11_out & PIN11_OUT_FO2) != 0) then
+			-- 送信開始 				
+			pin11In = PIN11_IN_IB2;
 			sioCount = 0;
-		}
+		end
+	end
+end
 
-		return pin11_in;
-	}
+--ブザーから音を出力する (out18の下請け)
+--private void out18Buzzer(int pin11_out)
+local function out18Buzzer(pin11_out)
 
-			11pinI/Fの入力 (inportの下請け)
-		private int in1f()
-	{
-		if(sioMode == SIO_MODE_IN)
-			pin11In = in1fRead();
+	pos = (executeStates - restStates) * (44100 / fps) / executeStates;
+	if(pos < 0) then
+		pos = 0;
+	elseif(pos > wave.length - 1) then
+		return;
+	end
 
-		return keyBreak | pin11In;
-	}
+	if((pin11_out & (PIN11_OUT_BEEP | PIN11_OUT_XOUT)) != 0) then
+		if(pos >= wave0.length) then return; end
+		if(wave0[pos] != (byte) 0) then return; end
+		Arrays.fill(wave0, pos, wave0.length - 1, (byte) 0x3f);
+	else 
+		if(pos >= wave0.length) then return; end
+		if(wave0[pos] == (byte) 0) then return; end
+		Arrays.fill(wave0, pos, wave0.length - 1, (byte) 0);
+	end
+end
+
+--11pinI/Fの出力制御 (outportの下請け)
+--private void out18(int x)
+local function out18(x)
+	pin11Out = x & (PIN11_OUT_FO1 | PIN11_OUT_FO2 | PIN11_OUT_BEEP | PIN11_OUT_XOUT);
+
+	if(executeStates == 0) then return; end
+
+	if(sioMode == SIO_MODE_OUT) then
+		out18Write(x);
+	else
+		out18Buzzer(x);
+	end
+end
+
+--ROMバンク切り替え (inportの下請け)
+--private int in19()
+local function in19()
+	return ((exBank & 0x07) << 4) | (romBank & 0x0f);
+end
+
+--ROMバンク切り替え (outportの下請け)
+--private void out19(int x)
+local function out19(x)
+	if(romBanks > 0) then
+		romBank = (x & 0x0f) % romBanks;
+		if(rom[romBank] != nil) then
+			System.arraycopy(rom[romBank], 0, memory, 0xc000, 0x4000);
+		else
+			Arrays.fill(memory, 0xc000, 0x4000, (byte) 0xff);
+		end
+	end
+	exBank = (x & 0x70) >> 4;
+end
+
+--BOOT ROM ON/OFF (inportの下請け)
+--private int in1a()
+local function in1a()
+	return 0;
+end
+
+--BOOT ROM ON/OFF (outportの下請け)
+--private void out1a(int x)
+local function out1a(x)
+	-- 未対応 	
+end
+
+--RAMバンク切り替え (inportの下請け)
+--private int in1b()
+local function in1b()
+	return ramBank;
+end
+
+--RAMバンク切り替え (outportの下請け)
+--private void out1b(int x)
+local function out1b(x)
+	ramBank = x & 0x04;
+end
+
+--I/Oリセット (inportの下請け)
+--private int in1c()
+local function in1c()
+	return 0;
+end
+
+--I/Oリセット (outportの下請け)
+--private void out1c(int x)
+local function out1c(x)
+	ioReset = x;
+end
+
+--バッテリー状態 (inportの下請け)
+--private int in1d()
+local function 
+	return 0x08;
+end
+
+--バッテリー状態 (outportの下請け)
+--private void out1d(int x)
+local function out1d(x)
+
+end
+
+--? (inportの下請け)
+--private int in1e()
+local function in1e
+	return 0;
+end
+
+--? (outportの下請け)
+--private void out1e(int x)
+local function out1e
+
+end
+
+--SIOバッファから読み込む (in1fの下請け)
+--private int in1fRead()
+local in1fRead()
+	bit_count = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+	int pos = sioCount / 14;
+	int pin11_in;
+
+	if((pin11Out & PIN11_OUT_FO1) ~= 0) then  -- 送信要求 			
+		if(sioCount == 0) then
+			-- 初回ならバッファに書き込む 				
+			FileInputStream inFile = nil;
+			--int size;
+
+			func2 = function()
+				file = File(sioInPathname);
+
+				if(0 < file.length() && file.length() < 0x100000) then
+					--sioBuffer = new byte[(int )file.length() + 1];
+					sioBuffer = {}
+
+					func1 = function()
+						inFile = FileInputStream(sioInPathname);
+						size = inFile.read(sioBuffer, 0, sioBuffer.length);
+						sioBuffer[size] = 0x1a;
+					
+						if(inFile ~= nil) then
+							inFile.close();
+						end
+					end
+					tryCatch(func1)
+				else
+					sioBuffer = nil;
+				end
+			end
+
+			tryCatch(func1, function() sioBuffer = nil end)
+		end	
+		
+
+		if(sioBuffer == nil || pos >= sioBuffer.length) then
+			pin11_in = 0;
+		else 
+			n = sioCount % 14;
+
+			--switch(n) {
+			if n == 0 then
+			elseif n == 1  then
+			elseif n == 2  then  -- スタートビット 					
+				pin11_in = PIN11_IN_XIN | PIN11_IN_IB2;
+				break;
+			elseif n ==  3  then 
+			elseif n ==  4  then 
+			elseif n ==  5  then 
+			elseif n ==  6  then 
+			elseif n ==  7  then 
+			elseif n ==  8  then 
+			elseif n ==  9  then 
+			elseif n ==  10 then -- データビット 					
+				if((sioBuffer[pos] & (1 << (n - 3))) == 0) then
+					pin11_in = PIN11_IN_XIN;
+				else
+					pin11_in = 0;
+				end
+				break;
+			elseif n ==  11 then-- パリティビット 					
+				--if(((bit_count[sioBuffer[pos] & 0x0f] + bit_count[(sioBuffer[pos] >>> 4) & 0x0f]) & 1) == 0) then
+				if(((bit_count[sioBuffer[pos] & 0x0f] + bit_count[(sioBuffer[pos] >> 4) & 0x0f]) & 1) == 0) then
+					pin11_in = 0;
+				else
+					pin11_in = PIN11_IN_XIN;
+				end
+				break;
+			elseif n == 12 then  
+			elseif n == 13 then -- エンドビット 					
+				pin11_in = PIN11_IN_IB2;
+				break;
+			else
+				pin11_in = 0;
+				break;
+			end
+		end
+
+		sioCount = sioCount + 1;
+
+	elseif((pin11Out & PIN11_OUT_FO2) ~= 0)  then -- 送信一時停止 			
+		pin11_in = 0;
+	else  -- 送信停止 			
+		pin11_in = 0;
+		sioCount = 0;
+	end
+
+	return pin11_in;
+
+end
+
+--11pinI/Fの入力 (inportの下請け)
+--private int in1f()
+local function in1f()	
+	if(sioMode == SIO_MODE_IN) then
+		pin11In = in1fRead();
+	end
+	return keyBreak | pin11In;
+end
 
 			11pinI/Fの入力 (outportの下請け)
 		private void out1f(int x)
@@ -2775,7 +3109,7 @@ end
 		pset(x, y - 0, ((pat & 0x80) != 0 ? 1 : 0));
 	}
 
-			押されているキーを得る(waitなし) (下請け)
+			押されている按键を得る(waitなし) (下請け)
 		private int getKey()
 	{
 		int key, i;
@@ -2794,7 +3128,7 @@ end
 		return GKEY_NONE;
 	}
 
-			押されているキーを得る(waitあり) (下請け)
+			押されている按键を得る(waitあり) (下請け)
 		private int getKeyWait()
 	{
 		if(pressedKey != GKEY_NONE) {
@@ -2808,7 +3142,7 @@ end
 		return pressedKey;
 	}
 
-			キーコードをASCIIコードに変換する (下請け)
+			按键コードをASCIIコードに変換する (下請け)
 		private int keyToAscii(int key, boolean upper)
 	{
 		if(upper && key < 0x49)
@@ -3096,7 +3430,7 @@ end
 		return 1000;
 	end
 
-	--押されているキーのASCIIコードを得る(waitあり) (PC-G850専用) (subroutineの下請け)
+	--押されている按键のASCIIコードを得る(waitあり) (PC-G850専用) (subroutineの下請け)
 	--private int iocs_bcc4()
 	function iocs_bcc4()
 		int key;
@@ -3115,7 +3449,7 @@ end
 		return 100000;
 	end
 
-	--押されているキーを得る(waitなし) (subroutineの下請け)
+	--押されている按键を得る(waitなし) (subroutineの下請け)
 	--private int iocs_be53()
 	function iocs_be53()
 		int key = getKey();
@@ -3143,7 +3477,7 @@ end
 		end
 	end
 
-	--キーコードをASCIIコードに変換する (subroutineの下請け)
+	--按键コードをASCIIコードに変換する (subroutineの下請け)
 	--private int iocs_be56()
 	function iocs_be56()
 		if((read8(0x78f0) & 0x08) != 0) then
@@ -3204,7 +3538,7 @@ end
 		return 5000;
 	end
 
-	--押されているキーを得る(waitあり) (subroutineの下請け)
+	--押されている按键を得る(waitあり) (subroutineの下請け)
 	--private int iocs_bcfd()
 	function iocs_bcfd()
 		int key;
@@ -3221,13 +3555,13 @@ end
 		return 20000;
 	end
 
-	--16進数2桁のキー入力を得る (subroutineの下請け)
+	--16進数2桁の按键入力を得る (subroutineの下請け)
 	--private int iocs_bd09()
 	function iocs_bd09() 
 		return 100000;
 	end
 
-	--16進数4桁のキー入力を得る (subroutineの下請け)
+	--16進数4桁の按键入力を得る (subroutineの下請け)
 	--private int iocs_bd0f()
 	function iocs_bd0f()
 		return 100000;
@@ -3401,7 +3735,7 @@ end
 		if(mode == MODE_EMULATOR) {
 			-- コードを実行する 			execute(cpuClocks / fps);
 
-			-- キー割り込み 			if(intIA) {
+			-- 按键割り込み 			if(intIA) {
 				if((interruptMask & INTERRUPT_IA) != 0) {
 					interruptType |= INTERRUPT_IA;
 					int1();
@@ -3409,7 +3743,7 @@ end
 				intIA = false;
 			}
 
-			-- キー割り込み(BREAKキー) 			if(intKON) {
+			-- 按键割り込み(BREAK按键) 			if(intKON) {
 				if((interruptMask & INTERRUPT_KON) != 0) {
 					interruptType |= INTERRUPT_KON;
 					int1();
@@ -3606,7 +3940,7 @@ end
 		return hlt && iff == 0;
 	end
 
-	--キーを押した
+	--按键を押した
 	--public void keyPress(int key)
 	function keyPress(int key)
 		if(GKEY_OFF <= key && key <= GKEY_CLS) then
@@ -3629,7 +3963,7 @@ end
 		end
 	end
 
-	--キーを離した
+	--按键を離した
 	--public void keyRelease(int key)
 	function keyRelease(key)
 		if(GKEY_OFF <= key && key <= GKEY_CLS) then
@@ -3971,6 +4305,8 @@ end
 		return HexFile.readZipURL(memory, url, entryname);
 
 	end
+
+--]===]
 
 --[[
 	--- k6x8のライセンス ----------------------------------------------------------------------------------------------------------------	These fonts are free softwares.

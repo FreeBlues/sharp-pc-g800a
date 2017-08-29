@@ -10,38 +10,38 @@ local Z = ts.Z
 print("R8 测试-----------------------")
 
 function ts:testR8() 
-R8 = Z.Register8
+	R8 = Z.Register8
 
-R8:init()
-print("R8 不带初值初始化:",R8:get())
-print("R8 是否为0:", R8:isZero())
+	R8:init()
+	print("R8 不带初值初始化:",R8:get())
+	print("R8 是否为0:", R8:isZero())
 
--- for k,v in pairs(R8) do print(k,v) end
+	-- for k,v in pairs(R8) do print(k,v) end
 
-R8:init(0xef)
-print("R8 带初值初始化:", string.format("%X",R8:get()))
-print("R8 是否为0:", R8:isZero())
+	R8:init(0xef)
+	print("R8 带初值初始化:", string.format("%X",R8:get()))
+	print("R8 是否为0:", R8:isZero())
 
-R8:set(0xab)
-print("R8 设置新值:", string.format("%X",R8:get()))
-print("R8 是否为0:", R8:isZero())
+	R8:set(0xab)
+	print("R8 设置新值:", string.format("%X",R8:get()))
+	print("R8 是否为0:", R8:isZero())
 
-R8:add(0x11)
-print("R8 增加:", string.format("%X",R8:get()))
+	R8:add(0x11)
+	print("R8 增加:", string.format("%X",R8:get()))
 
-print("R8 获得进位标志 cy:", R8:cy())
-print("R8 获得进位标志 ncy:", R8:ncy())
+	print("R8 获得进位标志 cy:", R8:cy())
+	print("R8 获得进位标志 ncy:", R8:ncy())
 
-print("R8 获得减标志:", R8:n())
-print("R8 获得奇偶校验|溢出标志 pv:", R8:pv())
-print("R8 获得奇偶校验|溢出标志 npv:", R8:npv())
+	print("R8 获得减标志:", R8:n())
+	print("R8 获得奇偶校验|溢出标志 pv:", R8:pv())
+	print("R8 获得奇偶校验|溢出标志 npv:", R8:npv())
 
-print("R8 获得半进位标志 hc:", R8:hc())
-print("R8 获得零标志 z:", R8:z())
-print("R8 获得零标志 nz:", R8:nz())
+	print("R8 获得半进位标志 hc:", R8:hc())
+	print("R8 获得零标志 z:", R8:z())
+	print("R8 获得零标志 nz:", R8:nz())
 
-print("R8 获得签名标志 s:", R8:s())
-print("R8 获得签名标志 ns:", R8:ns())
+	print("R8 获得签名标志 s:", R8:s())
+	print("R8 获得签名标志 ns:", R8:ns())
 end
 
 
@@ -82,6 +82,7 @@ z80 = Z:Z80Emulator()
 print(Z.iff,Z.hlt,Z.a)
 
 end
+
 
 ts:testR8()
 ts:testR16()

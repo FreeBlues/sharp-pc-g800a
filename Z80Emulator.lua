@@ -5,6 +5,23 @@
 Z80Emulator = {}
 
 local Z80 = Z80Emulator
+Z80.__index = Z80;
+
+-- Z80Emulator 的构造函数
+function Z80:init(x)
+	--[[
+	local obj = { ["x"] = x };
+	setmetatable(obj, self);
+	return obj
+	--]]
+	self.x = x;
+
+	local instance = {} 
+	instance.x = self.x
+	setmetatable(instance, {__index = self})
+
+	return instance
+end
 
 -- 8位寄存器
 Z80.Register8  = {}
@@ -915,10 +932,10 @@ local function interrupt(address)
 	pc = address;
 
 	if(s < 0) then
-	 break; --通常的 call 调用
+		--通常的 call 调用
 		return false;
 	else
-	 break; --模拟的子程序
+		 --模拟的子程序
 		pc = Z80:read16(sp);
 		sp.add(2);
 		states = states + s;
@@ -2598,7 +2615,7 @@ function Z80:int1()
 	return true;
 end
 
--- 输出跟踪 private void disassemble()
+--[[ 输出跟踪 private void disassemble()
 local function disassemble()
 		log(String.format(
 		"%c%c%c%c%c%c(%02x) A=%02x BC=%04x DE=%04x HL=%04x SP=%04x PC=%04x %s" + System.getProperty("line.separator") +
@@ -2643,7 +2660,7 @@ function Z80:execute(execute_states)
 	executeStates = restStates
 
 	if (hlt) then 
-		if (trace) then	Z80:disassemble(); end
+		--if (trace) then	Z80:disassemble(); end
 		restStates = 0;
 		return 0
 	end
@@ -2651,7 +2668,7 @@ function Z80:execute(execute_states)
 	while (restStates > 0) do
 	--repeat 	
 		
-		if (trace) then Z80:disassemble(); end
+		--if (trace) then Z80:disassemble(); end
 
 		local f1 = fetchXX()
 
