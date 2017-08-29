@@ -1,9 +1,15 @@
 -- 本程序用于测试 Z80Emulator.lua
 --
+TestSuitZ80Emu = {}
 
-Z = require("Z80Emulator")
+local ts = TestSuitZ80Emu
+
+ts.Z = require("Z80Emulator")
+local Z = ts.Z
 
 print("R8 测试-----------------------")
+
+function ts:testR8() 
 R8 = Z.Register8
 
 R8:init()
@@ -36,8 +42,12 @@ print("R8 获得零标志 nz:", R8:nz())
 
 print("R8 获得签名标志 s:", R8:s())
 print("R8 获得签名标志 ns:", R8:ns())
+end
 
+
+function ts:testR16()
 print("==== R16 测试-----------------------")
+
 R16 = Z.Register16
 
 local h = R8:init(0x34)
@@ -71,7 +81,10 @@ z80 = Z:Z80Emulator()
 --for k,v in pairs(Z) do print(k,v) end
 print(Z.iff,Z.hlt,Z.a)
 
+end
 
+ts:testR8()
+ts:testR16()
 
 
 

@@ -6,7 +6,6 @@ Z80Emulator = {}
 
 local Z80 = Z80Emulator
 
---
 -- 8位寄存器
 Z80.Register8  = {}
 local R8 = Z80.Register8
@@ -916,10 +915,10 @@ local function interrupt(address)
 	pc = address;
 
 	if(s < 0) then
-		-- 通常的 call 调用
+	 break; --通常的 call 调用
 		return false;
 	else
-		-- 模拟的子程序
+	 break; --模拟的子程序
 		pc = Z80:read16(sp);
 		sp.add(2);
 		states = states + s;
@@ -2639,14 +2638,12 @@ end
 --]]
 
 -- 执行 int execute(int execute_states)
-function Z80:execute(execute_state)
+function Z80:execute(execute_states)
 	restStates = execute_states;
 	executeStates = restStates
 
 	if (hlt) then 
-		if (trace) then
-			Z80:disassemble();
-		end
+		if (trace) then	Z80:disassemble(); end
 		restStates = 0;
 		return 0
 	end
@@ -2658,1503 +2655,1505 @@ function Z80:execute(execute_state)
 
 		local f1 = fetchXX()
 
-		if 	   f1 == 0x00 then nop();		-- nop 
-		elseif f1 == 0x01 then ld16(bc, imm16());		-- ld BC, mn
-		elseif f1 == 0x02 then st8(bc, a);		-- ld (BC), A 
-		elseif f1 == 0x03 then inc16(bc);		-- inc BC
-		elseif f1 == 0x04 then inc8_r(b);		-- inc B 
-		elseif f1 == 0x05 then dec8_r(b);		-- dec B
-		elseif f1 == 0x06 then ld8(b, imm8());		-- ld B, n
-		elseif f1 == 0x07 then rlca();		-- rlca
+		if 	   f1 == 0x00 then nop();	 break; --nop 
+		elseif f1 == 0x01 then ld16(bc, imm16());	 break; --ld BC, mn
+		elseif f1 == 0x02 then st8(bc, a);	 break; --ld (BC), A 
+		elseif f1 == 0x03 then inc16(bc);	 break; --inc BC
+		elseif f1 == 0x04 then inc8_r(b);	 break; --inc B 
+		elseif f1 == 0x05 then dec8_r(b);	 break; --dec B
+		elseif f1 == 0x06 then ld8(b, imm8());	 break; --ld B, n
+		elseif f1 == 0x07 then rlca();	 break; --rlca
 
-		elseif f1 == 0x08 then ex_r(af, af_d);		-- ex AF, AF'
-		elseif f1 == 0x09 then add16(hl, bc);		-- add HL, BC
+		elseif f1 == 0x08 then ex_r(af, af_d);	 break; --ex AF, AF'
+		elseif f1 == 0x09 then add16(hl, bc);	 break; --add HL, BC
 		elseif f1 == 0x0a then ld8(a, mem8(bc));		--ld A, (BC)
-		elseif f1 == 0x0b then dec16(bc);		-- dec BC
-		elseif f1 == 0x0c then inc8_r(c);		-- inc C
-        elseif f1 == 0x0d then dec8_r(c);		-- dec C
-		elseif f1 == 0x0e then ld8(c, imm8());		-- ld C, n
-		elseif f1 == 0x0f then rrca();		-- rrca
+		elseif f1 == 0x0b then dec16(bc);	 break; --dec BC
+		elseif f1 == 0x0c then inc8_r(c);	 break; --inc C
+        elseif f1 == 0x0d then dec8_r(c);	 break; --dec C
+		elseif f1 == 0x0e then ld8(c, imm8());	 break; --ld C, n
+		elseif f1 == 0x0f then rrca();	 break; --rrca
 
-		elseif f1 == 0x10 then djnz(dis());		-- djnz e
-		elseif f1 == 0x11 then ld16(de, imm16());		-- ld DE, mn
-		elseif f1 == 0x12 then st8(de, a);		-- ld (DE), A
-		elseif f1 == 0x13 then inc16(de);		-- inc DE
-		elseif f1 == 0x14 then inc8_r(d);		-- inc D
-		elseif f1 == 0x15 then dec8_r(d);		-- dec D
-		elseif f1 == 0x16 then ld8(d, imm8());		-- ld D, n
-		elseif f1 == 0x17 then rla();		-- rla
+		elseif f1 == 0x10 then djnz(dis());	 break; --djnz e
+		elseif f1 == 0x11 then ld16(de, imm16());	 break; --ld DE, mn
+		elseif f1 == 0x12 then st8(de, a);	 break; --ld (DE), A
+		elseif f1 == 0x13 then inc16(de);	 break; --inc DE
+		elseif f1 == 0x14 then inc8_r(d);	 break; --inc D
+		elseif f1 == 0x15 then dec8_r(d);	 break; --dec D
+		elseif f1 == 0x16 then ld8(d, imm8());	 break; --ld D, n
+		elseif f1 == 0x17 then rla();	 break; --rla
 	
-		elseif f1 == 0x18 then jr(1, dis());		-- jr e
-		elseif f1 == 0x19 then add16(hl, de);		-- add HL, DE
-		elseif f1 == 0x1a then ld8(a, mem8(de));		-- ld A, (DE)
-		elseif f1 == 0x1b then dec16(de);		-- dec DE
-		elseif f1 == 0x1c then inc8_r(e);		-- inc E
-        elseif f1 == 0x1d then dec8_r(e);		-- dec E
-		elseif f1 == 0x1e then ld8(e, imm8());		-- ld E, n
-		elseif f1 == 0x1f then rra();		-- rra
+		elseif f1 == 0x18 then jr(1, dis());	 break; --jr e
+		elseif f1 == 0x19 then add16(hl, de);	 break; --add HL, DE
+		elseif f1 == 0x1a then ld8(a, mem8(de));	 break; --ld A, (DE)
+		elseif f1 == 0x1b then dec16(de);	 break; --dec DE
+		elseif f1 == 0x1c then inc8_r(e);	 break; --inc E
+        elseif f1 == 0x1d then dec8_r(e);	 break; --dec E
+		elseif f1 == 0x1e then ld8(e, imm8());	 break; --ld E, n
+		elseif f1 == 0x1f then rra();	 break; --rra
 
-		elseif f1 == 0x20 then jr(f.nz(), dis());  	-- jr NZ, e  
-		elseif f1 == 0x21 then ld16(hl, imm16());  	-- ld HL, mn  
-		elseif f1 == 0x22 then st16(imm16(), hl);  	-- ld (mn), HL  
-		elseif f1 == 0x23 then inc16(hl);          	-- inc HL  
-		elseif f1 == 0x24 then inc8_r(h);          	-- inc H  
-		elseif f1 == 0x25 then dec8_r(h);          	-- dec H  
-		elseif f1 == 0x26 then ld8(h, imm8());     	-- ld H, n  
-		elseif f1 == 0x27 then daa();              	-- daa  
+		elseif f1 == 0x20 then jr(f.nz(), dis());   break; --jr NZ, e  
+		elseif f1 == 0x21 then ld16(hl, imm16());   break; --ld HL, mn  
+		elseif f1 == 0x22 then st16(imm16(), hl);   break; --ld (mn), HL  
+		elseif f1 == 0x23 then inc16(hl);           break; --inc HL  
+		elseif f1 == 0x24 then inc8_r(h);           break; --inc H  
+		elseif f1 == 0x25 then dec8_r(h);           break; --dec H  
+		elseif f1 == 0x26 then ld8(h, imm8());      break; --ld H, n  
+		elseif f1 == 0x27 then daa();               break; --daa  
 
-		elseif f1 == 0x28 then jr(f.z(), dis());          	-- jr Z, e  
-		elseif f1 == 0x29 then add16(hl, hl);             	-- add HL, HL  
-		elseif f1 == 0x2a then ld16(hl, mem16(imm16()));  	-- ld HL, (mn)  
-		elseif f1 == 0x2b then dec16(hl);                 	-- dec HL  
-		elseif f1 == 0x2c then inc8_r(l);                 	-- inc L  
-		elseif f1 == 0x2d then dec8_r(l);                 	-- dec L  
-		elseif f1 == 0x2e then ld8(l, imm8());            	-- ld L, n  
-		elseif f1 == 0x2f then cpl();                     	-- cpl  
+		elseif f1 == 0x28 then jr(f.z(), dis());           break; --jr Z, e  
+		elseif f1 == 0x29 then add16(hl, hl);              break; --add HL, HL  
+		elseif f1 == 0x2a then ld16(hl, mem16(imm16()));   break; --ld HL, (mn)  
+		elseif f1 == 0x2b then dec16(hl);                  break; --dec HL  
+		elseif f1 == 0x2c then inc8_r(l);                  break; --inc L  
+		elseif f1 == 0x2d then dec8_r(l);                  break; --dec L  
+		elseif f1 == 0x2e then ld8(l, imm8());             break; --ld L, n  
+		elseif f1 == 0x2f then cpl();                      break; --cpl  
 
-		elseif f1 == 0x30 then jr(f.ncy(), dis());  	-- jr NC, e  
-		elseif f1 == 0x31 then ld16(sp, imm16());   	-- ld SP, mn  
-		elseif f1 == 0x32 then st8(imm16(), a);     	-- ld (mn), A  
-		elseif f1 == 0x33 then inc16(sp);           	-- inc SP  
-		elseif f1 == 0x34 then inc8_m(hl);          	-- inc (HL)  
-		elseif f1 == 0x35 then dec8_m(hl);          	-- dec (HL)  
-		elseif f1 == 0x36 then st8(hl, imm8());     	-- ld (HL), n  
-		elseif f1 == 0x37 then scf();               	-- scf  
+		elseif f1 == 0x30 then jr(f.ncy(), dis());   break; --jr NC, e  
+		elseif f1 == 0x31 then ld16(sp, imm16());    break; --ld SP, mn  
+		elseif f1 == 0x32 then st8(imm16(), a);      break; --ld (mn), A  
+		elseif f1 == 0x33 then inc16(sp);            break; --inc SP  
+		elseif f1 == 0x34 then inc8_m(hl);           break; --inc (HL)  
+		elseif f1 == 0x35 then dec8_m(hl);           break; --dec (HL)  
+		elseif f1 == 0x36 then st8(hl, imm8());      break; --ld (HL), n  
+		elseif f1 == 0x37 then scf();                break; --scf  
 
-		elseif f1 == 0x38 then jr(f.cy(), dis());      	-- jr C, e  
-		elseif f1 == 0x39 then add16(hl, sp);          	-- add HL, SP  
-		elseif f1 == 0x3a then ld8(a, mem8(imm16()));  	-- ld A, (mn)  
-		elseif f1 == 0x3b then dec16(sp);              	-- dec SP  
-		elseif f1 == 0x3c then inc8_r(a);              	-- inc A  
-		elseif f1 == 0x3d then dec8_r(a);              	-- dec A  
-		elseif f1 == 0x3e then ld8(a, imm8());         	-- ld A, n  
-		elseif f1 == 0x3f then ccf();                  	-- ccf  
+		elseif f1 == 0x38 then jr(f.cy(), dis());       break; --jr C, e  
+		elseif f1 == 0x39 then add16(hl, sp);           break; --add HL, SP  
+		elseif f1 == 0x3a then ld8(a, mem8(imm16()));   break; --ld A, (mn)  
+		elseif f1 == 0x3b then dec16(sp);               break; --dec SP  
+		elseif f1 == 0x3c then inc8_r(a);               break; --inc A  
+		elseif f1 == 0x3d then dec8_r(a);               break; --dec A  
+		elseif f1 == 0x3e then ld8(a, imm8());          break; --ld A, n  
+		elseif f1 == 0x3f then ccf();                   break; --ccf  
 
-		elseif f1 == 0x40 then ld8(b, b);         	-- ld B, B  
-		elseif f1 == 0x41 then ld8(b, c);         	-- ld B, C  
-		elseif f1 == 0x42 then ld8(b, d);         	-- ld B, D  
-		elseif f1 == 0x43 then ld8(b, e);         	-- ld B, E  
-		elseif f1 == 0x44 then ld8(b, h);         	-- ld B, H  
-		elseif f1 == 0x45 then ld8(b, l);         	-- ld B, L  
-		elseif f1 == 0x46 then ld8(b, mem8(hl));  	-- ld B, (HL)  
-		elseif f1 == 0x47 then ld8(b, a);         	-- ld B, A  
+		elseif f1 == 0x40 then ld8(b, b);          break; --ld B, B  
+		elseif f1 == 0x41 then ld8(b, c);          break; --ld B, C  
+		elseif f1 == 0x42 then ld8(b, d);          break; --ld B, D  
+		elseif f1 == 0x43 then ld8(b, e);          break; --ld B, E  
+		elseif f1 == 0x44 then ld8(b, h);          break; --ld B, H  
+		elseif f1 == 0x45 then ld8(b, l);          break; --ld B, L  
+		elseif f1 == 0x46 then ld8(b, mem8(hl));   break; --ld B, (HL)  
+		elseif f1 == 0x47 then ld8(b, a);          break; --ld B, A  
 
-		elseif f1 == 0x48 then ld8(c, b);         	-- ld C, B  
-		elseif f1 == 0x49 then ld8(c, c);         	-- ld C, C  
-		elseif f1 == 0x4a then ld8(c, d);         	-- ld C, D  
-		elseif f1 == 0x4b then ld8(c, e);         	-- ld C, E  
-		elseif f1 == 0x4c then ld8(c, h);         	-- ld C, H  
-		elseif f1 == 0x4d then ld8(c, l);         	-- ld C, L  
-		elseif f1 == 0x4e then ld8(c, mem8(hl));  	-- ld C, (HL)  
-		elseif f1 == 0x4f then ld8(c, a);         	-- ld C, A  
+		elseif f1 == 0x48 then ld8(c, b);          break; --ld C, B  
+		elseif f1 == 0x49 then ld8(c, c);          break; --ld C, C  
+		elseif f1 == 0x4a then ld8(c, d);          break; --ld C, D  
+		elseif f1 == 0x4b then ld8(c, e);          break; --ld C, E  
+		elseif f1 == 0x4c then ld8(c, h);          break; --ld C, H  
+		elseif f1 == 0x4d then ld8(c, l);          break; --ld C, L  
+		elseif f1 == 0x4e then ld8(c, mem8(hl));   break; --ld C, (HL)  
+		elseif f1 == 0x4f then ld8(c, a);          break; --ld C, A  
 
-		elseif f1 == 0x50 then ld8(d, b);         	-- ld D, B  
-		elseif f1 == 0x51 then ld8(d, c);         	-- ld D, C  
-		elseif f1 == 0x52 then ld8(d, d);         	-- ld D, D  
-		elseif f1 == 0x53 then ld8(d, e);         	-- ld D, E  
-		elseif f1 == 0x54 then ld8(d, h);         	-- ld D, H  
-		elseif f1 == 0x55 then ld8(d, l);         	-- ld D, L  
-		elseif f1 == 0x56 then ld8(d, mem8(hl));  	-- ld D, (HL)  
-		elseif f1 == 0x57 then ld8(d, a);         	-- ld D, A  
+		elseif f1 == 0x50 then ld8(d, b);          break; --ld D, B  
+		elseif f1 == 0x51 then ld8(d, c);          break; --ld D, C  
+		elseif f1 == 0x52 then ld8(d, d);          break; --ld D, D  
+		elseif f1 == 0x53 then ld8(d, e);          break; --ld D, E  
+		elseif f1 == 0x54 then ld8(d, h);          break; --ld D, H  
+		elseif f1 == 0x55 then ld8(d, l);          break; --ld D, L  
+		elseif f1 == 0x56 then ld8(d, mem8(hl));   break; --ld D, (HL)  
+		elseif f1 == 0x57 then ld8(d, a);          break; --ld D, A  
 
-		elseif f1 == 0x58 then ld8(e, b);         	-- ld E, B  
-		elseif f1 == 0x59 then ld8(e, c);         	-- ld E, C  
-		elseif f1 == 0x5a then ld8(e, d);         	-- ld E, D  
-		elseif f1 == 0x5b then ld8(e, e);         	-- ld E, E  
-		elseif f1 == 0x5c then ld8(e, h);         	-- ld E, H  
-		elseif f1 == 0x5d then ld8(e, l);         	-- ld E, L  
-		elseif f1 == 0x5e then ld8(e, mem8(hl));  	-- ld E, (HL)  
-		elseif f1 == 0x5f then ld8(e, a);         	-- ld E, A  
+		elseif f1 == 0x58 then ld8(e, b);          break; --ld E, B  
+		elseif f1 == 0x59 then ld8(e, c);          break; --ld E, C  
+		elseif f1 == 0x5a then ld8(e, d);          break; --ld E, D  
+		elseif f1 == 0x5b then ld8(e, e);          break; --ld E, E  
+		elseif f1 == 0x5c then ld8(e, h);          break; --ld E, H  
+		elseif f1 == 0x5d then ld8(e, l);          break; --ld E, L  
+		elseif f1 == 0x5e then ld8(e, mem8(hl));   break; --ld E, (HL)  
+		elseif f1 == 0x5f then ld8(e, a);          break; --ld E, A  
 
-		elseif f1 == 0x60 then ld8(h, b);         	-- ld H, B  
-		elseif f1 == 0x61 then ld8(h, c);         	-- ld H, C  
-		elseif f1 == 0x62 then ld8(h, d);         	-- ld H, D  
-		elseif f1 == 0x63 then ld8(h, e);         	-- ld H, E  
-		elseif f1 == 0x64 then ld8(h, h);         	-- ld H, H  
-		elseif f1 == 0x65 then ld8(h, l);         	-- ld H, L  
-		elseif f1 == 0x66 then ld8(h, mem8(hl));  	-- ld H, (HL)  
-		elseif f1 == 0x67 then ld8(h, a);         	-- ld H, A  
+		elseif f1 == 0x60 then ld8(h, b);          break; --ld H, B  
+		elseif f1 == 0x61 then ld8(h, c);          break; --ld H, C  
+		elseif f1 == 0x62 then ld8(h, d);          break; --ld H, D  
+		elseif f1 == 0x63 then ld8(h, e);          break; --ld H, E  
+		elseif f1 == 0x64 then ld8(h, h);          break; --ld H, H  
+		elseif f1 == 0x65 then ld8(h, l);          break; --ld H, L  
+		elseif f1 == 0x66 then ld8(h, mem8(hl));   break; --ld H, (HL)  
+		elseif f1 == 0x67 then ld8(h, a);          break; --ld H, A  
 
-		elseif f1 == 0x68 then ld8(l, b);         	-- ld L, B  
-		elseif f1 == 0x69 then ld8(l, c);         	-- ld L, C  
-		elseif f1 == 0x6a then ld8(l, d);         	-- ld L, D  
-		elseif f1 == 0x6b then ld8(l, e);         	-- ld L, E  
-		elseif f1 == 0x6c then ld8(l, h);         	-- ld L, H  
-		elseif f1 == 0x6d then ld8(l, l);         	-- ld L, L  
-		elseif f1 == 0x6e then ld8(l, mem8(hl));  	-- ld L, (HL)  
-		elseif f1 == 0x6f then ld8(l, a);         	-- ld L, A  
+		elseif f1 == 0x68 then ld8(l, b);          break; --ld L, B  
+		elseif f1 == 0x69 then ld8(l, c);          break; --ld L, C  
+		elseif f1 == 0x6a then ld8(l, d);          break; --ld L, D  
+		elseif f1 == 0x6b then ld8(l, e);          break; --ld L, E  
+		elseif f1 == 0x6c then ld8(l, h);          break; --ld L, H  
+		elseif f1 == 0x6d then ld8(l, l);          break; --ld L, L  
+		elseif f1 == 0x6e then ld8(l, mem8(hl));   break; --ld L, (HL)  
+		elseif f1 == 0x6f then ld8(l, a);          break; --ld L, A  
 
-		elseif f1 == 0x70 then st8(hl, b);  	-- ld (HL), B  
-		elseif f1 == 0x71 then st8(hl, c);  	-- ld (HL), C  
-		elseif f1 == 0x72 then st8(hl, d);  	-- ld (HL), D  
-		elseif f1 == 0x73 then st8(hl, e);  	-- ld (HL), E  
-		elseif f1 == 0x74 then st8(hl, h);  	-- ld (HL), H  
-		elseif f1 == 0x75 then st8(hl, l);  	-- ld (HL), L  
-		elseif f1 == 0x76 then halt(); return 1;	-- halt  
-		elseif f1 == 0x77 then st8(hl, a);  	-- ld (HL), A  
+		elseif f1 == 0x70 then st8(hl, b);   break; --ld (HL), B  
+		elseif f1 == 0x71 then st8(hl, c);   break; --ld (HL), C  
+		elseif f1 == 0x72 then st8(hl, d);   break; --ld (HL), D  
+		elseif f1 == 0x73 then st8(hl, e);   break; --ld (HL), E  
+		elseif f1 == 0x74 then st8(hl, h);   break; --ld (HL), H  
+		elseif f1 == 0x75 then st8(hl, l);   break; --ld (HL), L  
+		elseif f1 == 0x76 then halt(); return 1; --halt  
+		elseif f1 == 0x77 then st8(hl, a);   break; --ld (HL), A  
 
-		elseif f1 == 0x78 then ld8(a, b);         	-- ld A, B  
-		elseif f1 == 0x79 then ld8(a, c);         	-- ld A, C  
-		elseif f1 == 0x7a then ld8(a, d);         	-- ld A, D  
-		elseif f1 == 0x7b then ld8(a, e);         	-- ld A, E  
-		elseif f1 == 0x7c then ld8(a, h);         	-- ld A, H  
-		elseif f1 == 0x7d then ld8(a, l);         	-- ld A, L  
-		elseif f1 == 0x7e then ld8(a, mem8(hl));  	-- ld A, (HL)  
-		elseif f1 == 0x7f then ld8(a, a);         	-- ld A, A  
+		elseif f1 == 0x78 then ld8(a, b);          break; --ld A, B  
+		elseif f1 == 0x79 then ld8(a, c);          break; --ld A, C  
+		elseif f1 == 0x7a then ld8(a, d);          break; --ld A, D  
+		elseif f1 == 0x7b then ld8(a, e);          break; --ld A, E  
+		elseif f1 == 0x7c then ld8(a, h);          break; --ld A, H  
+		elseif f1 == 0x7d then ld8(a, l);          break; --ld A, L  
+		elseif f1 == 0x7e then ld8(a, mem8(hl));   break; --ld A, (HL)  
+		elseif f1 == 0x7f then ld8(a, a);          break; --ld A, A  
 
-		elseif f1 == 0x80 then add8(b);         	-- add B  
-		elseif f1 == 0x81 then add8(c);         	-- add C  
-		elseif f1 == 0x82 then add8(d);         	-- add D  
-		elseif f1 == 0x83 then add8(e);         	-- add E  
-		elseif f1 == 0x84 then add8(h);         	-- add H  
-		elseif f1 == 0x85 then add8(l);         	-- add L  
-		elseif f1 == 0x86 then add8(mem8(hl));  	-- add (HL)  
-		elseif f1 == 0x87 then add8(a);         	-- add A  
+		elseif f1 == 0x80 then add8(b);          break; --add B  
+		elseif f1 == 0x81 then add8(c);          break; --add C  
+		elseif f1 == 0x82 then add8(d);          break; --add D  
+		elseif f1 == 0x83 then add8(e);          break; --add E  
+		elseif f1 == 0x84 then add8(h);          break; --add H  
+		elseif f1 == 0x85 then add8(l);          break; --add L  
+		elseif f1 == 0x86 then add8(mem8(hl));   break; --add (HL)  
+		elseif f1 == 0x87 then add8(a);          break; --add A  
 
-		elseif f1 == 0x88 then adc8(b);         	-- adc B  
-		elseif f1 == 0x89 then adc8(c);         	-- adc C  
-		elseif f1 == 0x8a then adc8(d);         	-- adc D  
-		elseif f1 == 0x8b then adc8(e);         	-- adc E  
-		elseif f1 == 0x8c then adc8(h);         	-- adc H  
-		elseif f1 == 0x8d then adc8(l);         	-- adc L  
-		elseif f1 == 0x8e then adc8(mem8(hl));  	-- adc (HL)  
-		elseif f1 == 0x8f then adc8(a);         	-- adc A  
+		elseif f1 == 0x88 then adc8(b);          break; --adc B  
+		elseif f1 == 0x89 then adc8(c);          break; --adc C  
+		elseif f1 == 0x8a then adc8(d);          break; --adc D  
+		elseif f1 == 0x8b then adc8(e);          break; --adc E  
+		elseif f1 == 0x8c then adc8(h);          break; --adc H  
+		elseif f1 == 0x8d then adc8(l);          break; --adc L  
+		elseif f1 == 0x8e then adc8(mem8(hl));   break; --adc (HL)  
+		elseif f1 == 0x8f then adc8(a);          break; --adc A  
 
-		elseif f1 == 0x90 then sub8(b);         	-- sub B  
-		elseif f1 == 0x91 then sub8(c);         	-- sub C  
-		elseif f1 == 0x92 then sub8(d);         	-- sub D  
-		elseif f1 == 0x93 then sub8(e);         	-- sub E  
-		elseif f1 == 0x94 then sub8(h);         	-- sub H  
-		elseif f1 == 0x95 then sub8(l);         	-- sub L  
-		elseif f1 == 0x96 then sub8(mem8(hl));  	-- sub (HL)  
-		elseif f1 == 0x97 then sub8(a);         	-- sub A  
+		elseif f1 == 0x90 then sub8(b);          break; --sub B  
+		elseif f1 == 0x91 then sub8(c);          break; --sub C  
+		elseif f1 == 0x92 then sub8(d);          break; --sub D  
+		elseif f1 == 0x93 then sub8(e);          break; --sub E  
+		elseif f1 == 0x94 then sub8(h);          break; --sub H  
+		elseif f1 == 0x95 then sub8(l);          break; --sub L  
+		elseif f1 == 0x96 then sub8(mem8(hl));   break; --sub (HL)  
+		elseif f1 == 0x97 then sub8(a);          break; --sub A  
 
-		elseif f1 == 0x98 then sbc8(b);         	-- sbc B  
-		elseif f1 == 0x99 then sbc8(c);         	-- sbc C  
-		elseif f1 == 0x9a then sbc8(d);         	-- sbc D  
-		elseif f1 == 0x9b then sbc8(e);         	-- sbc E  
-		elseif f1 == 0x9c then sbc8(h);         	-- sbc H  
-		elseif f1 == 0x9d then sbc8(l);         	-- sbc L  
-		elseif f1 == 0x9e then sbc8(mem8(hl));  	-- sbc (HL)  
-		elseif f1 == 0x9f then sbc8(a);         	-- sbc A  
+		elseif f1 == 0x98 then sbc8(b);          break; --sbc B  
+		elseif f1 == 0x99 then sbc8(c);          break; --sbc C  
+		elseif f1 == 0x9a then sbc8(d);          break; --sbc D  
+		elseif f1 == 0x9b then sbc8(e);          break; --sbc E  
+		elseif f1 == 0x9c then sbc8(h);          break; --sbc H  
+		elseif f1 == 0x9d then sbc8(l);          break; --sbc L  
+		elseif f1 == 0x9e then sbc8(mem8(hl));   break; --sbc (HL)  
+		elseif f1 == 0x9f then sbc8(a);          break; --sbc A  
 
-		elseif f1 == 0xa0 then And(b);         	-- and B  
-		elseif f1 == 0xa1 then And(c);         	-- and C  
-		elseif f1 == 0xa2 then And(d);         	-- and D  
-		elseif f1 == 0xa3 then And(e);         	-- and E  
-		elseif f1 == 0xa4 then And(h);         	-- and H  
-		elseif f1 == 0xa5 then And(l);         	-- and L  
-		elseif f1 == 0xa6 then And(mem8(hl));  	-- and (HL)  
-		elseif f1 == 0xa7 then And(a);         	-- and A  
+		elseif f1 == 0xa0 then And(b);          break; --and B  
+		elseif f1 == 0xa1 then And(c);          break; --and C  
+		elseif f1 == 0xa2 then And(d);          break; --and D  
+		elseif f1 == 0xa3 then And(e);          break; --and E  
+		elseif f1 == 0xa4 then And(h);          break; --and H  
+		elseif f1 == 0xa5 then And(l);          break; --and L  
+		elseif f1 == 0xa6 then And(mem8(hl));   break; --and (HL)  
+		elseif f1 == 0xa7 then And(a);          break; --and A  
 
-		elseif f1 == 0xa8 then Xor(b);         	-- xor B  
-		elseif f1 == 0xa9 then Xor(c);         	-- xor C  
-		elseif f1 == 0xaa then Xor(d);         	-- xor D  
-		elseif f1 == 0xab then Xor(e);         	-- xor E  
-		elseif f1 == 0xac then Xor(h);         	-- xor H  
-		elseif f1 == 0xad then Xor(l);         	-- xor L  
-		elseif f1 == 0xae then Xor(mem8(hl));  	-- xor (HL)  
-		elseif f1 == 0xaf then Xor(a);         	-- xor A  
+		elseif f1 == 0xa8 then Xor(b);          break; --xor B  
+		elseif f1 == 0xa9 then Xor(c);          break; --xor C  
+		elseif f1 == 0xaa then Xor(d);          break; --xor D  
+		elseif f1 == 0xab then Xor(e);          break; --xor E  
+		elseif f1 == 0xac then Xor(h);          break; --xor H  
+		elseif f1 == 0xad then Xor(l);          break; --xor L  
+		elseif f1 == 0xae then Xor(mem8(hl));   break; --xor (HL)  
+		elseif f1 == 0xaf then Xor(a);          break; --xor A  
 
-		elseif f1 == 0xb0 then Or(b);         	-- or B  
-		elseif f1 == 0xb1 then Or(c);         	-- or C  
-		elseif f1 == 0xb2 then Or(d);         	-- or D  
-		elseif f1 == 0xb3 then Or(e);         	-- or E  
-		elseif f1 == 0xb4 then Or(h);         	-- or H  
-		elseif f1 == 0xb5 then Or(l);         	-- or L  
-		elseif f1 == 0xb6 then Or(mem8(hl));  	-- or (HL)  
-		elseif f1 == 0xb7 then Or(a);         	-- or A  
+		elseif f1 == 0xb0 then Or(b);          break; --or B  
+		elseif f1 == 0xb1 then Or(c);          break; --or C  
+		elseif f1 == 0xb2 then Or(d);          break; --or D  
+		elseif f1 == 0xb3 then Or(e);          break; --or E  
+		elseif f1 == 0xb4 then Or(h);          break; --or H  
+		elseif f1 == 0xb5 then Or(l);          break; --or L  
+		elseif f1 == 0xb6 then Or(mem8(hl));   break; --or (HL)  
+		elseif f1 == 0xb7 then Or(a);          break; --or A  
 
-		elseif f1 == 0xb8 then cp(b);         	-- cp B  
-		elseif f1 == 0xb9 then cp(c);         	-- cp C  
-		elseif f1 == 0xba then cp(d);         	-- cp D  
-		elseif f1 == 0xbb then cp(e);         	-- cp E  
-		elseif f1 == 0xbc then cp(h);         	-- cp H  
-		elseif f1 == 0xbd then cp(l);         	-- cp L  
-		elseif f1 == 0xbe then cp(mem8(hl));  	-- cp (HL)  
-		elseif f1 == 0xbf then cp(a);         	-- cp A  
+		elseif f1 == 0xb8 then cp(b);          break; --cp B  
+		elseif f1 == 0xb9 then cp(c);          break; --cp C  
+		elseif f1 == 0xba then cp(d);          break; --cp D  
+		elseif f1 == 0xbb then cp(e);          break; --cp E  
+		elseif f1 == 0xbc then cp(h);          break; --cp H  
+		elseif f1 == 0xbd then cp(l);          break; --cp L  
+		elseif f1 == 0xbe then cp(mem8(hl));   break; --cp (HL)  
+		elseif f1 == 0xbf then cp(a);          break; --cp A  
 
-		elseif f1 == 0xc0 then ret(f.nz());            	-- ret NZ  
-		elseif f1 == 0xc1 then pop(bc);                	-- pop BC  
-		elseif f1 == 0xc2 then jp(f.nz(), imm16());    	-- jp NZ, mn  
-		elseif f1 == 0xc3 then jp(1, imm16());         	-- jp mn  
-		elseif f1 == 0xc4 then call(f.nz(), imm16());  	-- call NZ, mn  
-		elseif f1 == 0xc5 then push(bc);               	-- push BC  
-		elseif f1 == 0xc6 then add8(imm8());           	-- add n  
-		elseif f1 == 0xc7 then rst(0x00);              	-- rst 00H  
+		elseif f1 == 0xc0 then ret(f.nz());             break; --ret NZ  
+		elseif f1 == 0xc1 then pop(bc);                 break; --pop BC  
+		elseif f1 == 0xc2 then jp(f.nz(), imm16());     break; --jp NZ, mn  
+		elseif f1 == 0xc3 then jp(1, imm16());          break; --jp mn  
+		elseif f1 == 0xc4 then call(f.nz(), imm16());   break; --call NZ, mn  
+		elseif f1 == 0xc5 then push(bc);                break; --push BC  
+		elseif f1 == 0xc6 then add8(imm8());            break; --add n  
+		elseif f1 == 0xc7 then rst(0x00);               break; --rst 00H  
 
-		elseif f1 == 0xc8 then ret(f.z());		-- ret Z
-		elseif f1 == 0xc9 then ret(1);		-- ret
-		elseif f1 == 0xca then jp(f.z(), imm16());		-- jp Z, mn		
+		elseif f1 == 0xc8 then ret(f.z());	 break; --ret Z
+		elseif f1 == 0xc9 then ret(1);	 break; --ret
+		elseif f1 == 0xca then jp(f.z(), imm16());	 break; --jp Z, mn		
 		elseif f1 == 0xcb then
 			pc = pc + 1
 			local f11 = fetchCBXX()
-			if     f11 == 0x00 then rlc_r(b);		-- rlc B
-			elseif f11 == 0x01 then rlc_r(c);		-- rlc C
-			elseif f11 == 0x02 then rlc_r(d);		-- rlc D
+			if     f11 == 0x00 then rlc_r(b);	 break; --rlc B
+			elseif f11 == 0x01 then rlc_r(c);	 break; --rlc C
+			elseif f11 == 0x02 then rlc_r(d);	 break; --rlc D
 		    
-			elseif f11 == 0x03 then rlc_r(e);   	 -- rlc E  
-			elseif f11 == 0x04 then rlc_r(h);   	 -- rlc H  
-			elseif f11 == 0x05 then rlc_r(l);   	 -- rlc L  
-			elseif f11 == 0x06 then rlc_m(hl);  	 -- rlc (HL)  
-			elseif f11 == 0x07 then rlc_r(a);   	 -- rlc A  
+			elseif f11 == 0x03 then rlc_r(e);   	 break; --rlc E  
+			elseif f11 == 0x04 then rlc_r(h);   	 break; --rlc H  
+			elseif f11 == 0x05 then rlc_r(l);   	 break; --rlc L  
+			elseif f11 == 0x06 then rlc_m(hl);  	 break; --rlc (HL)  
+			elseif f11 == 0x07 then rlc_r(a);   	 break; --rlc A  
 
-			elseif f11 == 0x08 then rrc_r(b);   	 -- rrc B  
-			elseif f11 == 0x09 then rrc_r(c);   	 -- rrc C  
-			elseif f11 == 0x0a then rrc_r(d);   	 -- rrc D  
-			elseif f11 == 0x0b then rrc_r(e);   	 -- rrc E  
-			elseif f11 == 0x0c then rrc_r(h);   	 -- rrc H  
-			elseif f11 == 0x0d then rrc_r(l);   	 -- rrc L  
-			elseif f11 == 0x0e then rrc_m(hl);  	 -- rrc (HL)  
-			elseif f11 == 0x0f then rrc_r(a);   	 -- rrc A  
+			elseif f11 == 0x08 then rrc_r(b);   	 break; --rrc B  
+			elseif f11 == 0x09 then rrc_r(c);   	 break; --rrc C  
+			elseif f11 == 0x0a then rrc_r(d);   	 break; --rrc D  
+			elseif f11 == 0x0b then rrc_r(e);   	 break; --rrc E  
+			elseif f11 == 0x0c then rrc_r(h);   	 break; --rrc H  
+			elseif f11 == 0x0d then rrc_r(l);   	 break; --rrc L  
+			elseif f11 == 0x0e then rrc_m(hl);  	 break; --rrc (HL)  
+			elseif f11 == 0x0f then rrc_r(a);   	 break; --rrc A  
 
-			elseif f11 == 0x10 then rl_r(b);   	 -- rl B  
-			elseif f11 == 0x11 then rl_r(c);   	 -- rl C  
-			elseif f11 == 0x12 then rl_r(d);   	 -- rl D  
-			elseif f11 == 0x13 then rl_r(e);   	 -- rl E  
-			elseif f11 == 0x14 then rl_r(h);   	 -- rl H  
-			elseif f11 == 0x15 then rl_r(l);   	 -- rl L  
-			elseif f11 == 0x16 then rl_m(hl);  	 -- rl (HL)  
-			elseif f11 == 0x17 then rl_r(a);   	 -- rl A  
+			elseif f11 == 0x10 then rl_r(b);   	 break; --rl B  
+			elseif f11 == 0x11 then rl_r(c);   	 break; --rl C  
+			elseif f11 == 0x12 then rl_r(d);   	 break; --rl D  
+			elseif f11 == 0x13 then rl_r(e);   	 break; --rl E  
+			elseif f11 == 0x14 then rl_r(h);   	 break; --rl H  
+			elseif f11 == 0x15 then rl_r(l);   	 break; --rl L  
+			elseif f11 == 0x16 then rl_m(hl);  	 break; --rl (HL)  
+			elseif f11 == 0x17 then rl_r(a);   	 break; --rl A  
 
-			elseif f11 == 0x18 then rr_r(b);   	 -- rr B  
-			elseif f11 == 0x19 then rr_r(c);   	 -- rr C  
-			elseif f11 == 0x1a then rr_r(d);   	 -- rr D  
-			elseif f11 == 0x1b then rr_r(e);   	 -- rr E  
-			elseif f11 == 0x1c then rr_r(h);   	 -- rr H  
-			elseif f11 == 0x1d then rr_r(l);   	 -- rr L  
-			elseif f11 == 0x1e then rr_m(hl);  	 -- rr (HL)  
-			elseif f11 == 0x1f then rr_r(a);   	 -- rr A  
+			elseif f11 == 0x18 then rr_r(b);   	 break; --rr B  
+			elseif f11 == 0x19 then rr_r(c);   	 break; --rr C  
+			elseif f11 == 0x1a then rr_r(d);   	 break; --rr D  
+			elseif f11 == 0x1b then rr_r(e);   	 break; --rr E  
+			elseif f11 == 0x1c then rr_r(h);   	 break; --rr H  
+			elseif f11 == 0x1d then rr_r(l);   	 break; --rr L  
+			elseif f11 == 0x1e then rr_m(hl);  	 break; --rr (HL)  
+			elseif f11 == 0x1f then rr_r(a);   	 break; --rr A  
 
-			elseif f11 == 0x20 then sla_r(b);   	 -- sla B  
-			elseif f11 == 0x21 then sla_r(c);   	 -- sla C  
-			elseif f11 == 0x22 then sla_r(d);   	 -- sla D  
-			elseif f11 == 0x23 then sla_r(e);   	 -- sla E  
-			elseif f11 == 0x24 then sla_r(h);   	 -- sla H  
-			elseif f11 == 0x25 then sla_r(l);   	 -- sla L  
-			elseif f11 == 0x26 then sla_m(hl);  	 -- sla (HL)  
-			elseif f11 == 0x27 then sla_r(a);   	 -- sla A  
+			elseif f11 == 0x20 then sla_r(b);   	 break; --sla B  
+			elseif f11 == 0x21 then sla_r(c);   	 break; --sla C  
+			elseif f11 == 0x22 then sla_r(d);   	 break; --sla D  
+			elseif f11 == 0x23 then sla_r(e);   	 break; --sla E  
+			elseif f11 == 0x24 then sla_r(h);   	 break; --sla H  
+			elseif f11 == 0x25 then sla_r(l);   	 break; --sla L  
+			elseif f11 == 0x26 then sla_m(hl);  	 break; --sla (HL)  
+			elseif f11 == 0x27 then sla_r(a);   	 break; --sla A  
 
-			elseif f11 == 0x28 then sra_r(b);   	 -- sra B  
-			elseif f11 == 0x29 then sra_r(c);   	 -- sra C  
-			elseif f11 == 0x2a then sra_r(d);   	 -- sra D  
-			elseif f11 == 0x2b then sra_r(e);   	 -- sra E  
-			elseif f11 == 0x2c then sra_r(h);   	 -- sra H  
-			elseif f11 == 0x2d then sra_r(l);   	 -- sra L  
-			elseif f11 == 0x2e then sra_m(hl);  	 -- sra (HL)  
-			elseif f11 == 0x2f then sra_r(a);   	 -- sra A  
+			elseif f11 == 0x28 then sra_r(b);   	 break; --sra B  
+			elseif f11 == 0x29 then sra_r(c);   	 break; --sra C  
+			elseif f11 == 0x2a then sra_r(d);   	 break; --sra D  
+			elseif f11 == 0x2b then sra_r(e);   	 break; --sra E  
+			elseif f11 == 0x2c then sra_r(h);   	 break; --sra H  
+			elseif f11 == 0x2d then sra_r(l);   	 break; --sra L  
+			elseif f11 == 0x2e then sra_m(hl);  	 break; --sra (HL)  
+			elseif f11 == 0x2f then sra_r(a);   	 break; --sra A  
 
-			elseif f11 == 0x30 then sll_r(b);   	 -- sll B  
-			elseif f11 == 0x31 then sll_r(c);   	 -- sll C  
-			elseif f11 == 0x32 then sll_r(d);   	 -- sll D  
-			elseif f11 == 0x33 then sll_r(e);   	 -- sll E  
-			elseif f11 == 0x34 then sll_r(h);   	 -- sll H  
-			elseif f11 == 0x35 then sll_r(l);   	 -- sll L  
-			elseif f11 == 0x36 then sll_m(hl);  	 -- sll (HL)  
-			elseif f11 == 0x37 then sll_r(a);   	 -- sll A  
+			elseif f11 == 0x30 then sll_r(b);   	 break; --sll B  
+			elseif f11 == 0x31 then sll_r(c);   	 break; --sll C  
+			elseif f11 == 0x32 then sll_r(d);   	 break; --sll D  
+			elseif f11 == 0x33 then sll_r(e);   	 break; --sll E  
+			elseif f11 == 0x34 then sll_r(h);   	 break; --sll H  
+			elseif f11 == 0x35 then sll_r(l);   	 break; --sll L  
+			elseif f11 == 0x36 then sll_m(hl);  	 break; --sll (HL)  
+			elseif f11 == 0x37 then sll_r(a);   	 break; --sll A  
 
-			elseif f11 == 0x38 then srl_r(b);   	 -- srl B  
-			elseif f11 == 0x39 then srl_r(c);   	 -- srl C  
-			elseif f11 == 0x3a then srl_r(d);   	 -- srl D  
-			elseif f11 == 0x3b then srl_r(e);   	 -- srl E  
-			elseif f11 == 0x3c then srl_r(h);   	 -- srl H  
-			elseif f11 == 0x3d then srl_r(l);   	 -- srl L  
-			elseif f11 == 0x3e then srl_m(hl);  	 -- srl (HL)  
-			elseif f11 == 0x3f then srl_r(a);   	 -- srl A  
+			elseif f11 == 0x38 then srl_r(b);   	 break; --srl B  
+			elseif f11 == 0x39 then srl_r(c);   	 break; --srl C  
+			elseif f11 == 0x3a then srl_r(d);   	 break; --srl D  
+			elseif f11 == 0x3b then srl_r(e);   	 break; --srl E  
+			elseif f11 == 0x3c then srl_r(h);   	 break; --srl H  
+			elseif f11 == 0x3d then srl_r(l);   	 break; --srl L  
+			elseif f11 == 0x3e then srl_m(hl);  	 break; --srl (HL)  
+			elseif f11 == 0x3f then srl_r(a);   	 break; --srl A  
 
-			elseif f11 == 0x40 then bit(0, b);         	 -- bit 0, B  
-			elseif f11 == 0x41 then bit(0, c);         	 -- bit 0, C  
-			elseif f11 == 0x42 then bit(0, d);         	 -- bit 0, D  
-			elseif f11 == 0x43 then bit(0, e);         	 -- bit 0, E  
-			elseif f11 == 0x44 then bit(0, h);         	 -- bit 0, H  
-			elseif f11 == 0x45 then bit(0, l);         	 -- bit 0, L  
-			elseif f11 == 0x46 then bit(0, mem8(hl));  	 -- bit 0, (HL)  
-			elseif f11 == 0x47 then bit(0, a);         	 -- bit 0, A  
+			elseif f11 == 0x40 then bit(0, b);         	 break; --bit 0, B  
+			elseif f11 == 0x41 then bit(0, c);         	 break; --bit 0, C  
+			elseif f11 == 0x42 then bit(0, d);         	 break; --bit 0, D  
+			elseif f11 == 0x43 then bit(0, e);         	 break; --bit 0, E  
+			elseif f11 == 0x44 then bit(0, h);         	 break; --bit 0, H  
+			elseif f11 == 0x45 then bit(0, l);         	 break; --bit 0, L  
+			elseif f11 == 0x46 then bit(0, mem8(hl));  	 break; --bit 0, (HL)  
+			elseif f11 == 0x47 then bit(0, a);         	 break; --bit 0, A  
 
-			elseif f11 == 0x48 then bit(1, b);         	 -- bit 1, B  
-			elseif f11 == 0x49 then bit(1, c);         	 -- bit 1, C  
-			elseif f11 == 0x4a then bit(1, d);         	 -- bit 1, D  
-			elseif f11 == 0x4b then bit(1, e);         	 -- bit 1, E  
-			elseif f11 == 0x4c then bit(1, h);         	 -- bit 1, H  
-			elseif f11 == 0x4d then bit(1, l);         	 -- bit 1, L  
-			elseif f11 == 0x4e then bit(1, mem8(hl));  	 -- bit 1, (HL)  
-			elseif f11 == 0x4f then bit(1, a);         	 -- bit 1, A  
+			elseif f11 == 0x48 then bit(1, b);         	 break; --bit 1, B  
+			elseif f11 == 0x49 then bit(1, c);         	 break; --bit 1, C  
+			elseif f11 == 0x4a then bit(1, d);         	 break; --bit 1, D  
+			elseif f11 == 0x4b then bit(1, e);         	 break; --bit 1, E  
+			elseif f11 == 0x4c then bit(1, h);         	 break; --bit 1, H  
+			elseif f11 == 0x4d then bit(1, l);         	 break; --bit 1, L  
+			elseif f11 == 0x4e then bit(1, mem8(hl));  	 break; --bit 1, (HL)  
+			elseif f11 == 0x4f then bit(1, a);         	 break; --bit 1, A  
 
-			elseif f11 == 0x50 then bit(2, b);         	 -- bit 2, B  
-			elseif f11 == 0x51 then bit(2, c);         	 -- bit 2, C  
-			elseif f11 == 0x52 then bit(2, d);         	 -- bit 2, D  
-			elseif f11 == 0x53 then bit(2, e);         	 -- bit 2, E  
-			elseif f11 == 0x54 then bit(2, h);         	 -- bit 2, H  
-			elseif f11 == 0x55 then bit(2, l);         	 -- bit 2, L  
-			elseif f11 == 0x56 then bit(2, mem8(hl));  	 -- bit 2, (HL)  
-			elseif f11 == 0x57 then bit(2, a);         	 -- bit 2, A  
+			elseif f11 == 0x50 then bit(2, b);         	 break; --bit 2, B  
+			elseif f11 == 0x51 then bit(2, c);         	 break; --bit 2, C  
+			elseif f11 == 0x52 then bit(2, d);         	 break; --bit 2, D  
+			elseif f11 == 0x53 then bit(2, e);         	 break; --bit 2, E  
+			elseif f11 == 0x54 then bit(2, h);         	 break; --bit 2, H  
+			elseif f11 == 0x55 then bit(2, l);         	 break; --bit 2, L  
+			elseif f11 == 0x56 then bit(2, mem8(hl));  	 break; --bit 2, (HL)  
+			elseif f11 == 0x57 then bit(2, a);         	 break; --bit 2, A  
 
-			elseif f11 == 0x58 then bit(3, b);         	 -- bit 3, B  
-			elseif f11 == 0x59 then bit(3, c);         	 -- bit 3, C  
-			elseif f11 == 0x5a then bit(3, d);         	 -- bit 3, D  
-			elseif f11 == 0x5b then bit(3, e);         	 -- bit 3, E  
-			elseif f11 == 0x5c then bit(3, h);         	 -- bit 3, H  
-			elseif f11 == 0x5d then bit(3, l);         	 -- bit 3, L  
-			elseif f11 == 0x5e then bit(3, mem8(hl));  	 -- bit 3, (HL)  
-			elseif f11 == 0x5f then bit(3, a);         	 -- bit 3, A  
+			elseif f11 == 0x58 then bit(3, b);         	 break; --bit 3, B  
+			elseif f11 == 0x59 then bit(3, c);         	 break; --bit 3, C  
+			elseif f11 == 0x5a then bit(3, d);         	 break; --bit 3, D  
+			elseif f11 == 0x5b then bit(3, e);         	 break; --bit 3, E  
+			elseif f11 == 0x5c then bit(3, h);         	 break; --bit 3, H  
+			elseif f11 == 0x5d then bit(3, l);         	 break; --bit 3, L  
+			elseif f11 == 0x5e then bit(3, mem8(hl));  	 break; --bit 3, (HL)  
+			elseif f11 == 0x5f then bit(3, a);         	 break; --bit 3, A  
 
-			elseif f11 == 0x60 then bit(4, b);         	 -- bit 4, B  
-			elseif f11 == 0x61 then bit(4, c);         	 -- bit 4, C  
-			elseif f11 == 0x62 then bit(4, d);         	 -- bit 4, D  
-			elseif f11 == 0x63 then bit(4, e);         	 -- bit 4, E  
-			elseif f11 == 0x64 then bit(4, h);         	 -- bit 4, H  
-			elseif f11 == 0x65 then bit(4, l);         	 -- bit 4, L  
-			elseif f11 == 0x66 then bit(4, mem8(hl));  	 -- bit 4, (HL)  
-			elseif f11 == 0x67 then bit(4, a);         	 -- bit 4, A  
+			elseif f11 == 0x60 then bit(4, b);         	 break; --bit 4, B  
+			elseif f11 == 0x61 then bit(4, c);         	 break; --bit 4, C  
+			elseif f11 == 0x62 then bit(4, d);         	 break; --bit 4, D  
+			elseif f11 == 0x63 then bit(4, e);         	 break; --bit 4, E  
+			elseif f11 == 0x64 then bit(4, h);         	 break; --bit 4, H  
+			elseif f11 == 0x65 then bit(4, l);         	 break; --bit 4, L  
+			elseif f11 == 0x66 then bit(4, mem8(hl));  	 break; --bit 4, (HL)  
+			elseif f11 == 0x67 then bit(4, a);         	 break; --bit 4, A  
 
-			elseif f11 == 0x68 then bit(5, b);         	 -- bit 5, B  
-			elseif f11 == 0x69 then bit(5, c);         	 -- bit 5, C  
-			elseif f11 == 0x6a then bit(5, d);         	 -- bit 5, D  
-			elseif f11 == 0x6b then bit(5, e);         	 -- bit 5, E  
-			elseif f11 == 0x6c then bit(5, h);         	 -- bit 5, H  
-			elseif f11 == 0x6d then bit(5, l);         	 -- bit 5, L  
-			elseif f11 == 0x6e then bit(5, mem8(hl));  	 -- bit 5, (HL)  
-			elseif f11 == 0x6f then bit(5, a);         	 -- bit 5, A  
+			elseif f11 == 0x68 then bit(5, b);         	 break; --bit 5, B  
+			elseif f11 == 0x69 then bit(5, c);         	 break; --bit 5, C  
+			elseif f11 == 0x6a then bit(5, d);         	 break; --bit 5, D  
+			elseif f11 == 0x6b then bit(5, e);         	 break; --bit 5, E  
+			elseif f11 == 0x6c then bit(5, h);         	 break; --bit 5, H  
+			elseif f11 == 0x6d then bit(5, l);         	 break; --bit 5, L  
+			elseif f11 == 0x6e then bit(5, mem8(hl));  	 break; --bit 5, (HL)  
+			elseif f11 == 0x6f then bit(5, a);         	 break; --bit 5, A  
 
-			elseif f11 == 0x70 then bit(6, b);         	 -- bit 6, B  
-			elseif f11 == 0x71 then bit(6, c);         	 -- bit 6, C  
-			elseif f11 == 0x72 then bit(6, d);         	 -- bit 6, D  
-			elseif f11 == 0x73 then bit(6, e);         	 -- bit 6, E  
-			elseif f11 == 0x74 then bit(6, h);         	 -- bit 6, H  
-			elseif f11 == 0x75 then bit(6, l);         	 -- bit 6, L  
-			elseif f11 == 0x76 then bit(6, mem8(hl));  	 -- bit 6, (HL)  
-			elseif f11 == 0x77 then bit(6, a);         	 -- bit 6, A  
+			elseif f11 == 0x70 then bit(6, b);         	 break; --bit 6, B  
+			elseif f11 == 0x71 then bit(6, c);         	 break; --bit 6, C  
+			elseif f11 == 0x72 then bit(6, d);         	 break; --bit 6, D  
+			elseif f11 == 0x73 then bit(6, e);         	 break; --bit 6, E  
+			elseif f11 == 0x74 then bit(6, h);         	 break; --bit 6, H  
+			elseif f11 == 0x75 then bit(6, l);         	 break; --bit 6, L  
+			elseif f11 == 0x76 then bit(6, mem8(hl));  	 break; --bit 6, (HL)  
+			elseif f11 == 0x77 then bit(6, a);         	 break; --bit 6, A  
 
-			elseif f11 == 0x78 then bit(7, b);         	 -- bit 7, B  
-			elseif f11 == 0x79 then bit(7, c);         	 -- bit 7, C  
-			elseif f11 == 0x7a then bit(7, d);         	 -- bit 7, D  
-			elseif f11 == 0x7b then bit(7, e);         	 -- bit 7, E  
-			elseif f11 == 0x7c then bit(7, h);         	 -- bit 7, H  
-			elseif f11 == 0x7d then bit(7, l);         	 -- bit 7, L  
-			elseif f11 == 0x7e then bit(7, mem8(hl));  	 -- bit 7, (HL)  
-			elseif f11 == 0x7f then bit(7, a);         	 -- bit 7, A  
+			elseif f11 == 0x78 then bit(7, b);         	 break; --bit 7, B  
+			elseif f11 == 0x79 then bit(7, c);         	 break; --bit 7, C  
+			elseif f11 == 0x7a then bit(7, d);         	 break; --bit 7, D  
+			elseif f11 == 0x7b then bit(7, e);         	 break; --bit 7, E  
+			elseif f11 == 0x7c then bit(7, h);         	 break; --bit 7, H  
+			elseif f11 == 0x7d then bit(7, l);         	 break; --bit 7, L  
+			elseif f11 == 0x7e then bit(7, mem8(hl));  	 break; --bit 7, (HL)  
+			elseif f11 == 0x7f then bit(7, a);         	 break; --bit 7, A  
 
-			elseif f11 == 0x80 then res_r(0, b);   	 -- res 0, B  
-			elseif f11 == 0x81 then res_r(0, c);   	 -- res 0, C  
-			elseif f11 == 0x82 then res_r(0, d);   	 -- res 0, D  
-			elseif f11 == 0x83 then res_r(0, e);   	 -- res 0, E  
-			elseif f11 == 0x84 then res_r(0, h);   	 -- res 0, H  
-			elseif f11 == 0x85 then res_r(0, l);   	 -- res 0, L  
-			elseif f11 == 0x86 then res_m(0, hl);  	 -- res 0, (HL)  
-			elseif f11 == 0x87 then res_r(0, a);   	 -- res 0, A  
+			elseif f11 == 0x80 then res_r(0, b);   	 break; --res 0, B  
+			elseif f11 == 0x81 then res_r(0, c);   	 break; --res 0, C  
+			elseif f11 == 0x82 then res_r(0, d);   	 break; --res 0, D  
+			elseif f11 == 0x83 then res_r(0, e);   	 break; --res 0, E  
+			elseif f11 == 0x84 then res_r(0, h);   	 break; --res 0, H  
+			elseif f11 == 0x85 then res_r(0, l);   	 break; --res 0, L  
+			elseif f11 == 0x86 then res_m(0, hl);  	 break; --res 0, (HL)  
+			elseif f11 == 0x87 then res_r(0, a);   	 break; --res 0, A  
 
-			elseif f11 == 0x88 then res_r(1, b);   	 -- res 1, B  
-			elseif f11 == 0x89 then res_r(1, c);   	 -- res 1, C  
-			elseif f11 == 0x8a then res_r(1, d);   	 -- res 1, D  
-			elseif f11 == 0x8b then res_r(1, e);   	 -- res 1, E  
-			elseif f11 == 0x8c then res_r(1, h);   	 -- res 1, H  
-			elseif f11 == 0x8d then res_r(1, l);   	 -- res 1, L  
-			elseif f11 == 0x8e then res_m(1, hl);  	 -- res 1, (HL)  
-			elseif f11 == 0x8f then res_r(1, a);   	 -- res 1, A  
+			elseif f11 == 0x88 then res_r(1, b);   	 break; --res 1, B  
+			elseif f11 == 0x89 then res_r(1, c);   	 break; --res 1, C  
+			elseif f11 == 0x8a then res_r(1, d);   	 break; --res 1, D  
+			elseif f11 == 0x8b then res_r(1, e);   	 break; --res 1, E  
+			elseif f11 == 0x8c then res_r(1, h);   	 break; --res 1, H  
+			elseif f11 == 0x8d then res_r(1, l);   	 break; --res 1, L  
+			elseif f11 == 0x8e then res_m(1, hl);  	 break; --res 1, (HL)  
+			elseif f11 == 0x8f then res_r(1, a);   	 break; --res 1, A  
 
-			elseif f11 == 0x90 then res_r(2, b);   	 -- res 2, B  
-			elseif f11 == 0x91 then res_r(2, c);   	 -- res 2, C  
-			elseif f11 == 0x92 then res_r(2, d);   	 -- res 2, D  
-			elseif f11 == 0x93 then res_r(2, e);   	 -- res 2, E  
-			elseif f11 == 0x94 then res_r(2, h);   	 -- res 2, H  
-			elseif f11 == 0x95 then res_r(2, l);   	 -- res 2, L  
-			elseif f11 == 0x96 then res_m(2, hl);  	 -- res 2, (HL)  
-			elseif f11 == 0x97 then res_r(2, a);   	 -- res 2, A  
+			elseif f11 == 0x90 then res_r(2, b);   	 break; --res 2, B  
+			elseif f11 == 0x91 then res_r(2, c);   	 break; --res 2, C  
+			elseif f11 == 0x92 then res_r(2, d);   	 break; --res 2, D  
+			elseif f11 == 0x93 then res_r(2, e);   	 break; --res 2, E  
+			elseif f11 == 0x94 then res_r(2, h);   	 break; --res 2, H  
+			elseif f11 == 0x95 then res_r(2, l);   	 break; --res 2, L  
+			elseif f11 == 0x96 then res_m(2, hl);  	 break; --res 2, (HL)  
+			elseif f11 == 0x97 then res_r(2, a);   	 break; --res 2, A  
 
-			elseif f11 == 0x98 then res_r(3, b);   	 -- res 3, B  
-			elseif f11 == 0x99 then res_r(3, c);   	 -- res 3, C  
-			elseif f11 == 0x9a then res_r(3, d);   	 -- res 3, D  
-			elseif f11 == 0x9b then res_r(3, e);   	 -- res 3, E  
-			elseif f11 == 0x9c then res_r(3, h);   	 -- res 3, H  
-			elseif f11 == 0x9d then res_r(3, l);   	 -- res 3, L  
-			elseif f11 == 0x9e then res_m(3, hl);  	 -- res 3, (HL)  
-			elseif f11 == 0x9f then res_r(3, a);   	 -- res 3, A  
+			elseif f11 == 0x98 then res_r(3, b);   	 break; --res 3, B  
+			elseif f11 == 0x99 then res_r(3, c);   	 break; --res 3, C  
+			elseif f11 == 0x9a then res_r(3, d);   	 break; --res 3, D  
+			elseif f11 == 0x9b then res_r(3, e);   	 break; --res 3, E  
+			elseif f11 == 0x9c then res_r(3, h);   	 break; --res 3, H  
+			elseif f11 == 0x9d then res_r(3, l);   	 break; --res 3, L  
+			elseif f11 == 0x9e then res_m(3, hl);  	 break; --res 3, (HL)  
+			elseif f11 == 0x9f then res_r(3, a);   	 break; --res 3, A  
 
-			elseif f11 == 0xa0 then res_r(4, b);   	 -- res 4, B  
-			elseif f11 == 0xa1 then res_r(4, c);   	 -- res 4, C  
-			elseif f11 == 0xa2 then res_r(4, d);   	 -- res 4, D  
-			elseif f11 == 0xa3 then res_r(4, e);   	 -- res 4, E  
-			elseif f11 == 0xa4 then res_r(4, h);   	 -- res 4, H  
-			elseif f11 == 0xa5 then res_r(4, l);   	 -- res 4, L  
-			elseif f11 == 0xa6 then res_m(4, hl);  	 -- res 4, (HL)  
-			elseif f11 == 0xa7 then res_r(4, a);   	 -- res 4, A  
+			elseif f11 == 0xa0 then res_r(4, b);   	 break; --res 4, B  
+			elseif f11 == 0xa1 then res_r(4, c);   	 break; --res 4, C  
+			elseif f11 == 0xa2 then res_r(4, d);   	 break; --res 4, D  
+			elseif f11 == 0xa3 then res_r(4, e);   	 break; --res 4, E  
+			elseif f11 == 0xa4 then res_r(4, h);   	 break; --res 4, H  
+			elseif f11 == 0xa5 then res_r(4, l);   	 break; --res 4, L  
+			elseif f11 == 0xa6 then res_m(4, hl);  	 break; --res 4, (HL)  
+			elseif f11 == 0xa7 then res_r(4, a);   	 break; --res 4, A  
 
-			elseif f11 == 0xa8 then res_r(5, b);   	 -- res 5, B  
-			elseif f11 == 0xa9 then res_r(5, c);   	 -- res 5, C  
-			elseif f11 == 0xaa then res_r(5, d);   	 -- res 5, D  
-			elseif f11 == 0xab then res_r(5, e);   	 -- res 5, E  
-			elseif f11 == 0xac then res_r(5, h);   	 -- res 5, H  
-			elseif f11 == 0xad then res_r(5, l);   	 -- res 5, L  
-			elseif f11 == 0xae then res_m(5, hl);  	 -- res 5, (HL)  
-			elseif f11 == 0xaf then res_r(5, a);   	 -- res 5, A  
+			elseif f11 == 0xa8 then res_r(5, b);   	 break; --res 5, B  
+			elseif f11 == 0xa9 then res_r(5, c);   	 break; --res 5, C  
+			elseif f11 == 0xaa then res_r(5, d);   	 break; --res 5, D  
+			elseif f11 == 0xab then res_r(5, e);   	 break; --res 5, E  
+			elseif f11 == 0xac then res_r(5, h);   	 break; --res 5, H  
+			elseif f11 == 0xad then res_r(5, l);   	 break; --res 5, L  
+			elseif f11 == 0xae then res_m(5, hl);  	 break; --res 5, (HL)  
+			elseif f11 == 0xaf then res_r(5, a);   	 break; --res 5, A  
 
-			elseif f11 == 0xb0 then res_r(6, b);   	 -- res 6, B  
-			elseif f11 == 0xb1 then res_r(6, c);   	 -- res 6, C  
-			elseif f11 == 0xb2 then res_r(6, d);   	 -- res 6, D  
-			elseif f11 == 0xb3 then res_r(6, e);   	 -- res 6, E  
-			elseif f11 == 0xb4 then res_r(6, h);   	 -- res 6, H  
-			elseif f11 == 0xb5 then res_r(6, l);   	 -- res 6, L  
-			elseif f11 == 0xb6 then res_m(6, hl);  	 -- res 6, (HL)  
-			elseif f11 == 0xb7 then res_r(6, a);   	 -- res 6, A  
+			elseif f11 == 0xb0 then res_r(6, b);   	 break; --res 6, B  
+			elseif f11 == 0xb1 then res_r(6, c);   	 break; --res 6, C  
+			elseif f11 == 0xb2 then res_r(6, d);   	 break; --res 6, D  
+			elseif f11 == 0xb3 then res_r(6, e);   	 break; --res 6, E  
+			elseif f11 == 0xb4 then res_r(6, h);   	 break; --res 6, H  
+			elseif f11 == 0xb5 then res_r(6, l);   	 break; --res 6, L  
+			elseif f11 == 0xb6 then res_m(6, hl);  	 break; --res 6, (HL)  
+			elseif f11 == 0xb7 then res_r(6, a);   	 break; --res 6, A  
 
-			elseif f11 == 0xb8 then res_r(7, b);   	 -- res 7, B  
-			elseif f11 == 0xb9 then res_r(7, c);   	 -- res 7, C  
-			elseif f11 == 0xba then res_r(7, d);   	 -- res 7, D  
-			elseif f11 == 0xbb then res_r(7, e);   	 -- res 7, E  
-			elseif f11 == 0xbc then res_r(7, h);   	 -- res 7, H  
-			elseif f11 == 0xbd then res_r(7, l);   	 -- res 7, L  
-			elseif f11 == 0xbe then res_m(7, hl);  	 -- res 7, (HL)  
-			elseif f11 == 0xbf then res_r(7, a);   	 -- res 7, A  
+			elseif f11 == 0xb8 then res_r(7, b);   	 break; --res 7, B  
+			elseif f11 == 0xb9 then res_r(7, c);   	 break; --res 7, C  
+			elseif f11 == 0xba then res_r(7, d);   	 break; --res 7, D  
+			elseif f11 == 0xbb then res_r(7, e);   	 break; --res 7, E  
+			elseif f11 == 0xbc then res_r(7, h);   	 break; --res 7, H  
+			elseif f11 == 0xbd then res_r(7, l);   	 break; --res 7, L  
+			elseif f11 == 0xbe then res_m(7, hl);  	 break; --res 7, (HL)  
+			elseif f11 == 0xbf then res_r(7, a);   	 break; --res 7, A  
 
-			elseif f11 == 0xc0 then set_r(0, b);   	 -- set 0, B  
-			elseif f11 == 0xc1 then set_r(0, c);   	 -- set 0, C  
-			elseif f11 == 0xc2 then set_r(0, d);   	 -- set 0, D  
-			elseif f11 == 0xc3 then set_r(0, e);   	 -- set 0, E  
-			elseif f11 == 0xc4 then set_r(0, h);   	 -- set 0, H  
-			elseif f11 == 0xc5 then set_r(0, l);   	 -- set 0, L  
-			elseif f11 == 0xc6 then set_m(0, hl);  	 -- set 0, (HL)  
-			elseif f11 == 0xc7 then set_r(0, a);   	 -- set 0, A  
+			elseif f11 == 0xc0 then set_r(0, b);   	 break; --set 0, B  
+			elseif f11 == 0xc1 then set_r(0, c);   	 break; --set 0, C  
+			elseif f11 == 0xc2 then set_r(0, d);   	 break; --set 0, D  
+			elseif f11 == 0xc3 then set_r(0, e);   	 break; --set 0, E  
+			elseif f11 == 0xc4 then set_r(0, h);   	 break; --set 0, H  
+			elseif f11 == 0xc5 then set_r(0, l);   	 break; --set 0, L  
+			elseif f11 == 0xc6 then set_m(0, hl);  	 break; --set 0, (HL)  
+			elseif f11 == 0xc7 then set_r(0, a);   	 break; --set 0, A  
 
-			elseif f11 == 0xc8 then set_r(1, b);   	 -- set 1, B  
-			elseif f11 == 0xc9 then set_r(1, c);   	 -- set 1, C  
-			elseif f11 == 0xca then set_r(1, d);   	 -- set 1, D  
-			elseif f11 == 0xcb then set_r(1, e);   	 -- set 1, E  
-			elseif f11 == 0xcc then set_r(1, h);   	 -- set 1, H  
-			elseif f11 == 0xcd then set_r(1, l);   	 -- set 1, L  
-			elseif f11 == 0xce then set_m(1, hl);  	 -- set 1, (HL)  
-			elseif f11 == 0xcf then set_r(1, a);   	 -- set 1, A  
+			elseif f11 == 0xc8 then set_r(1, b);   	 break; --set 1, B  
+			elseif f11 == 0xc9 then set_r(1, c);   	 break; --set 1, C  
+			elseif f11 == 0xca then set_r(1, d);   	 break; --set 1, D  
+			elseif f11 == 0xcb then set_r(1, e);   	 break; --set 1, E  
+			elseif f11 == 0xcc then set_r(1, h);   	 break; --set 1, H  
+			elseif f11 == 0xcd then set_r(1, l);   	 break; --set 1, L  
+			elseif f11 == 0xce then set_m(1, hl);  	 break; --set 1, (HL)  
+			elseif f11 == 0xcf then set_r(1, a);   	 break; --set 1, A  
 
-			elseif f11 == 0xd0 then set_r(2, b);   	 -- set 2, B  
-			elseif f11 == 0xd1 then set_r(2, c);   	 -- set 2, C  
-			elseif f11 == 0xd2 then set_r(2, d);   	 -- set 2, D  
-			elseif f11 == 0xd3 then set_r(2, e);   	 -- set 2, E  
-			elseif f11 == 0xd4 then set_r(2, h);   	 -- set 2, H  
-			elseif f11 == 0xd5 then set_r(2, l);   	 -- set 2, L  
-			elseif f11 == 0xd6 then set_m(2, hl);  	 -- set 2, (HL)  
-			elseif f11 == 0xd7 then set_r(2, a);   	 -- set 2, A  
+			elseif f11 == 0xd0 then set_r(2, b);   	 break; --set 2, B  
+			elseif f11 == 0xd1 then set_r(2, c);   	 break; --set 2, C  
+			elseif f11 == 0xd2 then set_r(2, d);   	 break; --set 2, D  
+			elseif f11 == 0xd3 then set_r(2, e);   	 break; --set 2, E  
+			elseif f11 == 0xd4 then set_r(2, h);   	 break; --set 2, H  
+			elseif f11 == 0xd5 then set_r(2, l);   	 break; --set 2, L  
+			elseif f11 == 0xd6 then set_m(2, hl);  	 break; --set 2, (HL)  
+			elseif f11 == 0xd7 then set_r(2, a);   	 break; --set 2, A  
 
-			elseif f11 == 0xd8 then set_r(3, b);   	 -- set 3, B  
-			elseif f11 == 0xd9 then set_r(3, c);   	 -- set 3, C  
-			elseif f11 == 0xda then set_r(3, d);   	 -- set 3, D  
-			elseif f11 == 0xdb then set_r(3, e);   	 -- set 3, E  
-			elseif f11 == 0xdc then set_r(3, h);   	 -- set 3, H  
-			elseif f11 == 0xdd then set_r(3, l);   	 -- set 3, L  
-			elseif f11 == 0xde then set_m(3, hl);  	 -- set 3, (HL)  
-			elseif f11 == 0xdf then set_r(3, a);   	 -- set 3, A  
+			elseif f11 == 0xd8 then set_r(3, b);   	 break; --set 3, B  
+			elseif f11 == 0xd9 then set_r(3, c);   	 break; --set 3, C  
+			elseif f11 == 0xda then set_r(3, d);   	 break; --set 3, D  
+			elseif f11 == 0xdb then set_r(3, e);   	 break; --set 3, E  
+			elseif f11 == 0xdc then set_r(3, h);   	 break; --set 3, H  
+			elseif f11 == 0xdd then set_r(3, l);   	 break; --set 3, L  
+			elseif f11 == 0xde then set_m(3, hl);  	 break; --set 3, (HL)  
+			elseif f11 == 0xdf then set_r(3, a);   	 break; --set 3, A  
 
-			elseif f11 == 0xe0 then set_r(4, b);   	 -- set 4, B  
-			elseif f11 == 0xe1 then set_r(4, c);   	 -- set 4, C  
-			elseif f11 == 0xe2 then set_r(4, d);   	 -- set 4, D  
-			elseif f11 == 0xe3 then set_r(4, e);   	 -- set 4, E  
-			elseif f11 == 0xe4 then set_r(4, h);   	 -- set 4, H  
-			elseif f11 == 0xe5 then set_r(4, l);   	 -- set 4, L  
-			elseif f11 == 0xe6 then set_m(4, hl);  	 -- set 4, (HL)  
-			elseif f11 == 0xe7 then set_r(4, a);   	 -- set 4, A  
+			elseif f11 == 0xe0 then set_r(4, b);   	 break; --set 4, B  
+			elseif f11 == 0xe1 then set_r(4, c);   	 break; --set 4, C  
+			elseif f11 == 0xe2 then set_r(4, d);   	 break; --set 4, D  
+			elseif f11 == 0xe3 then set_r(4, e);   	 break; --set 4, E  
+			elseif f11 == 0xe4 then set_r(4, h);   	 break; --set 4, H  
+			elseif f11 == 0xe5 then set_r(4, l);   	 break; --set 4, L  
+			elseif f11 == 0xe6 then set_m(4, hl);  	 break; --set 4, (HL)  
+			elseif f11 == 0xe7 then set_r(4, a);   	 break; --set 4, A  
 
-			elseif f11 == 0xe8 then set_r(5, b);   	 -- set 5, B  
-			elseif f11 == 0xe9 then set_r(5, c);   	 -- set 5, C  
-			elseif f11 == 0xea then set_r(5, d);   	 -- set 5, D  
-			elseif f11 == 0xeb then set_r(5, e);   	 -- set 5, E  
-			elseif f11 == 0xec then set_r(5, h);   	 -- set 5, H  
-			elseif f11 == 0xed then set_r(5, l);   	 -- set 5, L  
-			elseif f11 == 0xee then set_m(5, hl);  	 -- set 5, (HL)  
-			elseif f11 == 0xef then set_r(5, a);   	 -- set 5, A  
+			elseif f11 == 0xe8 then set_r(5, b);   	 break; --set 5, B  
+			elseif f11 == 0xe9 then set_r(5, c);   	 break; --set 5, C  
+			elseif f11 == 0xea then set_r(5, d);   	 break; --set 5, D  
+			elseif f11 == 0xeb then set_r(5, e);   	 break; --set 5, E  
+			elseif f11 == 0xec then set_r(5, h);   	 break; --set 5, H  
+			elseif f11 == 0xed then set_r(5, l);   	 break; --set 5, L  
+			elseif f11 == 0xee then set_m(5, hl);  	 break; --set 5, (HL)  
+			elseif f11 == 0xef then set_r(5, a);   	 break; --set 5, A  
 
-			elseif f11 == 0xf0 then set_r(6, b);   	 -- set 6, B  
-			elseif f11 == 0xf1 then set_r(6, c);   	 -- set 6, C  
-			elseif f11 == 0xf2 then set_r(6, d);   	 -- set 6, D  
-			elseif f11 == 0xf3 then set_r(6, e);   	 -- set 6, E  
-			elseif f11 == 0xf4 then set_r(6, h);   	 -- set 6, H  
-			elseif f11 == 0xf5 then set_r(6, l);   	 -- set 6, L  
-			elseif f11 == 0xf6 then set_m(6, hl);  	 -- set 6, (HL)  
-			elseif f11 == 0xf7 then set_r(6, a);   	 -- set 6, A  
+			elseif f11 == 0xf0 then set_r(6, b);   	 break; --set 6, B  
+			elseif f11 == 0xf1 then set_r(6, c);   	 break; --set 6, C  
+			elseif f11 == 0xf2 then set_r(6, d);   	 break; --set 6, D  
+			elseif f11 == 0xf3 then set_r(6, e);   	 break; --set 6, E  
+			elseif f11 == 0xf4 then set_r(6, h);   	 break; --set 6, H  
+			elseif f11 == 0xf5 then set_r(6, l);   	 break; --set 6, L  
+			elseif f11 == 0xf6 then set_m(6, hl);  	 break; --set 6, (HL)  
+			elseif f11 == 0xf7 then set_r(6, a);   	 break; --set 6, A  
 
-			elseif f11 == 0xf8 then set_r(7, b);   	 -- set 7, B  
-			elseif f11 == 0xf9 then set_r(7, c);   	 -- set 7, C  
-			elseif f11 == 0xfa then set_r(7, d);   	 -- set 7, D  
-			elseif f11 == 0xfb then set_r(7, e);   	 -- set 7, E  
-			elseif f11 == 0xfc then set_r(7, h);   	 -- set 7, H  
-			elseif f11 == 0xfd then set_r(7, l);   	 -- set 7, L  
-			elseif f11 == 0xfe then set_m(7, hl);  	 -- set 7, (HL)  
-			elseif f11 == 0xff then set_r(7, a);   	 -- set 7, A  	
+			elseif f11 == 0xf8 then set_r(7, b);   	 break; --set 7, B  
+			elseif f11 == 0xf9 then set_r(7, c);   	 break; --set 7, C  
+			elseif f11 == 0xfa then set_r(7, d);   	 break; --set 7, D  
+			elseif f11 == 0xfb then set_r(7, e);   	 break; --set 7, E  
+			elseif f11 == 0xfc then set_r(7, h);   	 break; --set 7, H  
+			elseif f11 == 0xfd then set_r(7, l);   	 break; --set 7, L  
+			elseif f11 == 0xfe then set_m(7, hl);  	 break; --set 7, (HL)  
+			elseif f11 == 0xff then set_r(7, a);   	 break; --set 7, A  	
 		
 			end
 
-		elseif f1 == 0xcc then call(f.z(), imm16());		-- call Z, mn
-		elseif f1 == 0xcd then call(1, imm16());		-- call mn
-		elseif f1 == 0xce then adc8(imm8());		-- adc n
-		elseif f1 == 0xcf then rst(0x08);		-- rst 08H
+		elseif f1 == 0xcc then call(f.z(), imm16());	 break; --call Z, mn
+		elseif f1 == 0xcd then call(1, imm16());	 break; --call mn
+		elseif f1 == 0xce then adc8(imm8());	 break; --adc n
+		elseif f1 == 0xcf then rst(0x08);	 break; --rst 08H
 		
-		elseif f1 == 0xd0 then ret(f.ncy());            	 -- ret NC  
-		elseif f1 == 0xd1 then pop(de);                 	 -- pop DE  
-		elseif f1 == 0xd2 then jp(f.ncy(), imm16());    	 -- jp NC, mn  
-		elseif f1 == 0xd3 then out_n(imm8());           	 -- out (n), A  
-		elseif f1 == 0xd4 then call(f.ncy(), imm16());  	 -- call NC, mn  
-		elseif f1 == 0xd5 then push(de);                	 -- push DE  
-		elseif f1 == 0xd6 then sub8(imm8());            	 -- sub n  
-		elseif f1 == 0xd7 then rst(0x10);               	 -- rst 10H  
+		elseif f1 == 0xd0 then ret(f.ncy());            	 break; --ret NC  
+		elseif f1 == 0xd1 then pop(de);                 	 break; --pop DE  
+		elseif f1 == 0xd2 then jp(f.ncy(), imm16());    	 break; --jp NC, mn  
+		elseif f1 == 0xd3 then out_n(imm8());           	 break; --out (n), A  
+		elseif f1 == 0xd4 then call(f.ncy(), imm16());  	 break; --call NC, mn  
+		elseif f1 == 0xd5 then push(de);                	 break; --push DE  
+		elseif f1 == 0xd6 then sub8(imm8());            	 break; --sub n  
+		elseif f1 == 0xd7 then rst(0x10);               	 break; --rst 10H  
 
-		elseif f1 == 0xd8 then ret(f.cy());            	 -- ret C  
-		elseif f1 == 0xd9 then exx();                  	 -- exx  
-		elseif f1 == 0xda then jp(f.cy(), imm16());    	 -- jp C, mn  
-		elseif f1 == 0xdb then in_n(imm8());           	 -- in A, (n)  
-		elseif f1 == 0xdc then call(f.cy(), imm16());  	 -- call C, mn  
+		elseif f1 == 0xd8 then ret(f.cy());            	 break; --ret C  
+		elseif f1 == 0xd9 then exx();                  	 break; --exx  
+		elseif f1 == 0xda then jp(f.cy(), imm16());    	 break; --jp C, mn  
+		elseif f1 == 0xdb then in_n(imm8());           	 break; --in A, (n)  
+		elseif f1 == 0xdc then call(f.cy(), imm16());  	 break; --call C, mn  
 		elseif f1 == 0xdd then
 			pc = pc + 1
 			local f12 = fetchDDXX()
 			
-			if f12 == 0x09 then add16(ix, bc);  	 -- add IX, BC  
+			if f12 == 0x09 then add16(ix, bc);  	 break; --add IX, BC  
 
-			elseif f12 == 0x19 then add16(ix, de);  	 -- add IX, DE  
+			elseif f12 == 0x19 then add16(ix, de);  	 break; --add IX, DE  
 
-			elseif f12 == 0x21 then ld16(ix, imm16());  	 -- ld IX, mn  
-			elseif f12 == 0x22 then st16(imm16(), ix);  	 -- ld (mn), IX  
-			elseif f12 == 0x23 then inc16(ix);          	 -- inc IX  
-			elseif f12 == 0x24 then inc8_r(ixh);        	 -- inc IXh  
-			elseif f12 == 0x25 then dec8_r(ixh);        	 -- dec IXh  
-			elseif f12 == 0x26 then ld8(ixh, imm8());   	 -- ld IXh, n  
+			elseif f12 == 0x21 then ld16(ix, imm16());  	 break; --ld IX, mn  
+			elseif f12 == 0x22 then st16(imm16(), ix);  	 break; --ld (mn), IX  
+			elseif f12 == 0x23 then inc16(ix);          	 break; --inc IX  
+			elseif f12 == 0x24 then inc8_r(ixh);        	 break; --inc IXh  
+			elseif f12 == 0x25 then dec8_r(ixh);        	 break; --dec IXh  
+			elseif f12 == 0x26 then ld8(ixh, imm8());   	 break; --ld IXh, n  
 
-			elseif f12 == 0x29 then add16(ix, ix);             	 -- add IX, IX  
-			elseif f12 == 0x2a then ld16(ix, mem16(imm16()));  	 -- ld IX, (mn)  
-			elseif f12 == 0x2b then dec16(ix);                 	 -- dec IX  
-			elseif f12 == 0x2c then inc8_r(ixl);               	 -- inc IXl  
-			elseif f12 == 0x2d then dec8_r(ixl);               	 -- dec IXl  
-			elseif f12 == 0x2e then ld8(ixl, imm8());          	 -- ld IXl, n  
+			elseif f12 == 0x29 then add16(ix, ix);             	 break; --add IX, IX  
+			elseif f12 == 0x2a then ld16(ix, mem16(imm16()));  	 break; --ld IX, (mn)  
+			elseif f12 == 0x2b then dec16(ix);                 	 break; --dec IX  
+			elseif f12 == 0x2c then inc8_r(ixl);               	 break; --inc IXl  
+			elseif f12 == 0x2d then dec8_r(ixl);               	 break; --dec IXl  
+			elseif f12 == 0x2e then ld8(ixl, imm8());          	 break; --ld IXl, n  
 
-			elseif f12 == 0x34 then inc8_m(ix.get() + dis());             	 -- inc (IX + d)  
-			elseif f12 == 0x35 then dec8_m(ix.get() + dis());             	 -- dec (IX + d)  
-			elseif f12 == 0x36 then st8(ix.get() + dis(), mem8(pc + 2));  	 -- ld (IX + d), n  
+			elseif f12 == 0x34 then inc8_m(ix.get() + dis());             	 break; --inc (IX + d)  
+			elseif f12 == 0x35 then dec8_m(ix.get() + dis());             	 break; --dec (IX + d)  
+			elseif f12 == 0x36 then st8(ix.get() + dis(), mem8(pc + 2));  	 break; --ld (IX + d), n  
 
-			elseif f12 == 0x39 then add16(ix, sp);  	 -- ADD IX, SP  
+			elseif f12 == 0x39 then add16(ix, sp);  	 break; --ADD IX, SP  
 
-			elseif f12 == 0x44 then ld8(b, ixh);                  	 -- ld B, IXh  
-			elseif f12 == 0x45 then ld8(b, ixl);                  	 -- ld B, IXl  
-			elseif f12 == 0x46 then ld8(b, mem8(ix.get() + dis()));  	 -- ld B, (IX + d)  
+			elseif f12 == 0x44 then ld8(b, ixh);                  	 break; --ld B, IXh  
+			elseif f12 == 0x45 then ld8(b, ixl);                  	 break; --ld B, IXl  
+			elseif f12 == 0x46 then ld8(b, mem8(ix.get() + dis()));  	 break; --ld B, (IX + d)  
 
-			elseif f12 == 0x4c then ld8(c, ixh);                  	 -- ld C, IXh  
-			elseif f12 == 0x4d then ld8(c, ixl);                  	 -- ld C, IXl  
-			elseif f12 == 0x4e then ld8(c, mem8(ix.get() + dis()));  	 -- ld C, (IX + d)  
+			elseif f12 == 0x4c then ld8(c, ixh);                  	 break; --ld C, IXh  
+			elseif f12 == 0x4d then ld8(c, ixl);                  	 break; --ld C, IXl  
+			elseif f12 == 0x4e then ld8(c, mem8(ix.get() + dis()));  	 break; --ld C, (IX + d)  
 
-			elseif f12 == 0x54 then ld8(d, ixh);                  	 -- ld D, IXh  
-			elseif f12 == 0x55 then ld8(d, ixl);                  	 -- ld D, IXl  
-			elseif f12 == 0x56 then ld8(d, mem8(ix.get() + dis()));  	 -- ld D, (IX + d)  
+			elseif f12 == 0x54 then ld8(d, ixh);                  	 break; --ld D, IXh  
+			elseif f12 == 0x55 then ld8(d, ixl);                  	 break; --ld D, IXl  
+			elseif f12 == 0x56 then ld8(d, mem8(ix.get() + dis()));  	 break; --ld D, (IX + d)  
 
-			elseif f12 == 0x5c then ld8(e, ixh);                  	 -- ld E, IXh  
-			elseif f12 == 0x5d then ld8(e, ixl);                  	 -- ld E, IXl  
-			elseif f12 == 0x5e then ld8(e, mem8(ix.get() + dis()));  	 -- ld E, (IX + d)  
+			elseif f12 == 0x5c then ld8(e, ixh);                  	 break; --ld E, IXh  
+			elseif f12 == 0x5d then ld8(e, ixl);                  	 break; --ld E, IXl  
+			elseif f12 == 0x5e then ld8(e, mem8(ix.get() + dis()));  	 break; --ld E, (IX + d)  
 
-			elseif f12 == 0x60 then ld8(ixh, b);                  	 -- ld IXh, B  
-			elseif f12 == 0x61 then ld8(ixh, c);                  	 -- ld IXh, C  
-			elseif f12 == 0x62 then ld8(ixh, d);                  	 -- ld IXh, D  
-			elseif f12 == 0x63 then ld8(ixh, e);                  	 -- ld IXh, E  
-			elseif f12 == 0x64 then ld8(ixh, h);                  	 -- ld IXh, H  
-			elseif f12 == 0x65 then ld8(ixh, l);                  	 -- ld IXh, L  
-			elseif f12 == 0x66 then ld8(h, mem8(ix.get() + dis()));  	 -- ld H, (IX + d)  
-			elseif f12 == 0x67 then ld8(ixh, a);                  	 -- ld IXh, A  
+			elseif f12 == 0x60 then ld8(ixh, b);                  	 break; --ld IXh, B  
+			elseif f12 == 0x61 then ld8(ixh, c);                  	 break; --ld IXh, C  
+			elseif f12 == 0x62 then ld8(ixh, d);                  	 break; --ld IXh, D  
+			elseif f12 == 0x63 then ld8(ixh, e);                  	 break; --ld IXh, E  
+			elseif f12 == 0x64 then ld8(ixh, h);                  	 break; --ld IXh, H  
+			elseif f12 == 0x65 then ld8(ixh, l);                  	 break; --ld IXh, L  
+			elseif f12 == 0x66 then ld8(h, mem8(ix.get() + dis()));  	 break; --ld H, (IX + d)  
+			elseif f12 == 0x67 then ld8(ixh, a);                  	 break; --ld IXh, A  
 
-			elseif f12 == 0x68 then ld8(ixl, b);                  	 -- ld IXl, B  
-			elseif f12 == 0x69 then ld8(ixl, c);                  	 -- ld IXl, C  
-			elseif f12 == 0x6a then ld8(ixl, d);                  	 -- ld IXl, D  
-			elseif f12 == 0x6b then ld8(ixl, e);                  	 -- ld IXl, E  
-			elseif f12 == 0x6c then ld8(ixl, h);                  	 -- ld IXl, H  
-			elseif f12 == 0x6d then ld8(ixl, l);                  	 -- ld IXl, L  
-			elseif f12 == 0x6e then ld8(l, mem8(ix.get() + dis()));  	 -- ld L, (IX + d)  
-			elseif f12 == 0x6f then ld8(ixl, a);                  	 -- ld IXl, A  
+			elseif f12 == 0x68 then ld8(ixl, b);                  	 break; --ld IXl, B  
+			elseif f12 == 0x69 then ld8(ixl, c);                  	 break; --ld IXl, C  
+			elseif f12 == 0x6a then ld8(ixl, d);                  	 break; --ld IXl, D  
+			elseif f12 == 0x6b then ld8(ixl, e);                  	 break; --ld IXl, E  
+			elseif f12 == 0x6c then ld8(ixl, h);                  	 break; --ld IXl, H  
+			elseif f12 == 0x6d then ld8(ixl, l);                  	 break; --ld IXl, L  
+			elseif f12 == 0x6e then ld8(l, mem8(ix.get() + dis()));  	 break; --ld L, (IX + d)  
+			elseif f12 == 0x6f then ld8(ixl, a);                  	 break; --ld IXl, A  
 
-			elseif f12 == 0x70 then st8(ix.get() + dis(), b);  	 -- ld (IX + d), B  
-			elseif f12 == 0x71 then st8(ix.get() + dis(), c);  	 -- ld (IX + d), C  
-			elseif f12 == 0x72 then st8(ix.get() + dis(), d);  	 -- ld (IX + d), D  
-			elseif f12 == 0x73 then st8(ix.get() + dis(), e);  	 -- ld (IX + d), E  
-			elseif f12 == 0x74 then st8(ix.get() + dis(), h);  	 -- ld (IX + d), H  
-			elseif f12 == 0x75 then st8(ix.get() + dis(), l);  	 -- ld (IX + d), L  
-			elseif f12 == 0x77 then st8(ix.get() + dis(), a);  	 -- ld (IX + d), A  
+			elseif f12 == 0x70 then st8(ix.get() + dis(), b);  	 break; --ld (IX + d), B  
+			elseif f12 == 0x71 then st8(ix.get() + dis(), c);  	 break; --ld (IX + d), C  
+			elseif f12 == 0x72 then st8(ix.get() + dis(), d);  	 break; --ld (IX + d), D  
+			elseif f12 == 0x73 then st8(ix.get() + dis(), e);  	 break; --ld (IX + d), E  
+			elseif f12 == 0x74 then st8(ix.get() + dis(), h);  	 break; --ld (IX + d), H  
+			elseif f12 == 0x75 then st8(ix.get() + dis(), l);  	 break; --ld (IX + d), L  
+			elseif f12 == 0x77 then st8(ix.get() + dis(), a);  	 break; --ld (IX + d), A  
 
-			elseif f12 == 0x7c then ld8(a, ixh);                  	 -- ld A, IXh  
-			elseif f12 == 0x7d then ld8(a, ixl);                  	 -- ld A, IXl  
-			elseif f12 == 0x7e then ld8(a, mem8(ix.get() + dis()));  	 -- ld A, (IX + d)  
+			elseif f12 == 0x7c then ld8(a, ixh);                  	 break; --ld A, IXh  
+			elseif f12 == 0x7d then ld8(a, ixl);                  	 break; --ld A, IXl  
+			elseif f12 == 0x7e then ld8(a, mem8(ix.get() + dis()));  	 break; --ld A, (IX + d)  
 
-			elseif f12 == 0x84 then add8(ixh);                  	 -- add IXh  
-			elseif f12 == 0x85 then add8(ixl);                  	 -- add IXl  
-			elseif f12 == 0x86 then add8(mem8(ix.get() + dis()));  	 -- add (IX + d)  
+			elseif f12 == 0x84 then add8(ixh);                  	 break; --add IXh  
+			elseif f12 == 0x85 then add8(ixl);                  	 break; --add IXl  
+			elseif f12 == 0x86 then add8(mem8(ix.get() + dis()));  	 break; --add (IX + d)  
 
-			elseif f12 == 0x8c then adc8(ixh);                  	 -- adc IXh  
-			elseif f12 == 0x8d then adc8(ixl);                  	 -- adc IXl  
-			elseif f12 == 0x8e then adc8(mem8(ix.get() + dis()));  	 -- adc (IX + d)  
+			elseif f12 == 0x8c then adc8(ixh);                  	 break; --adc IXh  
+			elseif f12 == 0x8d then adc8(ixl);                  	 break; --adc IXl  
+			elseif f12 == 0x8e then adc8(mem8(ix.get() + dis()));  	 break; --adc (IX + d)  
 
-			elseif f12 == 0x94 then sub8(ixh);                  	 -- sub IXh  
-			elseif f12 == 0x95 then sub8(ixl);                  	 -- sub IXl  
-			elseif f12 == 0x96 then sub8(mem8(ix.get() + dis()));  	 -- sub (IX + d)  
+			elseif f12 == 0x94 then sub8(ixh);                  	 break; --sub IXh  
+			elseif f12 == 0x95 then sub8(ixl);                  	 break; --sub IXl  
+			elseif f12 == 0x96 then sub8(mem8(ix.get() + dis()));  	 break; --sub (IX + d)  
 
-			elseif f12 == 0x9c then sbc8(ixh);                  	 -- sbc IXh  
-			elseif f12 == 0x9d then sbc8(ixl);                  	 -- sbc IXl  
-			elseif f12 == 0x9e then sbc8(mem8(ix.get() + dis()));  	 -- sbc (IX + d)  
+			elseif f12 == 0x9c then sbc8(ixh);                  	 break; --sbc IXh  
+			elseif f12 == 0x9d then sbc8(ixl);                  	 break; --sbc IXl  
+			elseif f12 == 0x9e then sbc8(mem8(ix.get() + dis()));  	 break; --sbc (IX + d)  
 
-			elseif f12 == 0xa4 then And(ixh);                  	 -- and IXh  
-			elseif f12 == 0xa5 then And(ixl);                  	 -- and IXl  
-			elseif f12 == 0xa6 then And(mem8(ix.get() + dis()));  	 -- and (IX + d)  
+			elseif f12 == 0xa4 then And(ixh);                  	 break; --and IXh  
+			elseif f12 == 0xa5 then And(ixl);                  	 break; --and IXl  
+			elseif f12 == 0xa6 then And(mem8(ix.get() + dis()));  	 break; --and (IX + d)  
 
-			elseif f12 == 0xac then Xor(ixh);                  	 -- xor IXh  
-			elseif f12 == 0xad then Xor(ixl);                  	 -- xor IXl  
-			elseif f12 == 0xae then Xor(mem8(ix.get() + dis()));  	 -- xor (IX + d)  
+			elseif f12 == 0xac then Xor(ixh);                  	 break; --xor IXh  
+			elseif f12 == 0xad then Xor(ixl);                  	 break; --xor IXl  
+			elseif f12 == 0xae then Xor(mem8(ix.get() + dis()));  	 break; --xor (IX + d)  
 
-			elseif f12 == 0xb4 then Or(ixh);                  	 -- or IXh  
-			elseif f12 == 0xb5 then Or(ixl);                  	 -- or IXl  
-			elseif f12 == 0xb6 then Or(mem8(ix.get() + dis()));  	 -- or (IX + d)  
+			elseif f12 == 0xb4 then Or(ixh);                  	 break; --or IXh  
+			elseif f12 == 0xb5 then Or(ixl);                  	 break; --or IXl  
+			elseif f12 == 0xb6 then Or(mem8(ix.get() + dis()));  	 break; --or (IX + d)  
 
-			elseif f12 == 0xbc then cp(ixh);                  	 -- cp IXh  
-			elseif f12 == 0xbd then cp(ixl);                  	 -- cp IXl  
-			elseif f12 == 0xbe then cp(mem8(ix.get() + dis()));  	 -- cp (IX + d)  
+			elseif f12 == 0xbc then cp(ixh);                  	 break; --cp IXh  
+			elseif f12 == 0xbd then cp(ixl);                  	 break; --cp IXl  
+			elseif f12 == 0xbe then cp(mem8(ix.get() + dis()));  	 break; --cp (IX + d)  
 
 			elseif f12 == 0xcb then
 				local f121 = fetchDDCBXX()
 				
-				if 	   f121 == 0x00 then rlc_m_r(ix.get() + dis(), b);  	 -- rlc (IX + d), B  
-				elseif f121 == 0x01 then rlc_m_r(ix.get() + dis(), c);  	 -- rlc (IX + d), C  
-				elseif f121 == 0x02 then rlc_m_r(ix.get() + dis(), d);  	 -- rlc (IX + d), D  
-				elseif f121 == 0x03 then rlc_m_r(ix.get() + dis(), e);  	 -- rlc (IX + d), E  
-				elseif f121 == 0x04 then rlc_m_r(ix.get() + dis(), h);  	 -- rlc (IX + d), H  
-				elseif f121 == 0x05 then rlc_m_r(ix.get() + dis(), l);  	 -- rlc (IX + d), L  
-				elseif f121 == 0x06 then rlc_m(ix.get() + dis());       	 -- rlc (IX + d)  
-				elseif f121 == 0x07 then rlc_m_r(ix.get() + dis(), a);  	 -- rlc (IX + d), A  
+				if 	   f121 == 0x00 then rlc_m_r(ix.get() + dis(), b);  	 break; --rlc (IX + d), B  
+				elseif f121 == 0x01 then rlc_m_r(ix.get() + dis(), c);  	 break; --rlc (IX + d), C  
+				elseif f121 == 0x02 then rlc_m_r(ix.get() + dis(), d);  	 break; --rlc (IX + d), D  
+				elseif f121 == 0x03 then rlc_m_r(ix.get() + dis(), e);  	 break; --rlc (IX + d), E  
+				elseif f121 == 0x04 then rlc_m_r(ix.get() + dis(), h);  	 break; --rlc (IX + d), H  
+				elseif f121 == 0x05 then rlc_m_r(ix.get() + dis(), l);  	 break; --rlc (IX + d), L  
+				elseif f121 == 0x06 then rlc_m(ix.get() + dis());       	 break; --rlc (IX + d)  
+				elseif f121 == 0x07 then rlc_m_r(ix.get() + dis(), a);  	 break; --rlc (IX + d), A  
 
-				elseif f121 == 0x08 then rrc_m_r(ix.get() + dis(), b);  	 -- rrc (IX + d), B  
-				elseif f121 == 0x09 then rrc_m_r(ix.get() + dis(), c);  	 -- rrc (IX + d), C  
-				elseif f121 == 0x0a then rrc_m_r(ix.get() + dis(), d);  	 -- rrc (IX + d), D  
-				elseif f121 == 0x0b then rrc_m_r(ix.get() + dis(), e);  	 -- rrc (IX + d), E  
-				elseif f121 == 0x0c then rrc_m_r(ix.get() + dis(), h);  	 -- rrc (IX + d), H  
-				elseif f121 == 0x0d then rrc_m_r(ix.get() + dis(), l);  	 -- rrc (IX + d), L  
-				elseif f121 == 0x0e then rrc_m(ix.get() + dis());       	 -- rrc (IX + d)  
-				elseif f121 == 0x0f then rrc_m_r(ix.get() + dis(), a);  	 -- rrc (IX + d), A  
+				elseif f121 == 0x08 then rrc_m_r(ix.get() + dis(), b);  	 break; --rrc (IX + d), B  
+				elseif f121 == 0x09 then rrc_m_r(ix.get() + dis(), c);  	 break; --rrc (IX + d), C  
+				elseif f121 == 0x0a then rrc_m_r(ix.get() + dis(), d);  	 break; --rrc (IX + d), D  
+				elseif f121 == 0x0b then rrc_m_r(ix.get() + dis(), e);  	 break; --rrc (IX + d), E  
+				elseif f121 == 0x0c then rrc_m_r(ix.get() + dis(), h);  	 break; --rrc (IX + d), H  
+				elseif f121 == 0x0d then rrc_m_r(ix.get() + dis(), l);  	 break; --rrc (IX + d), L  
+				elseif f121 == 0x0e then rrc_m(ix.get() + dis());       	 break; --rrc (IX + d)  
+				elseif f121 == 0x0f then rrc_m_r(ix.get() + dis(), a);  	 break; --rrc (IX + d), A  
 
-				elseif f121 == 0x10 then rl_m_r(ix.get() + dis(), b);  	 -- rl (IX + d), B  
-				elseif f121 == 0x11 then rl_m_r(ix.get() + dis(), c);  	 -- rl (IX + d), C  
-				elseif f121 == 0x12 then rl_m_r(ix.get() + dis(), d);  	 -- rl (IX + d), D  
-				elseif f121 == 0x13 then rl_m_r(ix.get() + dis(), e);  	 -- rl (IX + d), E  
-				elseif f121 == 0x14 then rl_m_r(ix.get() + dis(), h);  	 -- rl (IX + d), H  
-				elseif f121 == 0x15 then rl_m_r(ix.get() + dis(), l);  	 -- rl (IX + d), L  
-				elseif f121 == 0x16 then rl_m(ix.get() + dis());       	 -- rl (IX + d)  
-				elseif f121 == 0x17 then rl_m_r(ix.get() + dis(), a);  	 -- rl (IX + d), A  
+				elseif f121 == 0x10 then rl_m_r(ix.get() + dis(), b);  	 break; --rl (IX + d), B  
+				elseif f121 == 0x11 then rl_m_r(ix.get() + dis(), c);  	 break; --rl (IX + d), C  
+				elseif f121 == 0x12 then rl_m_r(ix.get() + dis(), d);  	 break; --rl (IX + d), D  
+				elseif f121 == 0x13 then rl_m_r(ix.get() + dis(), e);  	 break; --rl (IX + d), E  
+				elseif f121 == 0x14 then rl_m_r(ix.get() + dis(), h);  	 break; --rl (IX + d), H  
+				elseif f121 == 0x15 then rl_m_r(ix.get() + dis(), l);  	 break; --rl (IX + d), L  
+				elseif f121 == 0x16 then rl_m(ix.get() + dis());       	 break; --rl (IX + d)  
+				elseif f121 == 0x17 then rl_m_r(ix.get() + dis(), a);  	 break; --rl (IX + d), A  
 
-				elseif f121 == 0x18 then rr_m_r(ix.get() + dis(), b);  	 -- rr (IX + d), B  
-				elseif f121 == 0x19 then rr_m_r(ix.get() + dis(), c);  	 -- rr (IX + d), C  
-				elseif f121 == 0x1a then rr_m_r(ix.get() + dis(), d);  	 -- rr (IX + d), D  
-				elseif f121 == 0x1b then rr_m_r(ix.get() + dis(), e);  	 -- rr (IX + d), E  
-				elseif f121 == 0x1c then rr_m_r(ix.get() + dis(), h);  	 -- rr (IX + d), H  
-				elseif f121 == 0x1d then rr_m_r(ix.get() + dis(), l);  	 -- rr (IX + d), L  
-				elseif f121 == 0x1e then rr_m(ix.get() + dis());       	 -- rr (IX + d)  
-				elseif f121 == 0x1f then rr_m_r(ix.get() + dis(), a);  	 -- rr (IX + d), A  
+				elseif f121 == 0x18 then rr_m_r(ix.get() + dis(), b);  	 break; --rr (IX + d), B  
+				elseif f121 == 0x19 then rr_m_r(ix.get() + dis(), c);  	 break; --rr (IX + d), C  
+				elseif f121 == 0x1a then rr_m_r(ix.get() + dis(), d);  	 break; --rr (IX + d), D  
+				elseif f121 == 0x1b then rr_m_r(ix.get() + dis(), e);  	 break; --rr (IX + d), E  
+				elseif f121 == 0x1c then rr_m_r(ix.get() + dis(), h);  	 break; --rr (IX + d), H  
+				elseif f121 == 0x1d then rr_m_r(ix.get() + dis(), l);  	 break; --rr (IX + d), L  
+				elseif f121 == 0x1e then rr_m(ix.get() + dis());       	 break; --rr (IX + d)  
+				elseif f121 == 0x1f then rr_m_r(ix.get() + dis(), a);  	 break; --rr (IX + d), A  
 
-				elseif f121 == 0x20 then sla_m_r(ix.get() + dis(), b);  	 -- sla (IX + d), B  
-				elseif f121 == 0x21 then sla_m_r(ix.get() + dis(), c);  	 -- sla (IX + d), C  
-				elseif f121 == 0x22 then sla_m_r(ix.get() + dis(), d);  	 -- sla (IX + d), D  
-				elseif f121 == 0x23 then sla_m_r(ix.get() + dis(), e);  	 -- sla (IX + d), E  
-				elseif f121 == 0x24 then sla_m_r(ix.get() + dis(), h);  	 -- sla (IX + d), H  
-				elseif f121 == 0x25 then sla_m_r(ix.get() + dis(), l);  	 -- sla (IX + d), L  
-				elseif f121 == 0x26 then sla_m(ix.get() + dis());       	 -- sla (IX + d)  
-				elseif f121 == 0x27 then sla_m_r(ix.get() + dis(), a);  	 -- sla (IX + d), A  
+				elseif f121 == 0x20 then sla_m_r(ix.get() + dis(), b);  	 break; --sla (IX + d), B  
+				elseif f121 == 0x21 then sla_m_r(ix.get() + dis(), c);  	 break; --sla (IX + d), C  
+				elseif f121 == 0x22 then sla_m_r(ix.get() + dis(), d);  	 break; --sla (IX + d), D  
+				elseif f121 == 0x23 then sla_m_r(ix.get() + dis(), e);  	 break; --sla (IX + d), E  
+				elseif f121 == 0x24 then sla_m_r(ix.get() + dis(), h);  	 break; --sla (IX + d), H  
+				elseif f121 == 0x25 then sla_m_r(ix.get() + dis(), l);  	 break; --sla (IX + d), L  
+				elseif f121 == 0x26 then sla_m(ix.get() + dis());       	 break; --sla (IX + d)  
+				elseif f121 == 0x27 then sla_m_r(ix.get() + dis(), a);  	 break; --sla (IX + d), A  
 
-				elseif f121 == 0x28 then sra_m_r(ix.get() + dis(), b);  	 -- sra (IX + d), B  
-				elseif f121 == 0x29 then sra_m_r(ix.get() + dis(), c);  	 -- sra (IX + d), C  
-				elseif f121 == 0x2a then sra_m_r(ix.get() + dis(), d);  	 -- sra (IX + d), D  
-				elseif f121 == 0x2b then sra_m_r(ix.get() + dis(), e);  	 -- sra (IX + d), E  
-				elseif f121 == 0x2c then sra_m_r(ix.get() + dis(), h);  	 -- sra (IX + d), H  
-				elseif f121 == 0x2d then sra_m_r(ix.get() + dis(), l);  	 -- sra (IX + d), L  
-				elseif f121 == 0x2e then sra_m(ix.get() + dis());       	 -- sra (IX + d)  
-				elseif f121 == 0x2f then sra_m_r(ix.get() + dis(), a);  	 -- sra (IX + d), A  
+				elseif f121 == 0x28 then sra_m_r(ix.get() + dis(), b);  	 break; --sra (IX + d), B  
+				elseif f121 == 0x29 then sra_m_r(ix.get() + dis(), c);  	 break; --sra (IX + d), C  
+				elseif f121 == 0x2a then sra_m_r(ix.get() + dis(), d);  	 break; --sra (IX + d), D  
+				elseif f121 == 0x2b then sra_m_r(ix.get() + dis(), e);  	 break; --sra (IX + d), E  
+				elseif f121 == 0x2c then sra_m_r(ix.get() + dis(), h);  	 break; --sra (IX + d), H  
+				elseif f121 == 0x2d then sra_m_r(ix.get() + dis(), l);  	 break; --sra (IX + d), L  
+				elseif f121 == 0x2e then sra_m(ix.get() + dis());       	 break; --sra (IX + d)  
+				elseif f121 == 0x2f then sra_m_r(ix.get() + dis(), a);  	 break; --sra (IX + d), A  
 
-				elseif f121 == 0x30 then sll_m_r(ix.get() + dis(), b);  	 -- sll (IX + d), B  
-				elseif f121 == 0x31 then sll_m_r(ix.get() + dis(), c);  	 -- sll (IX + d), C  
-				elseif f121 == 0x32 then sll_m_r(ix.get() + dis(), d);  	 -- sll (IX + d), D  
-				elseif f121 == 0x33 then sll_m_r(ix.get() + dis(), e);  	 -- sll (IX + d), E  
-				elseif f121 == 0x34 then sll_m_r(ix.get() + dis(), h);  	 -- sll (IX + d), H  
-				elseif f121 == 0x35 then sll_m_r(ix.get() + dis(), l);  	 -- sll (IX + d), L  
-				elseif f121 == 0x36 then sll_m(ix.get() + dis());       	 -- sll (IX + d)  
-				elseif f121 == 0x37 then sll_m_r(ix.get() + dis(), a);  	 -- sll (IX + d), A  
+				elseif f121 == 0x30 then sll_m_r(ix.get() + dis(), b);  	 break; --sll (IX + d), B  
+				elseif f121 == 0x31 then sll_m_r(ix.get() + dis(), c);  	 break; --sll (IX + d), C  
+				elseif f121 == 0x32 then sll_m_r(ix.get() + dis(), d);  	 break; --sll (IX + d), D  
+				elseif f121 == 0x33 then sll_m_r(ix.get() + dis(), e);  	 break; --sll (IX + d), E  
+				elseif f121 == 0x34 then sll_m_r(ix.get() + dis(), h);  	 break; --sll (IX + d), H  
+				elseif f121 == 0x35 then sll_m_r(ix.get() + dis(), l);  	 break; --sll (IX + d), L  
+				elseif f121 == 0x36 then sll_m(ix.get() + dis());       	 break; --sll (IX + d)  
+				elseif f121 == 0x37 then sll_m_r(ix.get() + dis(), a);  	 break; --sll (IX + d), A  
 
-				elseif f121 == 0x38 then srl_m_r(ix.get() + dis(), b);  	 -- srl (IX + d), B  
-				elseif f121 == 0x39 then srl_m_r(ix.get() + dis(), c);  	 -- srl (IX + d), C  
-				elseif f121 == 0x3a then srl_m_r(ix.get() + dis(), d);  	 -- srl (IX + d), D  
-				elseif f121 == 0x3b then srl_m_r(ix.get() + dis(), e);  	 -- srl (IX + d), E  
-				elseif f121 == 0x3c then srl_m_r(ix.get() + dis(), h);  	 -- srl (IX + d), H  
-				elseif f121 == 0x3d then srl_m_r(ix.get() + dis(), l);  	 -- srl (IX + d), L  
-				elseif f121 == 0x3e then srl_m(ix.get() + dis());       	 -- srl (IX + d)  
-				elseif f121 == 0x3f then srl_m_r(ix.get() + dis(), a);  	 -- srl (IX + d), A  
+				elseif f121 == 0x38 then srl_m_r(ix.get() + dis(), b);  	 break; --srl (IX + d), B  
+				elseif f121 == 0x39 then srl_m_r(ix.get() + dis(), c);  	 break; --srl (IX + d), C  
+				elseif f121 == 0x3a then srl_m_r(ix.get() + dis(), d);  	 break; --srl (IX + d), D  
+				elseif f121 == 0x3b then srl_m_r(ix.get() + dis(), e);  	 break; --srl (IX + d), E  
+				elseif f121 == 0x3c then srl_m_r(ix.get() + dis(), h);  	 break; --srl (IX + d), H  
+				elseif f121 == 0x3d then srl_m_r(ix.get() + dis(), l);  	 break; --srl (IX + d), L  
+				elseif f121 == 0x3e then srl_m(ix.get() + dis());       	 break; --srl (IX + d)  
+				elseif f121 == 0x3f then srl_m_r(ix.get() + dis(), a);  	 break; --srl (IX + d), A  
 
-				elseif f121 == 0x40 then bit(0, mem8(ix.get() + dis()));       -- bit 0, (IX + d)
-				elseif f121 == 0x41 then bit(0, mem8(ix.get() + dis()));       -- bit 0, (IX + d)
-				elseif f121 == 0x42 then bit(0, mem8(ix.get() + dis()));       -- bit 0, (IX + d)
-				elseif f121 == 0x43 then bit(0, mem8(ix.get() + dis()));       -- bit 0, (IX + d)
-				elseif f121 == 0x44 then bit(0, mem8(ix.get() + dis()));       -- bit 0, (IX + d)
-				elseif f121 == 0x45 then bit(0, mem8(ix.get() + dis()));       -- bit 0, (IX + d)
-				elseif f121 == 0x46 then bit(0, mem8(ix.get() + dis()));       -- bit 0, (IX + d)
-				elseif f121 == 0x47 then bit(0, mem8(ix.get() + dis()));  	 -- bit 0, (IX + d)  
+				elseif f121 == 0x40 then bit(0, mem8(ix.get() + dis()));       break; --bit 0, (IX + d)
+				elseif f121 == 0x41 then bit(0, mem8(ix.get() + dis()));       break; --bit 0, (IX + d)
+				elseif f121 == 0x42 then bit(0, mem8(ix.get() + dis()));       break; --bit 0, (IX + d)
+				elseif f121 == 0x43 then bit(0, mem8(ix.get() + dis()));       break; --bit 0, (IX + d)
+				elseif f121 == 0x44 then bit(0, mem8(ix.get() + dis()));       break; --bit 0, (IX + d)
+				elseif f121 == 0x45 then bit(0, mem8(ix.get() + dis()));       break; --bit 0, (IX + d)
+				elseif f121 == 0x46 then bit(0, mem8(ix.get() + dis()));       break; --bit 0, (IX + d)
+				elseif f121 == 0x47 then bit(0, mem8(ix.get() + dis()));  	 break; --bit 0, (IX + d)  
 
-				elseif f121 == 0x48 then bit(1, mem8(ix.get() + dis()));       -- bit 1, (IX + d)
-				elseif f121 == 0x49 then bit(1, mem8(ix.get() + dis()));       -- bit 1, (IX + d)
-				elseif f121 == 0x4a then bit(1, mem8(ix.get() + dis()));       -- bit 1, (IX + d)
-				elseif f121 == 0x4b then bit(1, mem8(ix.get() + dis()));       -- bit 1, (IX + d)
-				elseif f121 == 0x4c then bit(1, mem8(ix.get() + dis()));       -- bit 1, (IX + d)
-				elseif f121 == 0x4d then bit(1, mem8(ix.get() + dis()));       -- bit 1, (IX + d)
-				elseif f121 == 0x4e then bit(1, mem8(ix.get() + dis()));       -- bit 1, (IX + d)
-				elseif f121 == 0x4f then bit(1, mem8(ix.get() + dis()));  	 -- bit 1, (IX + d)  
+				elseif f121 == 0x48 then bit(1, mem8(ix.get() + dis()));       break; --bit 1, (IX + d)
+				elseif f121 == 0x49 then bit(1, mem8(ix.get() + dis()));       break; --bit 1, (IX + d)
+				elseif f121 == 0x4a then bit(1, mem8(ix.get() + dis()));       break; --bit 1, (IX + d)
+				elseif f121 == 0x4b then bit(1, mem8(ix.get() + dis()));       break; --bit 1, (IX + d)
+				elseif f121 == 0x4c then bit(1, mem8(ix.get() + dis()));       break; --bit 1, (IX + d)
+				elseif f121 == 0x4d then bit(1, mem8(ix.get() + dis()));       break; --bit 1, (IX + d)
+				elseif f121 == 0x4e then bit(1, mem8(ix.get() + dis()));       break; --bit 1, (IX + d)
+				elseif f121 == 0x4f then bit(1, mem8(ix.get() + dis()));  	 break; --bit 1, (IX + d)  
 
-				elseif f121 == 0x50 then bit(2, mem8(ix.get() + dis()));       -- bit 2, (IX + d)
-				elseif f121 == 0x51 then bit(2, mem8(ix.get() + dis()));       -- bit 2, (IX + d)
-				elseif f121 == 0x52 then bit(2, mem8(ix.get() + dis()));       -- bit 2, (IX + d)
-				elseif f121 == 0x53 then bit(2, mem8(ix.get() + dis()));       -- bit 2, (IX + d)
-				elseif f121 == 0x54 then bit(2, mem8(ix.get() + dis()));       -- bit 2, (IX + d)
-				elseif f121 == 0x55 then bit(2, mem8(ix.get() + dis()));       -- bit 2, (IX + d)
-				elseif f121 == 0x56 then bit(2, mem8(ix.get() + dis()));       -- bit 2, (IX + d)
-				elseif f121 == 0x57 then bit(2, mem8(ix.get() + dis()));  	 -- bit 2, (IX + d)  
+				elseif f121 == 0x50 then bit(2, mem8(ix.get() + dis()));       break; --bit 2, (IX + d)
+				elseif f121 == 0x51 then bit(2, mem8(ix.get() + dis()));       break; --bit 2, (IX + d)
+				elseif f121 == 0x52 then bit(2, mem8(ix.get() + dis()));       break; --bit 2, (IX + d)
+				elseif f121 == 0x53 then bit(2, mem8(ix.get() + dis()));       break; --bit 2, (IX + d)
+				elseif f121 == 0x54 then bit(2, mem8(ix.get() + dis()));       break; --bit 2, (IX + d)
+				elseif f121 == 0x55 then bit(2, mem8(ix.get() + dis()));       break; --bit 2, (IX + d)
+				elseif f121 == 0x56 then bit(2, mem8(ix.get() + dis()));       break; --bit 2, (IX + d)
+				elseif f121 == 0x57 then bit(2, mem8(ix.get() + dis()));  	 break; --bit 2, (IX + d)  
 
-				elseif f121 == 0x58 then bit(3, mem8(ix.get() + dis()));       -- bit 3, (IX + d)
-				elseif f121 == 0x59 then bit(3, mem8(ix.get() + dis()));       -- bit 3, (IX + d)
-				elseif f121 == 0x5a then bit(3, mem8(ix.get() + dis()));       -- bit 3, (IX + d)
-				elseif f121 == 0x5b then bit(3, mem8(ix.get() + dis()));       -- bit 3, (IX + d)
-				elseif f121 == 0x5c then bit(3, mem8(ix.get() + dis()));       -- bit 3, (IX + d)
-				elseif f121 == 0x5d then bit(3, mem8(ix.get() + dis()));       -- bit 3, (IX + d)
-				elseif f121 == 0x5e then bit(3, mem8(ix.get() + dis()));       -- bit 3, (IX + d)
-				elseif f121 == 0x5f then bit(3, mem8(ix.get() + dis()));  	 -- bit 3, (IX + d)  
+				elseif f121 == 0x58 then bit(3, mem8(ix.get() + dis()));       break; --bit 3, (IX + d)
+				elseif f121 == 0x59 then bit(3, mem8(ix.get() + dis()));       break; --bit 3, (IX + d)
+				elseif f121 == 0x5a then bit(3, mem8(ix.get() + dis()));       break; --bit 3, (IX + d)
+				elseif f121 == 0x5b then bit(3, mem8(ix.get() + dis()));       break; --bit 3, (IX + d)
+				elseif f121 == 0x5c then bit(3, mem8(ix.get() + dis()));       break; --bit 3, (IX + d)
+				elseif f121 == 0x5d then bit(3, mem8(ix.get() + dis()));       break; --bit 3, (IX + d)
+				elseif f121 == 0x5e then bit(3, mem8(ix.get() + dis()));       break; --bit 3, (IX + d)
+				elseif f121 == 0x5f then bit(3, mem8(ix.get() + dis()));  	 break; --bit 3, (IX + d)  
 
-				elseif f121 == 0x60 then bit(4, mem8(ix.get() + dis()));       -- bit 4, (IX + d)
-				elseif f121 == 0x61 then bit(4, mem8(ix.get() + dis()));       -- bit 4, (IX + d)
-				elseif f121 == 0x62 then bit(4, mem8(ix.get() + dis()));       -- bit 4, (IX + d)
-				elseif f121 == 0x63 then bit(4, mem8(ix.get() + dis()));       -- bit 4, (IX + d)
-				elseif f121 == 0x64 then bit(4, mem8(ix.get() + dis()));       -- bit 4, (IX + d)
-				elseif f121 == 0x65 then bit(4, mem8(ix.get() + dis()));       -- bit 4, (IX + d)
-				elseif f121 == 0x66 then bit(4, mem8(ix.get() + dis()));       -- bit 4, (IX + d)
-				elseif f121 == 0x67 then bit(4, mem8(ix.get() + dis()));  	 -- bit 4, (IX + d)  
+				elseif f121 == 0x60 then bit(4, mem8(ix.get() + dis()));       break; --bit 4, (IX + d)
+				elseif f121 == 0x61 then bit(4, mem8(ix.get() + dis()));       break; --bit 4, (IX + d)
+				elseif f121 == 0x62 then bit(4, mem8(ix.get() + dis()));       break; --bit 4, (IX + d)
+				elseif f121 == 0x63 then bit(4, mem8(ix.get() + dis()));       break; --bit 4, (IX + d)
+				elseif f121 == 0x64 then bit(4, mem8(ix.get() + dis()));       break; --bit 4, (IX + d)
+				elseif f121 == 0x65 then bit(4, mem8(ix.get() + dis()));       break; --bit 4, (IX + d)
+				elseif f121 == 0x66 then bit(4, mem8(ix.get() + dis()));       break; --bit 4, (IX + d)
+				elseif f121 == 0x67 then bit(4, mem8(ix.get() + dis()));  	 break; --bit 4, (IX + d)  
 
-				elseif f121 == 0x68 then bit(5, mem8(ix.get() + dis()));       -- bit 5, (IX + d)
-				elseif f121 == 0x69 then bit(5, mem8(ix.get() + dis()));       -- bit 5, (IX + d)
-				elseif f121 == 0x6a then bit(5, mem8(ix.get() + dis()));       -- bit 5, (IX + d)
-				elseif f121 == 0x6b then bit(5, mem8(ix.get() + dis()));       -- bit 5, (IX + d)
-				elseif f121 == 0x6c then bit(5, mem8(ix.get() + dis()));       -- bit 5, (IX + d)
-				elseif f121 == 0x6d then bit(5, mem8(ix.get() + dis()));       -- bit 5, (IX + d)
-				elseif f121 == 0x6e then bit(5, mem8(ix.get() + dis()));       -- bit 5, (IX + d)
-				elseif f121 == 0x6f then bit(5, mem8(ix.get() + dis()));  	 -- bit 5, (IX + d)  
+				elseif f121 == 0x68 then bit(5, mem8(ix.get() + dis()));       break; --bit 5, (IX + d)
+				elseif f121 == 0x69 then bit(5, mem8(ix.get() + dis()));       break; --bit 5, (IX + d)
+				elseif f121 == 0x6a then bit(5, mem8(ix.get() + dis()));       break; --bit 5, (IX + d)
+				elseif f121 == 0x6b then bit(5, mem8(ix.get() + dis()));       break; --bit 5, (IX + d)
+				elseif f121 == 0x6c then bit(5, mem8(ix.get() + dis()));       break; --bit 5, (IX + d)
+				elseif f121 == 0x6d then bit(5, mem8(ix.get() + dis()));       break; --bit 5, (IX + d)
+				elseif f121 == 0x6e then bit(5, mem8(ix.get() + dis()));       break; --bit 5, (IX + d)
+				elseif f121 == 0x6f then bit(5, mem8(ix.get() + dis()));  	 break; --bit 5, (IX + d)  
 
-				elseif f121 == 0x70 then bit(6, mem8(ix.get() + dis()));       -- bit 6, (IX + d)
-				elseif f121 == 0x71 then bit(6, mem8(ix.get() + dis()));       -- bit 6, (IX + d)
-				elseif f121 == 0x72 then bit(6, mem8(ix.get() + dis()));       -- bit 6, (IX + d)
-				elseif f121 == 0x73 then bit(6, mem8(ix.get() + dis()));       -- bit 6, (IX + d)
-				elseif f121 == 0x74 then bit(6, mem8(ix.get() + dis()));       -- bit 6, (IX + d)
-				elseif f121 == 0x75 then bit(6, mem8(ix.get() + dis()));       -- bit 6, (IX + d)
-				elseif f121 == 0x76 then bit(6, mem8(ix.get() + dis()));       -- bit 6, (IX + d)
-				elseif f121 == 0x77 then bit(6, mem8(ix.get() + dis()));  	 -- bit 6, (IX + d)  
+				elseif f121 == 0x70 then bit(6, mem8(ix.get() + dis()));       break; --bit 6, (IX + d)
+				elseif f121 == 0x71 then bit(6, mem8(ix.get() + dis()));       break; --bit 6, (IX + d)
+				elseif f121 == 0x72 then bit(6, mem8(ix.get() + dis()));       break; --bit 6, (IX + d)
+				elseif f121 == 0x73 then bit(6, mem8(ix.get() + dis()));       break; --bit 6, (IX + d)
+				elseif f121 == 0x74 then bit(6, mem8(ix.get() + dis()));       break; --bit 6, (IX + d)
+				elseif f121 == 0x75 then bit(6, mem8(ix.get() + dis()));       break; --bit 6, (IX + d)
+				elseif f121 == 0x76 then bit(6, mem8(ix.get() + dis()));       break; --bit 6, (IX + d)
+				elseif f121 == 0x77 then bit(6, mem8(ix.get() + dis()));  	 break; --bit 6, (IX + d)  
 
-				elseif f121 == 0x78 then bit(7, mem8(ix.get() + dis()));       -- bit 7, (IX + d)
-				elseif f121 == 0x79 then bit(7, mem8(ix.get() + dis()));       -- bit 7, (IX + d)
-				elseif f121 == 0x7a then bit(7, mem8(ix.get() + dis()));       -- bit 7, (IX + d)
-				elseif f121 == 0x7b then bit(7, mem8(ix.get() + dis()));       -- bit 7, (IX + d)
-				elseif f121 == 0x7c then bit(7, mem8(ix.get() + dis()));       -- bit 7, (IX + d)
-				elseif f121 == 0x7d then bit(7, mem8(ix.get() + dis()));       -- bit 7, (IX + d)
-				elseif f121 == 0x7e then bit(7, mem8(ix.get() + dis()));       -- bit 7, (IX + d)
-				elseif f121 == 0x7f then bit(7, mem8(ix.get() + dis()));  	 -- bit 7, (IX + d)  
+				elseif f121 == 0x78 then bit(7, mem8(ix.get() + dis()));       break; --bit 7, (IX + d)
+				elseif f121 == 0x79 then bit(7, mem8(ix.get() + dis()));       break; --bit 7, (IX + d)
+				elseif f121 == 0x7a then bit(7, mem8(ix.get() + dis()));       break; --bit 7, (IX + d)
+				elseif f121 == 0x7b then bit(7, mem8(ix.get() + dis()));       break; --bit 7, (IX + d)
+				elseif f121 == 0x7c then bit(7, mem8(ix.get() + dis()));       break; --bit 7, (IX + d)
+				elseif f121 == 0x7d then bit(7, mem8(ix.get() + dis()));       break; --bit 7, (IX + d)
+				elseif f121 == 0x7e then bit(7, mem8(ix.get() + dis()));       break; --bit 7, (IX + d)
+				elseif f121 == 0x7f then bit(7, mem8(ix.get() + dis()));  	 break; --bit 7, (IX + d)  
 
-				elseif f121 == 0x80 then res_m_r(0, ix.get() + dis(), b);  	 -- res 0, (IX + d), B  
-				elseif f121 == 0x81 then res_m_r(0, ix.get() + dis(), c);  	 -- res 0, (IX + d), C  
-				elseif f121 == 0x82 then res_m_r(0, ix.get() + dis(), d);  	 -- res 0, (IX + d), D  
-				elseif f121 == 0x83 then res_m_r(0, ix.get() + dis(), e);  	 -- res 0, (IX + d), E  
-				elseif f121 == 0x84 then res_m_r(0, ix.get() + dis(), h);  	 -- res 0, (IX + d), H  
-				elseif f121 == 0x85 then res_m_r(0, ix.get() + dis(), l);  	 -- res 0, (IX + d), L  
-				elseif f121 == 0x86 then res_m(0, ix.get() + dis());       	 -- res 0, (IX + d)  
-				elseif f121 == 0x87 then res_m_r(0, ix.get() + dis(), a);  	 -- res 0, (IX + d), A  
+				elseif f121 == 0x80 then res_m_r(0, ix.get() + dis(), b);  	 break; --res 0, (IX + d), B  
+				elseif f121 == 0x81 then res_m_r(0, ix.get() + dis(), c);  	 break; --res 0, (IX + d), C  
+				elseif f121 == 0x82 then res_m_r(0, ix.get() + dis(), d);  	 break; --res 0, (IX + d), D  
+				elseif f121 == 0x83 then res_m_r(0, ix.get() + dis(), e);  	 break; --res 0, (IX + d), E  
+				elseif f121 == 0x84 then res_m_r(0, ix.get() + dis(), h);  	 break; --res 0, (IX + d), H  
+				elseif f121 == 0x85 then res_m_r(0, ix.get() + dis(), l);  	 break; --res 0, (IX + d), L  
+				elseif f121 == 0x86 then res_m(0, ix.get() + dis());       	 break; --res 0, (IX + d)  
+				elseif f121 == 0x87 then res_m_r(0, ix.get() + dis(), a);  	 break; --res 0, (IX + d), A  
 
-				elseif f121 == 0x88 then res_m_r(1, ix.get() + dis(), b);  	 -- res 1, (IX + d), B  
-				elseif f121 == 0x89 then res_m_r(1, ix.get() + dis(), c);  	 -- res 1, (IX + d), C  
-				elseif f121 == 0x8a then res_m_r(1, ix.get() + dis(), d);  	 -- res 1, (IX + d), D  
-				elseif f121 == 0x8b then res_m_r(1, ix.get() + dis(), e);  	 -- res 1, (IX + d), E  
-				elseif f121 == 0x8c then res_m_r(1, ix.get() + dis(), h);  	 -- res 1, (IX + d), H  
-				elseif f121 == 0x8d then res_m_r(1, ix.get() + dis(), l);  	 -- res 1, (IX + d), L  
-				elseif f121 == 0x8e then res_m(1, ix.get() + dis());       	 -- res 1, (IX + d)  
-				elseif f121 == 0x8f then res_m_r(1, ix.get() + dis(), a);  	 -- res 1, (IX + d), A  
+				elseif f121 == 0x88 then res_m_r(1, ix.get() + dis(), b);  	 break; --res 1, (IX + d), B  
+				elseif f121 == 0x89 then res_m_r(1, ix.get() + dis(), c);  	 break; --res 1, (IX + d), C  
+				elseif f121 == 0x8a then res_m_r(1, ix.get() + dis(), d);  	 break; --res 1, (IX + d), D  
+				elseif f121 == 0x8b then res_m_r(1, ix.get() + dis(), e);  	 break; --res 1, (IX + d), E  
+				elseif f121 == 0x8c then res_m_r(1, ix.get() + dis(), h);  	 break; --res 1, (IX + d), H  
+				elseif f121 == 0x8d then res_m_r(1, ix.get() + dis(), l);  	 break; --res 1, (IX + d), L  
+				elseif f121 == 0x8e then res_m(1, ix.get() + dis());       	 break; --res 1, (IX + d)  
+				elseif f121 == 0x8f then res_m_r(1, ix.get() + dis(), a);  	 break; --res 1, (IX + d), A  
 
-				elseif f121 == 0x90 then res_m_r(2, ix.get() + dis(), b);  	 -- res 2, (IX + d), B  
-				elseif f121 == 0x91 then res_m_r(2, ix.get() + dis(), c);  	 -- res 2, (IX + d), C  
-				elseif f121 == 0x92 then res_m_r(2, ix.get() + dis(), d);  	 -- res 2, (IX + d), D  
-				elseif f121 == 0x93 then res_m_r(2, ix.get() + dis(), e);  	 -- res 2, (IX + d), E  
-				elseif f121 == 0x94 then res_m_r(2, ix.get() + dis(), h);  	 -- res 2, (IX + d), H  
-				elseif f121 == 0x95 then res_m_r(2, ix.get() + dis(), l);  	 -- res 2, (IX + d), L  
-				elseif f121 == 0x96 then res_m(2, ix.get() + dis());       	 -- res 2, (IX + d)  
-				elseif f121 == 0x97 then res_m_r(2, ix.get() + dis(), a);  	 -- res 2, (IX + d), A  
+				elseif f121 == 0x90 then res_m_r(2, ix.get() + dis(), b);  	 break; --res 2, (IX + d), B  
+				elseif f121 == 0x91 then res_m_r(2, ix.get() + dis(), c);  	 break; --res 2, (IX + d), C  
+				elseif f121 == 0x92 then res_m_r(2, ix.get() + dis(), d);  	 break; --res 2, (IX + d), D  
+				elseif f121 == 0x93 then res_m_r(2, ix.get() + dis(), e);  	 break; --res 2, (IX + d), E  
+				elseif f121 == 0x94 then res_m_r(2, ix.get() + dis(), h);  	 break; --res 2, (IX + d), H  
+				elseif f121 == 0x95 then res_m_r(2, ix.get() + dis(), l);  	 break; --res 2, (IX + d), L  
+				elseif f121 == 0x96 then res_m(2, ix.get() + dis());       	 break; --res 2, (IX + d)  
+				elseif f121 == 0x97 then res_m_r(2, ix.get() + dis(), a);  	 break; --res 2, (IX + d), A  
 
-				elseif f121 == 0x98 then res_m_r(3, ix.get() + dis(), b);  	 -- res 3, (IX + d), B  
-				elseif f121 == 0x99 then res_m_r(3, ix.get() + dis(), c);  	 -- res 3, (IX + d), C  
-				elseif f121 == 0x9a then res_m_r(3, ix.get() + dis(), d);  	 -- res 3, (IX + d), D  
-				elseif f121 == 0x9b then res_m_r(3, ix.get() + dis(), e);  	 -- res 3, (IX + d), E  
-				elseif f121 == 0x9c then res_m_r(3, ix.get() + dis(), h);  	 -- res 3, (IX + d), H  
-				elseif f121 == 0x9d then res_m_r(3, ix.get() + dis(), l);  	 -- res 3, (IX + d), L  
-				elseif f121 == 0x9e then res_m(3, ix.get() + dis());       	 -- res 3, (IX + d)  
-				elseif f121 == 0x9f then res_m_r(3, ix.get() + dis(), a);  	 -- res 3, (IX + d), A  
+				elseif f121 == 0x98 then res_m_r(3, ix.get() + dis(), b);  	 break; --res 3, (IX + d), B  
+				elseif f121 == 0x99 then res_m_r(3, ix.get() + dis(), c);  	 break; --res 3, (IX + d), C  
+				elseif f121 == 0x9a then res_m_r(3, ix.get() + dis(), d);  	 break; --res 3, (IX + d), D  
+				elseif f121 == 0x9b then res_m_r(3, ix.get() + dis(), e);  	 break; --res 3, (IX + d), E  
+				elseif f121 == 0x9c then res_m_r(3, ix.get() + dis(), h);  	 break; --res 3, (IX + d), H  
+				elseif f121 == 0x9d then res_m_r(3, ix.get() + dis(), l);  	 break; --res 3, (IX + d), L  
+				elseif f121 == 0x9e then res_m(3, ix.get() + dis());       	 break; --res 3, (IX + d)  
+				elseif f121 == 0x9f then res_m_r(3, ix.get() + dis(), a);  	 break; --res 3, (IX + d), A  
 
-				elseif f121 == 0xa0 then res_m_r(4, ix.get() + dis(), b);  	 -- res 4, (IX + d), B  
-				elseif f121 == 0xa1 then res_m_r(4, ix.get() + dis(), c);  	 -- res 4, (IX + d), C  
-				elseif f121 == 0xa2 then res_m_r(4, ix.get() + dis(), d);  	 -- res 4, (IX + d), D  
-				elseif f121 == 0xa3 then res_m_r(4, ix.get() + dis(), e);  	 -- res 4, (IX + d), E  
-				elseif f121 == 0xa4 then res_m_r(4, ix.get() + dis(), h);  	 -- res 4, (IX + d), H  
-				elseif f121 == 0xa5 then res_m_r(4, ix.get() + dis(), l);  	 -- res 4, (IX + d), L  
-				elseif f121 == 0xa6 then res_m(4, ix.get() + dis());       	 -- res 4, (IX + d)  
-				elseif f121 == 0xa7 then res_m_r(4, ix.get() + dis(), a);  	 -- res 4, (IX + d), A  
+				elseif f121 == 0xa0 then res_m_r(4, ix.get() + dis(), b);  	 break; --res 4, (IX + d), B  
+				elseif f121 == 0xa1 then res_m_r(4, ix.get() + dis(), c);  	 break; --res 4, (IX + d), C  
+				elseif f121 == 0xa2 then res_m_r(4, ix.get() + dis(), d);  	 break; --res 4, (IX + d), D  
+				elseif f121 == 0xa3 then res_m_r(4, ix.get() + dis(), e);  	 break; --res 4, (IX + d), E  
+				elseif f121 == 0xa4 then res_m_r(4, ix.get() + dis(), h);  	 break; --res 4, (IX + d), H  
+				elseif f121 == 0xa5 then res_m_r(4, ix.get() + dis(), l);  	 break; --res 4, (IX + d), L  
+				elseif f121 == 0xa6 then res_m(4, ix.get() + dis());       	 break; --res 4, (IX + d)  
+				elseif f121 == 0xa7 then res_m_r(4, ix.get() + dis(), a);  	 break; --res 4, (IX + d), A  
 
-				elseif f121 == 0xa8 then res_m_r(5, ix.get() + dis(), b);  	 -- res 5, (IX + d), B  
-				elseif f121 == 0xa9 then res_m_r(5, ix.get() + dis(), c);  	 -- res 5, (IX + d), C  
-				elseif f121 == 0xaa then res_m_r(5, ix.get() + dis(), d);  	 -- res 5, (IX + d), D  
-				elseif f121 == 0xab then res_m_r(5, ix.get() + dis(), e);  	 -- res 5, (IX + d), E  
-				elseif f121 == 0xac then res_m_r(5, ix.get() + dis(), h);  	 -- res 5, (IX + d), H  
-				elseif f121 == 0xad then res_m_r(5, ix.get() + dis(), l);  	 -- res 5, (IX + d), L  
-				elseif f121 == 0xae then res_m(5, ix.get() + dis());       	 -- res 5, (IX + d)  
-				elseif f121 == 0xaf then res_m_r(5, ix.get() + dis(), a);  	 -- res 5, (IX + d), A  
+				elseif f121 == 0xa8 then res_m_r(5, ix.get() + dis(), b);  	 break; --res 5, (IX + d), B  
+				elseif f121 == 0xa9 then res_m_r(5, ix.get() + dis(), c);  	 break; --res 5, (IX + d), C  
+				elseif f121 == 0xaa then res_m_r(5, ix.get() + dis(), d);  	 break; --res 5, (IX + d), D  
+				elseif f121 == 0xab then res_m_r(5, ix.get() + dis(), e);  	 break; --res 5, (IX + d), E  
+				elseif f121 == 0xac then res_m_r(5, ix.get() + dis(), h);  	 break; --res 5, (IX + d), H  
+				elseif f121 == 0xad then res_m_r(5, ix.get() + dis(), l);  	 break; --res 5, (IX + d), L  
+				elseif f121 == 0xae then res_m(5, ix.get() + dis());       	 break; --res 5, (IX + d)  
+				elseif f121 == 0xaf then res_m_r(5, ix.get() + dis(), a);  	 break; --res 5, (IX + d), A  
 
-				elseif f121 == 0xb0 then res_m_r(6, ix.get() + dis(), b);  	 -- res 6, (IX + d), B  
-				elseif f121 == 0xb1 then res_m_r(6, ix.get() + dis(), c);  	 -- res 6, (IX + d), C  
-				elseif f121 == 0xb2 then res_m_r(6, ix.get() + dis(), d);  	 -- res 6, (IX + d), D  
-				elseif f121 == 0xb3 then res_m_r(6, ix.get() + dis(), e);  	 -- res 6, (IX + d), E  
-				elseif f121 == 0xb4 then res_m_r(6, ix.get() + dis(), h);  	 -- res 6, (IX + d), H  
-				elseif f121 == 0xb5 then res_m_r(6, ix.get() + dis(), l);  	 -- res 6, (IX + d), L  
-				elseif f121 == 0xb6 then res_m(6, ix.get() + dis());       	 -- res 6, (IX + d)  
-				elseif f121 == 0xb7 then res_m_r(6, ix.get() + dis(), a);  	 -- res 6, (IX + d), A  
+				elseif f121 == 0xb0 then res_m_r(6, ix.get() + dis(), b);  	 break; --res 6, (IX + d), B  
+				elseif f121 == 0xb1 then res_m_r(6, ix.get() + dis(), c);  	 break; --res 6, (IX + d), C  
+				elseif f121 == 0xb2 then res_m_r(6, ix.get() + dis(), d);  	 break; --res 6, (IX + d), D  
+				elseif f121 == 0xb3 then res_m_r(6, ix.get() + dis(), e);  	 break; --res 6, (IX + d), E  
+				elseif f121 == 0xb4 then res_m_r(6, ix.get() + dis(), h);  	 break; --res 6, (IX + d), H  
+				elseif f121 == 0xb5 then res_m_r(6, ix.get() + dis(), l);  	 break; --res 6, (IX + d), L  
+				elseif f121 == 0xb6 then res_m(6, ix.get() + dis());       	 break; --res 6, (IX + d)  
+				elseif f121 == 0xb7 then res_m_r(6, ix.get() + dis(), a);  	 break; --res 6, (IX + d), A  
 
-				elseif f121 == 0xb8 then res_m_r(7, ix.get() + dis(), b);  	 -- res 7, (IX + d), B  
-				elseif f121 == 0xb9 then res_m_r(7, ix.get() + dis(), c);  	 -- res 7, (IX + d), C  
-				elseif f121 == 0xba then res_m_r(7, ix.get() + dis(), d);  	 -- res 7, (IX + d), D  
-				elseif f121 == 0xbb then res_m_r(7, ix.get() + dis(), e);  	 -- res 7, (IX + d), E  
-				elseif f121 == 0xbc then res_m_r(7, ix.get() + dis(), h);  	 -- res 7, (IX + d), H  
-				elseif f121 == 0xbd then res_m_r(7, ix.get() + dis(), l);  	 -- res 7, (IX + d), L  
-				elseif f121 == 0xbe then res_m(7, ix.get() + dis());       	 -- res 7, (IX + d)  
-				elseif f121 == 0xbf then res_m_r(7, ix.get() + dis(), a);  	 -- res 7, (IX + d), A  
+				elseif f121 == 0xb8 then res_m_r(7, ix.get() + dis(), b);  	 break; --res 7, (IX + d), B  
+				elseif f121 == 0xb9 then res_m_r(7, ix.get() + dis(), c);  	 break; --res 7, (IX + d), C  
+				elseif f121 == 0xba then res_m_r(7, ix.get() + dis(), d);  	 break; --res 7, (IX + d), D  
+				elseif f121 == 0xbb then res_m_r(7, ix.get() + dis(), e);  	 break; --res 7, (IX + d), E  
+				elseif f121 == 0xbc then res_m_r(7, ix.get() + dis(), h);  	 break; --res 7, (IX + d), H  
+				elseif f121 == 0xbd then res_m_r(7, ix.get() + dis(), l);  	 break; --res 7, (IX + d), L  
+				elseif f121 == 0xbe then res_m(7, ix.get() + dis());       	 break; --res 7, (IX + d)  
+				elseif f121 == 0xbf then res_m_r(7, ix.get() + dis(), a);  	 break; --res 7, (IX + d), A  
 
-				elseif f121 == 0xc0 then set_m_r(0, ix.get() + dis(), b);  	 -- set 0, (IX + d), B  
-				elseif f121 == 0xc1 then set_m_r(0, ix.get() + dis(), c);  	 -- set 0, (IX + d), C  
-				elseif f121 == 0xc2 then set_m_r(0, ix.get() + dis(), d);  	 -- set 0, (IX + d), D  
-				elseif f121 == 0xc3 then set_m_r(0, ix.get() + dis(), e);  	 -- set 0, (IX + d), E  
-				elseif f121 == 0xc4 then set_m_r(0, ix.get() + dis(), h);  	 -- set 0, (IX + d), H  
-				elseif f121 == 0xc5 then set_m_r(0, ix.get() + dis(), l);  	 -- set 0, (IX + d), L  
-				elseif f121 == 0xc6 then set_m(0, ix.get() + dis());       	 -- set 0, (IX + d)  
-				elseif f121 == 0xc7 then set_m_r(0, ix.get() + dis(), a);  	 -- set 0, (IX + d), A  
+				elseif f121 == 0xc0 then set_m_r(0, ix.get() + dis(), b);  	 break; --set 0, (IX + d), B  
+				elseif f121 == 0xc1 then set_m_r(0, ix.get() + dis(), c);  	 break; --set 0, (IX + d), C  
+				elseif f121 == 0xc2 then set_m_r(0, ix.get() + dis(), d);  	 break; --set 0, (IX + d), D  
+				elseif f121 == 0xc3 then set_m_r(0, ix.get() + dis(), e);  	 break; --set 0, (IX + d), E  
+				elseif f121 == 0xc4 then set_m_r(0, ix.get() + dis(), h);  	 break; --set 0, (IX + d), H  
+				elseif f121 == 0xc5 then set_m_r(0, ix.get() + dis(), l);  	 break; --set 0, (IX + d), L  
+				elseif f121 == 0xc6 then set_m(0, ix.get() + dis());       	 break; --set 0, (IX + d)  
+				elseif f121 == 0xc7 then set_m_r(0, ix.get() + dis(), a);  	 break; --set 0, (IX + d), A  
 
-				elseif f121 == 0xc8 then set_m_r(1, ix.get() + dis(), b);  	 -- set 1, (IX + d), B  
-				elseif f121 == 0xc9 then set_m_r(1, ix.get() + dis(), c);  	 -- set 1, (IX + d), C  
-				elseif f121 == 0xca then set_m_r(1, ix.get() + dis(), d);  	 -- set 1, (IX + d), D  
-				elseif f121 == 0xcb then set_m_r(1, ix.get() + dis(), e);  	 -- set 1, (IX + d), E  
-				elseif f121 == 0xcc then set_m_r(1, ix.get() + dis(), h);  	 -- set 1, (IX + d), H  
-				elseif f121 == 0xcd then set_m_r(1, ix.get() + dis(), l);  	 -- set 1, (IX + d), L  
-				elseif f121 == 0xce then set_m(1, ix.get() + dis());       	 -- set 1, (IX + d)  
-				elseif f121 == 0xcf then set_m_r(1, ix.get() + dis(), a);  	 -- set 1, (IX + d), A  
+				elseif f121 == 0xc8 then set_m_r(1, ix.get() + dis(), b);  	 break; --set 1, (IX + d), B  
+				elseif f121 == 0xc9 then set_m_r(1, ix.get() + dis(), c);  	 break; --set 1, (IX + d), C  
+				elseif f121 == 0xca then set_m_r(1, ix.get() + dis(), d);  	 break; --set 1, (IX + d), D  
+				elseif f121 == 0xcb then set_m_r(1, ix.get() + dis(), e);  	 break; --set 1, (IX + d), E  
+				elseif f121 == 0xcc then set_m_r(1, ix.get() + dis(), h);  	 break; --set 1, (IX + d), H  
+				elseif f121 == 0xcd then set_m_r(1, ix.get() + dis(), l);  	 break; --set 1, (IX + d), L  
+				elseif f121 == 0xce then set_m(1, ix.get() + dis());       	 break; --set 1, (IX + d)  
+				elseif f121 == 0xcf then set_m_r(1, ix.get() + dis(), a);  	 break; --set 1, (IX + d), A  
 
-				elseif f121 == 0xd0 then set_m_r(2, ix.get() + dis(), b);  	 -- set 2, (IX + d), B  
-				elseif f121 == 0xd1 then set_m_r(2, ix.get() + dis(), c);  	 -- set 2, (IX + d), C  
-				elseif f121 == 0xd2 then set_m_r(2, ix.get() + dis(), d);  	 -- set 2, (IX + d), D  
-				elseif f121 == 0xd3 then set_m_r(2, ix.get() + dis(), e);  	 -- set 2, (IX + d), E  
-				elseif f121 == 0xd4 then set_m_r(2, ix.get() + dis(), h);  	 -- set 2, (IX + d), H  
-				elseif f121 == 0xd5 then set_m_r(2, ix.get() + dis(), l);  	 -- set 2, (IX + d), L  
-				elseif f121 == 0xd6 then set_m(2, ix.get() + dis());       	 -- set 2, (IX + d)  
-				elseif f121 == 0xd7 then set_m_r(2, ix.get() + dis(), a);  	 -- set 2, (IX + d), A  
+				elseif f121 == 0xd0 then set_m_r(2, ix.get() + dis(), b);  	 break; --set 2, (IX + d), B  
+				elseif f121 == 0xd1 then set_m_r(2, ix.get() + dis(), c);  	 break; --set 2, (IX + d), C  
+				elseif f121 == 0xd2 then set_m_r(2, ix.get() + dis(), d);  	 break; --set 2, (IX + d), D  
+				elseif f121 == 0xd3 then set_m_r(2, ix.get() + dis(), e);  	 break; --set 2, (IX + d), E  
+				elseif f121 == 0xd4 then set_m_r(2, ix.get() + dis(), h);  	 break; --set 2, (IX + d), H  
+				elseif f121 == 0xd5 then set_m_r(2, ix.get() + dis(), l);  	 break; --set 2, (IX + d), L  
+				elseif f121 == 0xd6 then set_m(2, ix.get() + dis());       	 break; --set 2, (IX + d)  
+				elseif f121 == 0xd7 then set_m_r(2, ix.get() + dis(), a);  	 break; --set 2, (IX + d), A  
 
-				elseif f121 == 0xd8 then set_m_r(3, ix.get() + dis(), b);  	 -- set 3, (IX + d), B  
-				elseif f121 == 0xd9 then set_m_r(3, ix.get() + dis(), c);  	 -- set 3, (IX + d), C  
-				elseif f121 == 0xda then set_m_r(3, ix.get() + dis(), d);  	 -- set 3, (IX + d), D  
-				elseif f121 == 0xdb then set_m_r(3, ix.get() + dis(), e);  	 -- set 3, (IX + d), E  
-				elseif f121 == 0xdc then set_m_r(3, ix.get() + dis(), h);  	 -- set 3, (IX + d), H  
-				elseif f121 == 0xdd then set_m_r(3, ix.get() + dis(), l);  	 -- set 3, (IX + d), L  
-				elseif f121 == 0xde then set_m(3, ix.get() + dis());       	 -- set 3, (IX + d)  
-				elseif f121 == 0xdf then set_m_r(3, ix.get() + dis(), a);  	 -- set 3, (IX + d), A  
+				elseif f121 == 0xd8 then set_m_r(3, ix.get() + dis(), b);  	 break; --set 3, (IX + d), B  
+				elseif f121 == 0xd9 then set_m_r(3, ix.get() + dis(), c);  	 break; --set 3, (IX + d), C  
+				elseif f121 == 0xda then set_m_r(3, ix.get() + dis(), d);  	 break; --set 3, (IX + d), D  
+				elseif f121 == 0xdb then set_m_r(3, ix.get() + dis(), e);  	 break; --set 3, (IX + d), E  
+				elseif f121 == 0xdc then set_m_r(3, ix.get() + dis(), h);  	 break; --set 3, (IX + d), H  
+				elseif f121 == 0xdd then set_m_r(3, ix.get() + dis(), l);  	 break; --set 3, (IX + d), L  
+				elseif f121 == 0xde then set_m(3, ix.get() + dis());       	 break; --set 3, (IX + d)  
+				elseif f121 == 0xdf then set_m_r(3, ix.get() + dis(), a);  	 break; --set 3, (IX + d), A  
 
-				elseif f121 == 0xe0 then set_m_r(4, ix.get() + dis(), b);  	 -- set 4, (IX + d), B  
-				elseif f121 == 0xe1 then set_m_r(4, ix.get() + dis(), c);  	 -- set 4, (IX + d), C  
-				elseif f121 == 0xe2 then set_m_r(4, ix.get() + dis(), d);  	 -- set 4, (IX + d), D  
-				elseif f121 == 0xe3 then set_m_r(4, ix.get() + dis(), e);  	 -- set 4, (IX + d), E  
-				elseif f121 == 0xe4 then set_m_r(4, ix.get() + dis(), h);  	 -- set 4, (IX + d), H  
-				elseif f121 == 0xe5 then set_m_r(4, ix.get() + dis(), l);  	 -- set 4, (IX + d), L  
-				elseif f121 == 0xe6 then set_m(4, ix.get() + dis());       	 -- set 4, (IX + d)  
-				elseif f121 == 0xe7 then set_m_r(4, ix.get() + dis(), a);  	 -- set 4, (IX + d), A  
+				elseif f121 == 0xe0 then set_m_r(4, ix.get() + dis(), b);  	 break; --set 4, (IX + d), B  
+				elseif f121 == 0xe1 then set_m_r(4, ix.get() + dis(), c);  	 break; --set 4, (IX + d), C  
+				elseif f121 == 0xe2 then set_m_r(4, ix.get() + dis(), d);  	 break; --set 4, (IX + d), D  
+				elseif f121 == 0xe3 then set_m_r(4, ix.get() + dis(), e);  	 break; --set 4, (IX + d), E  
+				elseif f121 == 0xe4 then set_m_r(4, ix.get() + dis(), h);  	 break; --set 4, (IX + d), H  
+				elseif f121 == 0xe5 then set_m_r(4, ix.get() + dis(), l);  	 break; --set 4, (IX + d), L  
+				elseif f121 == 0xe6 then set_m(4, ix.get() + dis());       	 break; --set 4, (IX + d)  
+				elseif f121 == 0xe7 then set_m_r(4, ix.get() + dis(), a);  	 break; --set 4, (IX + d), A  
 
-				elseif f121 == 0xe8 then set_m_r(5, ix.get() + dis(), b);  	 -- set 5, (IX + d), B  
-				elseif f121 == 0xe9 then set_m_r(5, ix.get() + dis(), c);  	 -- set 5, (IX + d), C  
-				elseif f121 == 0xea then set_m_r(5, ix.get() + dis(), d);  	 -- set 5, (IX + d), D  
-				elseif f121 == 0xeb then set_m_r(5, ix.get() + dis(), e);  	 -- set 5, (IX + d), E  
-				elseif f121 == 0xec then set_m_r(5, ix.get() + dis(), h);  	 -- set 5, (IX + d), H  
-				elseif f121 == 0xed then set_m_r(5, ix.get() + dis(), l);  	 -- set 5, (IX + d), L  
-				elseif f121 == 0xee then set_m(5, ix.get() + dis());       	 -- set 5, (IX + d)  
-				elseif f121 == 0xef then set_m_r(5, ix.get() + dis(), a);  	 -- set 5, (IX + d), A  
+				elseif f121 == 0xe8 then set_m_r(5, ix.get() + dis(), b);  	 break; --set 5, (IX + d), B  
+				elseif f121 == 0xe9 then set_m_r(5, ix.get() + dis(), c);  	 break; --set 5, (IX + d), C  
+				elseif f121 == 0xea then set_m_r(5, ix.get() + dis(), d);  	 break; --set 5, (IX + d), D  
+				elseif f121 == 0xeb then set_m_r(5, ix.get() + dis(), e);  	 break; --set 5, (IX + d), E  
+				elseif f121 == 0xec then set_m_r(5, ix.get() + dis(), h);  	 break; --set 5, (IX + d), H  
+				elseif f121 == 0xed then set_m_r(5, ix.get() + dis(), l);  	 break; --set 5, (IX + d), L  
+				elseif f121 == 0xee then set_m(5, ix.get() + dis());       	 break; --set 5, (IX + d)  
+				elseif f121 == 0xef then set_m_r(5, ix.get() + dis(), a);  	 break; --set 5, (IX + d), A  
 
-				elseif f121 == 0xf0 then set_m_r(6, ix.get() + dis(), b);  	 -- set 6, (IX + d), B  
-				elseif f121 == 0xf1 then set_m_r(6, ix.get() + dis(), c);  	 -- set 6, (IX + d), C  
-				elseif f121 == 0xf2 then set_m_r(6, ix.get() + dis(), d);  	 -- set 6, (IX + d), D  
-				elseif f121 == 0xf3 then set_m_r(6, ix.get() + dis(), e);  	 -- set 6, (IX + d), E  
-				elseif f121 == 0xf4 then set_m_r(6, ix.get() + dis(), h);  	 -- set 6, (IX + d), H  
-				elseif f121 == 0xf5 then set_m_r(6, ix.get() + dis(), l);  	 -- set 6, (IX + d), L  
-				elseif f121 == 0xf6 then set_m(6, ix.get() + dis());       	 -- set 6, (IX + d)  
-				elseif f121 == 0xf7 then set_m_r(6, ix.get() + dis(), a);  	 -- set 6, (IX + d), A  
+				elseif f121 == 0xf0 then set_m_r(6, ix.get() + dis(), b);  	 break; --set 6, (IX + d), B  
+				elseif f121 == 0xf1 then set_m_r(6, ix.get() + dis(), c);  	 break; --set 6, (IX + d), C  
+				elseif f121 == 0xf2 then set_m_r(6, ix.get() + dis(), d);  	 break; --set 6, (IX + d), D  
+				elseif f121 == 0xf3 then set_m_r(6, ix.get() + dis(), e);  	 break; --set 6, (IX + d), E  
+				elseif f121 == 0xf4 then set_m_r(6, ix.get() + dis(), h);  	 break; --set 6, (IX + d), H  
+				elseif f121 == 0xf5 then set_m_r(6, ix.get() + dis(), l);  	 break; --set 6, (IX + d), L  
+				elseif f121 == 0xf6 then set_m(6, ix.get() + dis());       	 break; --set 6, (IX + d)  
+				elseif f121 == 0xf7 then set_m_r(6, ix.get() + dis(), a);  	 break; --set 6, (IX + d), A  
 
-				elseif f121 == 0xf8 then set_m_r(7, ix.get() + dis(), b);  	 -- set 7, (IX + d), B  
-				elseif f121 == 0xf9 then set_m_r(7, ix.get() + dis(), c);  	 -- set 7, (IX + d), C  
-				elseif f121 == 0xfa then set_m_r(7, ix.get() + dis(), d);  	 -- set 7, (IX + d), D  
-				elseif f121 == 0xfb then set_m_r(7, ix.get() + dis(), e);  	 -- set 7, (IX + d), E  
-				elseif f121 == 0xfc then set_m_r(7, ix.get() + dis(), h);  	 -- set 7, (IX + d), H  
-				elseif f121 == 0xfd then set_m_r(7, ix.get() + dis(), l);  	 -- set 7, (IX + d), L  
-				elseif f121 == 0xfe then set_m(7, ix.get() + dis());       	 -- set 7, (IX + d)  
-				elseif f121 == 0xff then set_m_r(7, ix.get() + dis(), a);  	 -- set 7, (IX + d), A  
+				elseif f121 == 0xf8 then set_m_r(7, ix.get() + dis(), b);  	 break; --set 7, (IX + d), B  
+				elseif f121 == 0xf9 then set_m_r(7, ix.get() + dis(), c);  	 break; --set 7, (IX + d), C  
+				elseif f121 == 0xfa then set_m_r(7, ix.get() + dis(), d);  	 break; --set 7, (IX + d), D  
+				elseif f121 == 0xfb then set_m_r(7, ix.get() + dis(), e);  	 break; --set 7, (IX + d), E  
+				elseif f121 == 0xfc then set_m_r(7, ix.get() + dis(), h);  	 break; --set 7, (IX + d), H  
+				elseif f121 == 0xfd then set_m_r(7, ix.get() + dis(), l);  	 break; --set 7, (IX + d), L  
+				elseif f121 == 0xfe then set_m(7, ix.get() + dis());       	 break; --set 7, (IX + d)  
+				elseif f121 == 0xff then set_m_r(7, ix.get() + dis(), a);  	 break; --set 7, (IX + d), A  
 				
 				end
 			
-			elseif f12 == 0xe1 then pop(ix);    	 -- pop IX  
-			elseif f12 == 0xe3 then ex_sp(ix);  	 -- ex (SP), IX  
-			elseif f12 == 0xe5 then push(ix);   	 -- push IX  
+			elseif f12 == 0xe1 then pop(ix);    	 break; --pop IX  
+			elseif f12 == 0xe3 then ex_sp(ix);  	 break; --ex (SP), IX  
+			elseif f12 == 0xe5 then push(ix);   	 break; --push IX  
 
-			elseif f12 == 0xe9 then jp(1, ix);  	 -- jp (IX)  
+			elseif f12 == 0xe9 then jp(1, ix);  	 break; --jp (IX)  
 
-			elseif f12 == 0xf9 then ld16(sp, ix);  	 -- ld SP, IX  
-			else pc = pc + length 		-- nop
+			elseif f12 == 0xf9 then ld16(sp, ix);  	 break; --ld SP, IX  
+			else pc = pc + length 	 break; --nop
 			
 			end	
 
-		elseif f1 == 0xde then sbc8(imm8());  	 -- sbc n  
-		elseif f1 == 0xdf then rst(0x18);     	 -- rst 18H  
+		elseif f1 == 0xde then sbc8(imm8());  	 break; --sbc n  
+		elseif f1 == 0xdf then rst(0x18);     	 break; --rst 18H  
 
-		elseif f1 == 0xe0 then ret(f.npv());            	 -- ret PO  
-		elseif f1 == 0xe1 then pop(hl);                 	 -- pop HL  
-		elseif f1 == 0xe2 then jp(f.npv(), imm16());    	 -- jp PO, mn  
-		elseif f1 == 0xe3 then ex_sp(hl);               	 -- ex (SP), HL  
-		elseif f1 == 0xe4 then call(f.npv(), imm16());  	 -- call PO, mn  
-		elseif f1 == 0xe5 then push(hl);                	 -- push HL  
-		elseif f1 == 0xe6 then And(imm8());             	 -- and n  
-		elseif f1 == 0xe7 then rst(0x20);               	 -- rst 20H  
+		elseif f1 == 0xe0 then ret(f.npv());            	 break; --ret PO  
+		elseif f1 == 0xe1 then pop(hl);                 	 break; --pop HL  
+		elseif f1 == 0xe2 then jp(f.npv(), imm16());    	 break; --jp PO, mn  
+		elseif f1 == 0xe3 then ex_sp(hl);               	 break; --ex (SP), HL  
+		elseif f1 == 0xe4 then call(f.npv(), imm16());  	 break; --call PO, mn  
+		elseif f1 == 0xe5 then push(hl);                	 break; --push HL  
+		elseif f1 == 0xe6 then And(imm8());             	 break; --and n  
+		elseif f1 == 0xe7 then rst(0x20);               	 break; --rst 20H  
 
-		elseif f1 == 0xe8 then ret(f.pv());            	 -- ret PE  
-		elseif f1 == 0xe9 then jp(1, hl);              	 -- jp (HL)  
-		elseif f1 == 0xea then jp(f.pv(), imm16());    	 -- jp PE, mn  
-		elseif f1 == 0xeb then ex_r(de, hl);           	 -- ex DE, HL  
-		elseif f1 == 0xec then call(f.pv(), imm16());  	 -- call PE, mn  
+		elseif f1 == 0xe8 then ret(f.pv());            	 break; --ret PE  
+		elseif f1 == 0xe9 then jp(1, hl);              	 break; --jp (HL)  
+		elseif f1 == 0xea then jp(f.pv(), imm16());    	 break; --jp PE, mn  
+		elseif f1 == 0xeb then ex_r(de, hl);           	 break; --ex DE, HL  
+		elseif f1 == 0xec then call(f.pv(), imm16());  	 break; --call PE, mn  
 		elseif f1 == 0xed then
 			pc = pc + 1
 			local f13 = fetchEDXX()
 			
-			if     f13 == 0x40 then in_c(b);            	 -- in B, (C)  
-			elseif f13 == 0x41 then out_c(b);           	 -- out (C), B  
-			elseif f13 == 0x42 then sbc16(hl, bc);      	 -- sbc HL, BC  
-			elseif f13 == 0x43 then st16(imm16(), bc);  	 -- ld (mn), BC  
-			elseif f13 == 0x44 then neg();              	 -- neg  
-			elseif f13 == 0x45 then retn();             	 -- retn  
-			elseif f13 == 0x46 then im(0);              	 -- im 0  
-			elseif f13 == 0x47 then ld8(i, a);          	 -- ld I, A  
+			if     f13 == 0x40 then in_c(b);            	 break; --in B, (C)  
+			elseif f13 == 0x41 then out_c(b);           	 break; --out (C), B  
+			elseif f13 == 0x42 then sbc16(hl, bc);      	 break; --sbc HL, BC  
+			elseif f13 == 0x43 then st16(imm16(), bc);  	 break; --ld (mn), BC  
+			elseif f13 == 0x44 then neg();              	 break; --neg  
+			elseif f13 == 0x45 then retn();             	 break; --retn  
+			elseif f13 == 0x46 then im(0);              	 break; --im 0  
+			elseif f13 == 0x47 then ld8(i, a);          	 break; --ld I, A  
 
-			elseif f13 == 0x48 then in_c(c);                   	 -- in C, (C)  
-			elseif f13 == 0x49 then out_c(c);                  	 -- out (C), C  
-			elseif f13 == 0x4a then adc16(hl, bc);             	 -- adc HL, BC  
-			elseif f13 == 0x4b then ld16(bc, mem16(imm16()));  	 -- ld BC, (mn)  
-			elseif f13 == 0x4c then neg();                     	 -- neg  
-			elseif f13 == 0x4d then reti();                    	 -- reti  
-			elseif f13 == 0x4e then im(0);                     	 -- im 0  
-			elseif f13 == 0x4f then nop();                     	 -- ld R, A  
+			elseif f13 == 0x48 then in_c(c);                   	 break; --in C, (C)  
+			elseif f13 == 0x49 then out_c(c);                  	 break; --out (C), C  
+			elseif f13 == 0x4a then adc16(hl, bc);             	 break; --adc HL, BC  
+			elseif f13 == 0x4b then ld16(bc, mem16(imm16()));  	 break; --ld BC, (mn)  
+			elseif f13 == 0x4c then neg();                     	 break; --neg  
+			elseif f13 == 0x4d then reti();                    	 break; --reti  
+			elseif f13 == 0x4e then im(0);                     	 break; --im 0  
+			elseif f13 == 0x4f then nop();                     	 break; --ld R, A  
 
-			elseif f13 == 0x50 then in_c(d);            	 -- in D, (C)  
-			elseif f13 == 0x51 then out_c(d);           	 -- out (C), D  
-			elseif f13 == 0x52 then sbc16(hl, de);      	 -- sbc HL, DE  
-			elseif f13 == 0x53 then st16(imm16(), de);  	 -- ld (mn), DE  
-			elseif f13 == 0x54 then neg();              	 -- neg  
-			elseif f13 == 0x55 then retn();             	 -- retn  
-			elseif f13 == 0x56 then im(1);              	 -- im 1  
-			elseif f13 == 0x57 then ld_a_i();           	 -- ld A, I  
+			elseif f13 == 0x50 then in_c(d);            	 break; --in D, (C)  
+			elseif f13 == 0x51 then out_c(d);           	 break; --out (C), D  
+			elseif f13 == 0x52 then sbc16(hl, de);      	 break; --sbc HL, DE  
+			elseif f13 == 0x53 then st16(imm16(), de);  	 break; --ld (mn), DE  
+			elseif f13 == 0x54 then neg();              	 break; --neg  
+			elseif f13 == 0x55 then retn();             	 break; --retn  
+			elseif f13 == 0x56 then im(1);              	 break; --im 1  
+			elseif f13 == 0x57 then ld_a_i();           	 break; --ld A, I  
 
-			elseif f13 == 0x58 then in_c(e);                   	 -- in E, (C)  
-			elseif f13 == 0x59 then out_c(e);                  	 -- out (C), E  
-			elseif f13 == 0x5a then adc16(hl, de);             	 -- adc HL, DE  
-			elseif f13 == 0x5b then ld16(de, mem16(imm16()));  	 -- ld DE, (mn)  
-			elseif f13 == 0x5c then neg();                     	 -- neg  
-			elseif f13 == 0x5d then retn();                    	 -- retn  
-			elseif f13 == 0x5e then im(2);                     	 -- im 2  
-			elseif f13 == 0x5f then ld_a_r();                  	 -- ld A, R  
+			elseif f13 == 0x58 then in_c(e);                   	 break; --in E, (C)  
+			elseif f13 == 0x59 then out_c(e);                  	 break; --out (C), E  
+			elseif f13 == 0x5a then adc16(hl, de);             	 break; --adc HL, DE  
+			elseif f13 == 0x5b then ld16(de, mem16(imm16()));  	 break; --ld DE, (mn)  
+			elseif f13 == 0x5c then neg();                     	 break; --neg  
+			elseif f13 == 0x5d then retn();                    	 break; --retn  
+			elseif f13 == 0x5e then im(2);                     	 break; --im 2  
+			elseif f13 == 0x5f then ld_a_r();                  	 break; --ld A, R  
 
-			elseif f13 == 0x60 then in_c(h);            	 -- in H, (C)  
-			elseif f13 == 0x61 then out_c(h);           	 -- out (C), H  
-			elseif f13 == 0x62 then sbc16(hl, hl);      	 -- sbc HL, HL  
-			elseif f13 == 0x63 then st16(imm16(), hl);  	 -- ld (mn), HL  
-			elseif f13 == 0x64 then neg();              	 -- neg  
-			elseif f13 == 0x65 then retn();             	 -- retn  
-			elseif f13 == 0x66 then im(0);              	 -- im 0  
-			elseif f13 == 0x67 then rrd();              	 -- rrd  
+			elseif f13 == 0x60 then in_c(h);            	 break; --in H, (C)  
+			elseif f13 == 0x61 then out_c(h);           	 break; --out (C), H  
+			elseif f13 == 0x62 then sbc16(hl, hl);      	 break; --sbc HL, HL  
+			elseif f13 == 0x63 then st16(imm16(), hl);  	 break; --ld (mn), HL  
+			elseif f13 == 0x64 then neg();              	 break; --neg  
+			elseif f13 == 0x65 then retn();             	 break; --retn  
+			elseif f13 == 0x66 then im(0);              	 break; --im 0  
+			elseif f13 == 0x67 then rrd();              	 break; --rrd  
 
-			elseif f13 == 0x68 then in_c(l);                   	 -- in L, (C)  
-			elseif f13 == 0x69 then out_c(l);                  	 -- out (C), L  
-			elseif f13 == 0x6a then adc16(hl, hl);             	 -- adc HL, HL  
-			elseif f13 == 0x6b then ld16(hl, mem16(imm16()));  	 -- ld HL, (mn)  
-			elseif f13 == 0x6c then neg();                     	 -- neg  
-			elseif f13 == 0x6d then retn();                    	 -- retn  
-			elseif f13 == 0x6e then im(0);                     	 -- im 0  
-			elseif f13 == 0x6f then rld();                     	 -- rld  
+			elseif f13 == 0x68 then in_c(l);                   	 break; --in L, (C)  
+			elseif f13 == 0x69 then out_c(l);                  	 break; --out (C), L  
+			elseif f13 == 0x6a then adc16(hl, hl);             	 break; --adc HL, HL  
+			elseif f13 == 0x6b then ld16(hl, mem16(imm16()));  	 break; --ld HL, (mn)  
+			elseif f13 == 0x6c then neg();                     	 break; --neg  
+			elseif f13 == 0x6d then retn();                    	 break; --retn  
+			elseif f13 == 0x6e then im(0);                     	 break; --im 0  
+			elseif f13 == 0x6f then rld();                     	 break; --rld  
 
-			elseif f13 == 0x70 then in_c(f);            	 -- in F, (C)  
-			elseif f13 == 0x71 then out_c_0();          	 -- out (C), 0  
-			elseif f13 == 0x72 then sbc16(hl, sp);      	 -- sbc HL, SP  
-			elseif f13 == 0x73 then st16(imm16(), sp);  	 -- ld (mn), SP  
-			elseif f13 == 0x74 then neg();              	 -- neg  
-			elseif f13 == 0x75 then retn();             	 -- retn  
-			elseif f13 == 0x76 then im(1);              	 -- im 1  
+			elseif f13 == 0x70 then in_c(f);            	 break; --in F, (C)  
+			elseif f13 == 0x71 then out_c_0();          	 break; --out (C), 0  
+			elseif f13 == 0x72 then sbc16(hl, sp);      	 break; --sbc HL, SP  
+			elseif f13 == 0x73 then st16(imm16(), sp);  	 break; --ld (mn), SP  
+			elseif f13 == 0x74 then neg();              	 break; --neg  
+			elseif f13 == 0x75 then retn();             	 break; --retn  
+			elseif f13 == 0x76 then im(1);              	 break; --im 1  
 
-			elseif f13 == 0x78 then in_c(a);                   	 -- in A, (C)  
-			elseif f13 == 0x79 then out_c(a);                  	 -- out (C), A  
-			elseif f13 == 0x7a then adc16(hl, sp);             	 -- adc HL, SP  
-			elseif f13 == 0x7b then ld16(sp, mem16(imm16()));  	 -- ld SP, (mn)  
-			elseif f13 == 0x7c then neg();                     	 -- neg  
-			elseif f13 == 0x7d then retn();                    	 -- retn  
-			elseif f13 == 0x7e then im(2);                     	 -- im 2  
+			elseif f13 == 0x78 then in_c(a);                   	 break; --in A, (C)  
+			elseif f13 == 0x79 then out_c(a);                  	 break; --out (C), A  
+			elseif f13 == 0x7a then adc16(hl, sp);             	 break; --adc HL, SP  
+			elseif f13 == 0x7b then ld16(sp, mem16(imm16()));  	 break; --ld SP, (mn)  
+			elseif f13 == 0x7c then neg();                     	 break; --neg  
+			elseif f13 == 0x7d then retn();                    	 break; --retn  
+			elseif f13 == 0x7e then im(2);                     	 break; --im 2  
 
-			elseif f13 == 0xa0 then ldi();   	 -- ldi  
-			elseif f13 == 0xa1 then cpi();   	 -- cpi  
-			elseif f13 == 0xa2 then ini();   	 -- ini  
-			elseif f13 == 0xa3 then outi();  	 -- outi  
+			elseif f13 == 0xa0 then ldi();   	 break; --ldi  
+			elseif f13 == 0xa1 then cpi();   	 break; --cpi  
+			elseif f13 == 0xa2 then ini();   	 break; --ini  
+			elseif f13 == 0xa3 then outi();  	 break; --outi  
 
-			elseif f13 == 0xa8 then ldd();   	 -- ldd  
-			elseif f13 == 0xa9 then cpd();   	 -- cpd  
-			elseif f13 == 0xaa then ind();   	 -- ind  
-			elseif f13 == 0xab then outd();  	 -- outd  
+			elseif f13 == 0xa8 then ldd();   	 break; --ldd  
+			elseif f13 == 0xa9 then cpd();   	 break; --cpd  
+			elseif f13 == 0xaa then ind();   	 break; --ind  
+			elseif f13 == 0xab then outd();  	 break; --outd  
 
-			elseif f13 == 0xb0 then ldir();  	 -- ldir  
-			elseif f13 == 0xb1 then cpir();  	 -- cpir  
-			elseif f13 == 0xb2 then inir();  	 -- inir  
-			elseif f13 == 0xb3 then otir();  	 -- otir  
+			elseif f13 == 0xb0 then ldir();  	 break; --ldir  
+			elseif f13 == 0xb1 then cpir();  	 break; --cpir  
+			elseif f13 == 0xb2 then inir();  	 break; --inir  
+			elseif f13 == 0xb3 then otir();  	 break; --otir  
 
-			elseif f13 == 0xb8 then lddr();  	 -- lddr  
-			elseif f13 == 0xb9 then cpdr();  	 -- cpdr  
-			elseif f13 == 0xba then indr();  	 -- indr  
-			elseif f13 == 0xbb then otdr();  	 -- otdr  
+			elseif f13 == 0xb8 then lddr();  	 break; --lddr  
+			elseif f13 == 0xb9 then cpdr();  	 break; --cpdr  
+			elseif f13 == 0xba then indr();  	 break; --indr  
+			elseif f13 == 0xbb then otdr();  	 break; --otdr  
 			else pc = pc + length; 
 			
 			end
 			
-		elseif f1 == 0xee then xor(imm8());  	 -- xor n  
-		elseif f1 == 0xef then rst(0x28);    	 -- rst 28H  
+		elseif f1 == 0xee then xor(imm8());  	 break; --xor n  
+		elseif f1 == 0xef then rst(0x28);    	 break; --rst 28H  
 
-		elseif f1 == 0xf0 then ret(f.ns());            	 -- ret P  
-		elseif f1 == 0xf1 then pop(af);                	 -- pop AF  
-		elseif f1 == 0xf2 then jp(f.ns(), imm16());    	 -- jp P, mn  
-		elseif f1 == 0xf3 then di();                   	 -- di  
-		elseif f1 == 0xf4 then call(f.ns(), imm16());  	 -- call P, mn  
-		elseif f1 == 0xf5 then push(af);               	 -- push AF  
-		elseif f1 == 0xf6 then Or(imm8());             	 -- or n  
-		elseif f1 == 0xf7 then rst(0x30);              	 -- rst 30H  
+		elseif f1 == 0xf0 then ret(f.ns());            	 break; --ret P  
+		elseif f1 == 0xf1 then pop(af);                	 break; --pop AF  
+		elseif f1 == 0xf2 then jp(f.ns(), imm16());    	 break; --jp P, mn  
+		elseif f1 == 0xf3 then di();                   	 break; --di  
+		elseif f1 == 0xf4 then call(f.ns(), imm16());  	 break; --call P, mn  
+		elseif f1 == 0xf5 then push(af);               	 break; --push AF  
+		elseif f1 == 0xf6 then Or(imm8());             	 break; --or n  
+		elseif f1 == 0xf7 then rst(0x30);              	 break; --rst 30H  
 
-		elseif f1 == 0xf8 then ret(f.s());            	 -- ret M  
-		elseif f1 == 0xf9 then ld16(sp, hl);          	 -- ld SP, HL  
-		elseif f1 == 0xfa then jp(f.s(), imm16());    	 -- jp M, mn  
-		elseif f1 == 0xfb then if(ei()) then   else  break; end	 -- ei  
-		elseif f1 == 0xfc then call(f.s(), imm16());  	 -- call M, mn  
+		elseif f1 == 0xf8 then ret(f.s());            	 break; --ret M  
+		elseif f1 == 0xf9 then ld16(sp, hl);          	 break; --ld SP, HL  
+		elseif f1 == 0xfa then jp(f.s(), imm16());    	 break; --jp M, mn  
+		elseif f1 == 0xfb then if(ei()) then   else  break; end	 break; --ei  
+		elseif f1 == 0xfc then call(f.s(), imm16());  	 break; --call M, mn  
 		elseif f1 == 0xfd then
 			pc = pc + 1
 			local f14 = fetchFDXX()
 
-			if     f14 == 0x09 then add16(iy, bc);  	 -- add IY, BC  
-			elseif f14 == 0x19 then add16(iy, de);  	 -- add IY, DE  
-			elseif f14 == 0x21 then ld16(iy, imm16());  	 -- ld IY, mn  
-			elseif f14 == 0x22 then st16(imm16(), iy);  	 -- ld (mn), IY  
-			elseif f14 == 0x23 then inc16(iy);          	 -- inc IY  
-			elseif f14 == 0x24 then inc8_r(iyh);        	 -- inc IYh  
-			elseif f14 == 0x25 then dec8_r(iyh);        	 -- dec IYh  
-			elseif f14 == 0x26 then ld8(iyh, imm8());   	 -- ld IYh, n  
+			if     f14 == 0x09 then add16(iy, bc);  	 break; --add IY, BC  
+			elseif f14 == 0x19 then add16(iy, de);  	 break; --add IY, DE  
+			elseif f14 == 0x21 then ld16(iy, imm16());  	 break; --ld IY, mn  
+			elseif f14 == 0x22 then st16(imm16(), iy);  	 break; --ld (mn), IY  
+			elseif f14 == 0x23 then inc16(iy);          	 break; --inc IY  
+			elseif f14 == 0x24 then inc8_r(iyh);        	 break; --inc IYh  
+			elseif f14 == 0x25 then dec8_r(iyh);        	 break; --dec IYh  
+			elseif f14 == 0x26 then ld8(iyh, imm8());   	 break; --ld IYh, n  
 
-			elseif f14 == 0x29 then add16(iy, iy);             	 -- add IY, IY  
-			elseif f14 == 0x2a then ld16(iy, mem16(imm16()));  	 -- ld IY, (mn)  
-			elseif f14 == 0x2b then dec16(iy);                 	 -- dec IY  
-			elseif f14 == 0x2c then inc8_r(iyl);               	 -- inc IYl  
-			elseif f14 == 0x2d then dec8_r(iyl);               	 -- dec IYl  
-			elseif f14 == 0x2e then ld8(iyl, imm8());          	 -- ld IYl, n  
+			elseif f14 == 0x29 then add16(iy, iy);             	 break; --add IY, IY  
+			elseif f14 == 0x2a then ld16(iy, mem16(imm16()));  	 break; --ld IY, (mn)  
+			elseif f14 == 0x2b then dec16(iy);                 	 break; --dec IY  
+			elseif f14 == 0x2c then inc8_r(iyl);               	 break; --inc IYl  
+			elseif f14 == 0x2d then dec8_r(iyl);               	 break; --dec IYl  
+			elseif f14 == 0x2e then ld8(iyl, imm8());          	 break; --ld IYl, n  
 
-			elseif f14 == 0x34 then inc8_m(iy.get() + dis());             	 -- inc (IY + d)  
-			elseif f14 == 0x35 then dec8_m(iy.get() + dis());             	 -- dec (IY + d)  
-			elseif f14 == 0x36 then st8(iy.get() + dis(), mem8(pc + 2));  	 -- ld (IY + d), n  
+			elseif f14 == 0x34 then inc8_m(iy.get() + dis());             	 break; --inc (IY + d)  
+			elseif f14 == 0x35 then dec8_m(iy.get() + dis());             	 break; --dec (IY + d)  
+			elseif f14 == 0x36 then st8(iy.get() + dis(), mem8(pc + 2));  	 break; --ld (IY + d), n  
 
-			elseif f14 == 0x39 then add16(iy, sp);  	 -- ADD IY, SP  
+			elseif f14 == 0x39 then add16(iy, sp);  	 break; --ADD IY, SP  
 
-			elseif f14 == 0x44 then ld8(b, iyh);                  	 -- ld B, IYh  
-			elseif f14 == 0x45 then ld8(b, iyl);                  	 -- ld B, IYl  
-			elseif f14 == 0x46 then ld8(b, mem8(iy.get() + dis()));  	 -- ld B, (IY + d)  
+			elseif f14 == 0x44 then ld8(b, iyh);                  	 break; --ld B, IYh  
+			elseif f14 == 0x45 then ld8(b, iyl);                  	 break; --ld B, IYl  
+			elseif f14 == 0x46 then ld8(b, mem8(iy.get() + dis()));  	 break; --ld B, (IY + d)  
 
-			elseif f14 == 0x4c then ld8(c, iyh);                  	 -- ld C, IYh  
-			elseif f14 == 0x4d then ld8(c, iyl);                  	 -- ld C, IYl  
-			elseif f14 == 0x4e then ld8(c, mem8(iy.get() + dis()));  	 -- ld C, (IY + d)  
+			elseif f14 == 0x4c then ld8(c, iyh);                  	 break; --ld C, IYh  
+			elseif f14 == 0x4d then ld8(c, iyl);                  	 break; --ld C, IYl  
+			elseif f14 == 0x4e then ld8(c, mem8(iy.get() + dis()));  	 break; --ld C, (IY + d)  
 
-			elseif f14 == 0x54 then ld8(d, iyh);                  	 -- ld D, IYh  
-			elseif f14 == 0x55 then ld8(d, iyl);                  	 -- ld D, IYl  
-			elseif f14 == 0x56 then ld8(d, mem8(iy.get() + dis()));  	 -- ld D, (IY + d)  
+			elseif f14 == 0x54 then ld8(d, iyh);                  	 break; --ld D, IYh  
+			elseif f14 == 0x55 then ld8(d, iyl);                  	 break; --ld D, IYl  
+			elseif f14 == 0x56 then ld8(d, mem8(iy.get() + dis()));  	 break; --ld D, (IY + d)  
 
-			elseif f14 == 0x5c then ld8(e, iyh);                  	 -- ld E, IYh  
-			elseif f14 == 0x5d then ld8(e, iyl);                  	 -- ld E, IYl  
-			elseif f14 == 0x5e then ld8(e, mem8(iy.get() + dis()));  	 -- ld E, (IY + d)  
+			elseif f14 == 0x5c then ld8(e, iyh);                  	 break; --ld E, IYh  
+			elseif f14 == 0x5d then ld8(e, iyl);                  	 break; --ld E, IYl  
+			elseif f14 == 0x5e then ld8(e, mem8(iy.get() + dis()));  	 break; --ld E, (IY + d)  
 
-			elseif f14 == 0x60 then ld8(iyh, b);                  	 -- ld IYh, B  
-			elseif f14 == 0x61 then ld8(iyh, c);                  	 -- ld IYh, C  
-			elseif f14 == 0x62 then ld8(iyh, d);                  	 -- ld IYh, D  
-			elseif f14 == 0x63 then ld8(iyh, e);                  	 -- ld IYh, E  
-			elseif f14 == 0x64 then ld8(iyh, h);                  	 -- ld IYh, H  
-			elseif f14 == 0x65 then ld8(iyh, l);                  	 -- ld IYh, L  
-			elseif f14 == 0x66 then ld8(h, mem8(iy.get() + dis()));  	 -- ld H, (IY + d)  
-			elseif f14 == 0x67 then ld8(iyh, a);                  	 -- ld IYh, A  
+			elseif f14 == 0x60 then ld8(iyh, b);                  	 break; --ld IYh, B  
+			elseif f14 == 0x61 then ld8(iyh, c);                  	 break; --ld IYh, C  
+			elseif f14 == 0x62 then ld8(iyh, d);                  	 break; --ld IYh, D  
+			elseif f14 == 0x63 then ld8(iyh, e);                  	 break; --ld IYh, E  
+			elseif f14 == 0x64 then ld8(iyh, h);                  	 break; --ld IYh, H  
+			elseif f14 == 0x65 then ld8(iyh, l);                  	 break; --ld IYh, L  
+			elseif f14 == 0x66 then ld8(h, mem8(iy.get() + dis()));  	 break; --ld H, (IY + d)  
+			elseif f14 == 0x67 then ld8(iyh, a);                  	 break; --ld IYh, A  
 
-			elseif f14 == 0x68 then ld8(iyl, b);                  	 -- ld IYl, B  
-			elseif f14 == 0x69 then ld8(iyl, c);                  	 -- ld IYl, C  
-			elseif f14 == 0x6a then ld8(iyl, d);                  	 -- ld IYl, D  
-			elseif f14 == 0x6b then ld8(iyl, e);                  	 -- ld IYl, E  
-			elseif f14 == 0x6c then ld8(iyl, h);                  	 -- ld IYl, H  
-			elseif f14 == 0x6d then ld8(iyl, l);                  	 -- ld IYl, L  
-			elseif f14 == 0x6e then ld8(l, mem8(iy.get() + dis()));  	 -- ld L, (IY + d)  
-			elseif f14 == 0x6f then ld8(iyl, a);                  	 -- ld IYl, A  
+			elseif f14 == 0x68 then ld8(iyl, b);                  	 break; --ld IYl, B  
+			elseif f14 == 0x69 then ld8(iyl, c);                  	 break; --ld IYl, C  
+			elseif f14 == 0x6a then ld8(iyl, d);                  	 break; --ld IYl, D  
+			elseif f14 == 0x6b then ld8(iyl, e);                  	 break; --ld IYl, E  
+			elseif f14 == 0x6c then ld8(iyl, h);                  	 break; --ld IYl, H  
+			elseif f14 == 0x6d then ld8(iyl, l);                  	 break; --ld IYl, L  
+			elseif f14 == 0x6e then ld8(l, mem8(iy.get() + dis()));  	 break; --ld L, (IY + d)  
+			elseif f14 == 0x6f then ld8(iyl, a);                  	 break; --ld IYl, A  
 
-			elseif f14 == 0x70 then st8(iy.get() + dis(), b);  	 -- ld (IY + d), B  
-			elseif f14 == 0x71 then st8(iy.get() + dis(), c);  	 -- ld (IY + d), C  
-			elseif f14 == 0x72 then st8(iy.get() + dis(), d);  	 -- ld (IY + d), D  
-			elseif f14 == 0x73 then st8(iy.get() + dis(), e);  	 -- ld (IY + d), E  
-			elseif f14 == 0x74 then st8(iy.get() + dis(), h);  	 -- ld (IY + d), H  
-			elseif f14 == 0x75 then st8(iy.get() + dis(), l);  	 -- ld (IY + d), L  
-			elseif f14 == 0x77 then st8(iy.get() + dis(), a);  	 -- ld (IY + d), A  
+			elseif f14 == 0x70 then st8(iy.get() + dis(), b);  	 break; --ld (IY + d), B  
+			elseif f14 == 0x71 then st8(iy.get() + dis(), c);  	 break; --ld (IY + d), C  
+			elseif f14 == 0x72 then st8(iy.get() + dis(), d);  	 break; --ld (IY + d), D  
+			elseif f14 == 0x73 then st8(iy.get() + dis(), e);  	 break; --ld (IY + d), E  
+			elseif f14 == 0x74 then st8(iy.get() + dis(), h);  	 break; --ld (IY + d), H  
+			elseif f14 == 0x75 then st8(iy.get() + dis(), l);  	 break; --ld (IY + d), L  
+			elseif f14 == 0x77 then st8(iy.get() + dis(), a);  	 break; --ld (IY + d), A  
 
-			elseif f14 == 0x7c then ld8(a, iyh);                  	 -- ld A, IYh  
-			elseif f14 == 0x7d then ld8(a, iyl);                  	 -- ld A, IYl  
-			elseif f14 == 0x7e then ld8(a, mem8(iy.get() + dis()));  	 -- ld A, (IY + d)  
+			elseif f14 == 0x7c then ld8(a, iyh);                  	 break; --ld A, IYh  
+			elseif f14 == 0x7d then ld8(a, iyl);                  	 break; --ld A, IYl  
+			elseif f14 == 0x7e then ld8(a, mem8(iy.get() + dis()));  	 break; --ld A, (IY + d)  
 
-			elseif f14 == 0x84 then add8(iyh);                  	 -- add IYh  
-			elseif f14 == 0x85 then add8(iyl);                  	 -- add IYl  
-			elseif f14 == 0x86 then add8(mem8(iy.get() + dis()));  	 -- add (IY + d)  
+			elseif f14 == 0x84 then add8(iyh);                  	 break; --add IYh  
+			elseif f14 == 0x85 then add8(iyl);                  	 break; --add IYl  
+			elseif f14 == 0x86 then add8(mem8(iy.get() + dis()));  	 break; --add (IY + d)  
 
-			elseif f14 == 0x8c then adc8(iyh);                  	 -- adc IYh  
-			elseif f14 == 0x8d then adc8(iyl);                  	 -- adc IYl  
-			elseif f14 == 0x8e then adc8(mem8(iy.get() + dis()));  	 -- adc (IY + d)  
+			elseif f14 == 0x8c then adc8(iyh);                  	 break; --adc IYh  
+			elseif f14 == 0x8d then adc8(iyl);                  	 break; --adc IYl  
+			elseif f14 == 0x8e then adc8(mem8(iy.get() + dis()));  	 break; --adc (IY + d)  
 
-			elseif f14 == 0x94 then sub8(iyh);                  	 -- sub IYh  
-			elseif f14 == 0x95 then sub8(iyl);                  	 -- sub IYl  
-			elseif f14 == 0x96 then sub8(mem8(iy.get() + dis()));  	 -- sub (IY + d)  
+			elseif f14 == 0x94 then sub8(iyh);                  	 break; --sub IYh  
+			elseif f14 == 0x95 then sub8(iyl);                  	 break; --sub IYl  
+			elseif f14 == 0x96 then sub8(mem8(iy.get() + dis()));  	 break; --sub (IY + d)  
 
-			elseif f14 == 0x9c then sbc8(iyh);                  	 -- sbc IYh  
-			elseif f14 == 0x9d then sbc8(iyl);                  	 -- sbc IYl  
-			elseif f14 == 0x9e then sbc8(mem8(iy.get() + dis()));  	 -- sbc (IY + d)  
+			elseif f14 == 0x9c then sbc8(iyh);                  	 break; --sbc IYh  
+			elseif f14 == 0x9d then sbc8(iyl);                  	 break; --sbc IYl  
+			elseif f14 == 0x9e then sbc8(mem8(iy.get() + dis()));  	 break; --sbc (IY + d)  
 
-			elseif f14 == 0xa4 then And(iyh);                  	 -- and IYh  
-			elseif f14 == 0xa5 then And(iyl);                  	 -- and IYl  
-			elseif f14 == 0xa6 then And(mem8(iy.get() + dis()));  	 -- and (IY + d)  
+			elseif f14 == 0xa4 then And(iyh);                  	 break; --and IYh  
+			elseif f14 == 0xa5 then And(iyl);                  	 break; --and IYl  
+			elseif f14 == 0xa6 then And(mem8(iy.get() + dis()));  	 break; --and (IY + d)  
 
-			elseif f14 == 0xac then Xor(iyh);                  	 -- xor IYh  
-			elseif f14 == 0xad then Xor(iyl);                  	 -- xor IYl  
-			elseif f14 == 0xae then Xor(mem8(iy.get() + dis()));  	 -- xor (IY + d)  
+			elseif f14 == 0xac then Xor(iyh);                  	 break; --xor IYh  
+			elseif f14 == 0xad then Xor(iyl);                  	 break; --xor IYl  
+			elseif f14 == 0xae then Xor(mem8(iy.get() + dis()));  	 break; --xor (IY + d)  
 
-			elseif f14 == 0xb4 then Or(iyh);                  	 -- or IYh  
-			elseif f14 == 0xb5 then Or(iyl);                  	 -- or IYl  
-			elseif f14 == 0xb6 then Or(mem8(iy.get() + dis()));  	 -- or (IY + d)  
+			elseif f14 == 0xb4 then Or(iyh);                  	 break; --or IYh  
+			elseif f14 == 0xb5 then Or(iyl);                  	 break; --or IYl  
+			elseif f14 == 0xb6 then Or(mem8(iy.get() + dis()));  	 break; --or (IY + d)  
 
-			elseif f14 == 0xbc then cp(iyh);                  	 -- cp IYh  
-			elseif f14 == 0xbd then cp(iyl);                  	 -- cp IYl  
-			elseif f14 == 0xbe then cp(mem8(iy.get() + dis()));  	 -- cp (IY + d)  
+			elseif f14 == 0xbc then cp(iyh);                  	 break; --cp IYh  
+			elseif f14 == 0xbd then cp(iyl);                  	 break; --cp IYl  
+			elseif f14 == 0xbe then cp(mem8(iy.get() + dis()));  	 break; --cp (IY + d)  
 
 			elseif f14 == 0xcb then
 				local f141 = fetchFDCBXX()
 
-				if     f141 == 0x00 then rlc_m_r(iy.get() + dis(), b);  	 -- rlc (IY + d), B  
-				elseif f141 == 0x01 then rlc_m_r(iy.get() + dis(), c);  	 -- rlc (IY + d), C  
-				elseif f141 == 0x02 then rlc_m_r(iy.get() + dis(), d);  	 -- rlc (IY + d), D  
-				elseif f141 == 0x03 then rlc_m_r(iy.get() + dis(), e);  	 -- rlc (IY + d), E  
-				elseif f141 == 0x04 then rlc_m_r(iy.get() + dis(), h);  	 -- rlc (IY + d), H  
-				elseif f141 == 0x05 then rlc_m_r(iy.get() + dis(), l);  	 -- rlc (IY + d), L  
-				elseif f141 == 0x06 then rlc_m(iy.get() + dis());       	 -- rlc (IY + d)  
-				elseif f141 == 0x07 then rlc_m_r(iy.get() + dis(), a);  	 -- rlc (IY + d), A  
+				if     f141 == 0x00 then rlc_m_r(iy.get() + dis(), b);  	 break; --rlc (IY + d), B  
+				elseif f141 == 0x01 then rlc_m_r(iy.get() + dis(), c);  	 break; --rlc (IY + d), C  
+				elseif f141 == 0x02 then rlc_m_r(iy.get() + dis(), d);  	 break; --rlc (IY + d), D  
+				elseif f141 == 0x03 then rlc_m_r(iy.get() + dis(), e);  	 break; --rlc (IY + d), E  
+				elseif f141 == 0x04 then rlc_m_r(iy.get() + dis(), h);  	 break; --rlc (IY + d), H  
+				elseif f141 == 0x05 then rlc_m_r(iy.get() + dis(), l);  	 break; --rlc (IY + d), L  
+				elseif f141 == 0x06 then rlc_m(iy.get() + dis());       	 break; --rlc (IY + d)  
+				elseif f141 == 0x07 then rlc_m_r(iy.get() + dis(), a);  	 break; --rlc (IY + d), A  
 
-				elseif f141 == 0x08 then rrc_m_r(iy.get() + dis(), b);  	 -- rrc (IY + d), B  
-				elseif f141 == 0x09 then rrc_m_r(iy.get() + dis(), c);  	 -- rrc (IY + d), C  
-				elseif f141 == 0x0a then rrc_m_r(iy.get() + dis(), d);  	 -- rrc (IY + d), D  
-				elseif f141 == 0x0b then rrc_m_r(iy.get() + dis(), e);  	 -- rrc (IY + d), E  
-				elseif f141 == 0x0c then rrc_m_r(iy.get() + dis(), h);  	 -- rrc (IY + d), H  
-				elseif f141 == 0x0d then rrc_m_r(iy.get() + dis(), l);  	 -- rrc (IY + d), L  
-				elseif f141 == 0x0e then rrc_m(iy.get() + dis());       	 -- rrc (IY + d)  
-				elseif f141 == 0x0f then rrc_m_r(iy.get() + dis(), a);  	 -- rrc (IY + d), A  
+				elseif f141 == 0x08 then rrc_m_r(iy.get() + dis(), b);  	 break; --rrc (IY + d), B  
+				elseif f141 == 0x09 then rrc_m_r(iy.get() + dis(), c);  	 break; --rrc (IY + d), C  
+				elseif f141 == 0x0a then rrc_m_r(iy.get() + dis(), d);  	 break; --rrc (IY + d), D  
+				elseif f141 == 0x0b then rrc_m_r(iy.get() + dis(), e);  	 break; --rrc (IY + d), E  
+				elseif f141 == 0x0c then rrc_m_r(iy.get() + dis(), h);  	 break; --rrc (IY + d), H  
+				elseif f141 == 0x0d then rrc_m_r(iy.get() + dis(), l);  	 break; --rrc (IY + d), L  
+				elseif f141 == 0x0e then rrc_m(iy.get() + dis());       	 break; --rrc (IY + d)  
+				elseif f141 == 0x0f then rrc_m_r(iy.get() + dis(), a);  	 break; --rrc (IY + d), A  
 
-				elseif f141 == 0x10 then rl_m_r(iy.get() + dis(), b);  	 -- rl (IY + d), B  
-				elseif f141 == 0x11 then rl_m_r(iy.get() + dis(), c);  	 -- rl (IY + d), C  
-				elseif f141 == 0x12 then rl_m_r(iy.get() + dis(), d);  	 -- rl (IY + d), D  
-				elseif f141 == 0x13 then rl_m_r(iy.get() + dis(), e);  	 -- rl (IY + d), E  
-				elseif f141 == 0x14 then rl_m_r(iy.get() + dis(), h);  	 -- rl (IY + d), H  
-				elseif f141 == 0x15 then rl_m_r(iy.get() + dis(), l);  	 -- rl (IY + d), L  
-				elseif f141 == 0x16 then rl_m(iy.get() + dis());       	 -- rl (IY + d)  
-				elseif f141 == 0x17 then rl_m_r(iy.get() + dis(), a);  	 -- rl (IY + d), A  
+				elseif f141 == 0x10 then rl_m_r(iy.get() + dis(), b);  	 break; --rl (IY + d), B  
+				elseif f141 == 0x11 then rl_m_r(iy.get() + dis(), c);  	 break; --rl (IY + d), C  
+				elseif f141 == 0x12 then rl_m_r(iy.get() + dis(), d);  	 break; --rl (IY + d), D  
+				elseif f141 == 0x13 then rl_m_r(iy.get() + dis(), e);  	 break; --rl (IY + d), E  
+				elseif f141 == 0x14 then rl_m_r(iy.get() + dis(), h);  	 break; --rl (IY + d), H  
+				elseif f141 == 0x15 then rl_m_r(iy.get() + dis(), l);  	 break; --rl (IY + d), L  
+				elseif f141 == 0x16 then rl_m(iy.get() + dis());       	 break; --rl (IY + d)  
+				elseif f141 == 0x17 then rl_m_r(iy.get() + dis(), a);  	 break; --rl (IY + d), A  
 
-				elseif f141 == 0x18 then rr_m_r(iy.get() + dis(), b);  	 -- rr (IY + d), B  
-				elseif f141 == 0x19 then rr_m_r(iy.get() + dis(), c);  	 -- rr (IY + d), C  
-				elseif f141 == 0x1a then rr_m_r(iy.get() + dis(), d);  	 -- rr (IY + d), D  
-				elseif f141 == 0x1b then rr_m_r(iy.get() + dis(), e);  	 -- rr (IY + d), E  
-				elseif f141 == 0x1c then rr_m_r(iy.get() + dis(), h);  	 -- rr (IY + d), H  
-				elseif f141 == 0x1d then rr_m_r(iy.get() + dis(), l);  	 -- rr (IY + d), L  
-				elseif f141 == 0x1e then rr_m(iy.get() + dis());       	 -- rr (IY + d)  
-				elseif f141 == 0x1f then rr_m_r(iy.get() + dis(), a);  	 -- rr (IY + d), A  
+				elseif f141 == 0x18 then rr_m_r(iy.get() + dis(), b);  	 break; --rr (IY + d), B  
+				elseif f141 == 0x19 then rr_m_r(iy.get() + dis(), c);  	 break; --rr (IY + d), C  
+				elseif f141 == 0x1a then rr_m_r(iy.get() + dis(), d);  	 break; --rr (IY + d), D  
+				elseif f141 == 0x1b then rr_m_r(iy.get() + dis(), e);  	 break; --rr (IY + d), E  
+				elseif f141 == 0x1c then rr_m_r(iy.get() + dis(), h);  	 break; --rr (IY + d), H  
+				elseif f141 == 0x1d then rr_m_r(iy.get() + dis(), l);  	 break; --rr (IY + d), L  
+				elseif f141 == 0x1e then rr_m(iy.get() + dis());       	 break; --rr (IY + d)  
+				elseif f141 == 0x1f then rr_m_r(iy.get() + dis(), a);  	 break; --rr (IY + d), A  
 
-				elseif f141 == 0x20 then sla_m_r(iy.get() + dis(), b);  	 -- sla (IY + d), B  
-				elseif f141 == 0x21 then sla_m_r(iy.get() + dis(), c);  	 -- sla (IY + d), C  
-				elseif f141 == 0x22 then sla_m_r(iy.get() + dis(), d);  	 -- sla (IY + d), D  
-				elseif f141 == 0x23 then sla_m_r(iy.get() + dis(), e);  	 -- sla (IY + d), E  
-				elseif f141 == 0x24 then sla_m_r(iy.get() + dis(), h);  	 -- sla (IY + d), H  
-				elseif f141 == 0x25 then sla_m_r(iy.get() + dis(), l);  	 -- sla (IY + d), L  
-				elseif f141 == 0x26 then sla_m(iy.get() + dis());       	 -- sla (IY + d)  
-				elseif f141 == 0x27 then sla_m_r(iy.get() + dis(), a);  	 -- sla (IY + d), A  
+				elseif f141 == 0x20 then sla_m_r(iy.get() + dis(), b);  	 break; --sla (IY + d), B  
+				elseif f141 == 0x21 then sla_m_r(iy.get() + dis(), c);  	 break; --sla (IY + d), C  
+				elseif f141 == 0x22 then sla_m_r(iy.get() + dis(), d);  	 break; --sla (IY + d), D  
+				elseif f141 == 0x23 then sla_m_r(iy.get() + dis(), e);  	 break; --sla (IY + d), E  
+				elseif f141 == 0x24 then sla_m_r(iy.get() + dis(), h);  	 break; --sla (IY + d), H  
+				elseif f141 == 0x25 then sla_m_r(iy.get() + dis(), l);  	 break; --sla (IY + d), L  
+				elseif f141 == 0x26 then sla_m(iy.get() + dis());       	 break; --sla (IY + d)  
+				elseif f141 == 0x27 then sla_m_r(iy.get() + dis(), a);  	 break; --sla (IY + d), A  
 
-				elseif f141 == 0x28 then sra_m_r(iy.get() + dis(), b);  	 -- sra (IY + d), B  
-				elseif f141 == 0x29 then sra_m_r(iy.get() + dis(), c);  	 -- sra (IY + d), C  
-				elseif f141 == 0x2a then sra_m_r(iy.get() + dis(), d);  	 -- sra (IY + d), D  
-				elseif f141 == 0x2b then sra_m_r(iy.get() + dis(), e);  	 -- sra (IY + d), E  
-				elseif f141 == 0x2c then sra_m_r(iy.get() + dis(), h);  	 -- sra (IY + d), H  
-				elseif f141 == 0x2d then sra_m_r(iy.get() + dis(), l);  	 -- sra (IY + d), L  
-				elseif f141 == 0x2e then sra_m(iy.get() + dis());       	 -- sra (IY + d)  
-				elseif f141 == 0x2f then sra_m_r(iy.get() + dis(), a);  	 -- sra (IY + d), A  
+				elseif f141 == 0x28 then sra_m_r(iy.get() + dis(), b);  	 break; --sra (IY + d), B  
+				elseif f141 == 0x29 then sra_m_r(iy.get() + dis(), c);  	 break; --sra (IY + d), C  
+				elseif f141 == 0x2a then sra_m_r(iy.get() + dis(), d);  	 break; --sra (IY + d), D  
+				elseif f141 == 0x2b then sra_m_r(iy.get() + dis(), e);  	 break; --sra (IY + d), E  
+				elseif f141 == 0x2c then sra_m_r(iy.get() + dis(), h);  	 break; --sra (IY + d), H  
+				elseif f141 == 0x2d then sra_m_r(iy.get() + dis(), l);  	 break; --sra (IY + d), L  
+				elseif f141 == 0x2e then sra_m(iy.get() + dis());       	 break; --sra (IY + d)  
+				elseif f141 == 0x2f then sra_m_r(iy.get() + dis(), a);  	 break; --sra (IY + d), A  
 
-				elseif f141 == 0x30 then sll_m_r(iy.get() + dis(), b);  	 -- sll (IY + d), B  
-				elseif f141 == 0x31 then sll_m_r(iy.get() + dis(), c);  	 -- sll (IY + d), C  
-				elseif f141 == 0x32 then sll_m_r(iy.get() + dis(), d);  	 -- sll (IY + d), D  
-				elseif f141 == 0x33 then sll_m_r(iy.get() + dis(), e);  	 -- sll (IY + d), E  
-				elseif f141 == 0x34 then sll_m_r(iy.get() + dis(), h);  	 -- sll (IY + d), H  
-				elseif f141 == 0x35 then sll_m_r(iy.get() + dis(), l);  	 -- sll (IY + d), L  
-				elseif f141 == 0x36 then sll_m(iy.get() + dis());       	 -- sll (IY + d)  
-				elseif f141 == 0x37 then sll_m_r(iy.get() + dis(), a);  	 -- sll (IY + d), A  
+				elseif f141 == 0x30 then sll_m_r(iy.get() + dis(), b);  	 break; --sll (IY + d), B  
+				elseif f141 == 0x31 then sll_m_r(iy.get() + dis(), c);  	 break; --sll (IY + d), C  
+				elseif f141 == 0x32 then sll_m_r(iy.get() + dis(), d);  	 break; --sll (IY + d), D  
+				elseif f141 == 0x33 then sll_m_r(iy.get() + dis(), e);  	 break; --sll (IY + d), E  
+				elseif f141 == 0x34 then sll_m_r(iy.get() + dis(), h);  	 break; --sll (IY + d), H  
+				elseif f141 == 0x35 then sll_m_r(iy.get() + dis(), l);  	 break; --sll (IY + d), L  
+				elseif f141 == 0x36 then sll_m(iy.get() + dis());       	 break; --sll (IY + d)  
+				elseif f141 == 0x37 then sll_m_r(iy.get() + dis(), a);  	 break; --sll (IY + d), A  
 
-				elseif f141 == 0x38 then srl_m_r(iy.get() + dis(), b);  	 -- srl (IY + d), B  
-				elseif f141 == 0x39 then srl_m_r(iy.get() + dis(), c);  	 -- srl (IY + d), C  
-				elseif f141 == 0x3a then srl_m_r(iy.get() + dis(), d);  	 -- srl (IY + d), D  
-				elseif f141 == 0x3b then srl_m_r(iy.get() + dis(), e);  	 -- srl (IY + d), E  
-				elseif f141 == 0x3c then srl_m_r(iy.get() + dis(), h);  	 -- srl (IY + d), H  
-				elseif f141 == 0x3d then srl_m_r(iy.get() + dis(), l);  	 -- srl (IY + d), L  
-				elseif f141 == 0x3e then srl_m(iy.get() + dis());       	 -- srl (IY + d)  
-				elseif f141 == 0x3f then srl_m_r(iy.get() + dis(), a);  	 -- srl (IY + d), A  
+				elseif f141 == 0x38 then srl_m_r(iy.get() + dis(), b);  	 break; --srl (IY + d), B  
+				elseif f141 == 0x39 then srl_m_r(iy.get() + dis(), c);  	 break; --srl (IY + d), C  
+				elseif f141 == 0x3a then srl_m_r(iy.get() + dis(), d);  	 break; --srl (IY + d), D  
+				elseif f141 == 0x3b then srl_m_r(iy.get() + dis(), e);  	 break; --srl (IY + d), E  
+				elseif f141 == 0x3c then srl_m_r(iy.get() + dis(), h);  	 break; --srl (IY + d), H  
+				elseif f141 == 0x3d then srl_m_r(iy.get() + dis(), l);  	 break; --srl (IY + d), L  
+				elseif f141 == 0x3e then srl_m(iy.get() + dis());       	 break; --srl (IY + d)  
+				elseif f141 == 0x3f then srl_m_r(iy.get() + dis(), a);  	 break; --srl (IY + d), A  
 
-				elseif f141 == 0x40 then bit(0, mem8(iy.get() + dis()));     -- bit 0, (IY + d)
-				elseif f141 == 0x41 then bit(0, mem8(iy.get() + dis()));     -- bit 0, (IY + d)
-				elseif f141 == 0x42 then bit(0, mem8(iy.get() + dis()));     -- bit 0, (IY + d)
-				elseif f141 == 0x43 then bit(0, mem8(iy.get() + dis()));     -- bit 0, (IY + d)
-				elseif f141 == 0x44 then bit(0, mem8(iy.get() + dis()));     -- bit 0, (IY + d)
-				elseif f141 == 0x45 then bit(0, mem8(iy.get() + dis()));     -- bit 0, (IY + d)
-				elseif f141 == 0x46 then bit(0, mem8(iy.get() + dis()));     -- bit 0, (IY + d)
-				elseif f141 == 0x47 then bit(0, mem8(iy.get() + dis()));  	 -- bit 0, (IY + d)  
+				elseif f141 == 0x40 then bit(0, mem8(iy.get() + dis()));     break; --bit 0, (IY + d)
+				elseif f141 == 0x41 then bit(0, mem8(iy.get() + dis()));     break; --bit 0, (IY + d)
+				elseif f141 == 0x42 then bit(0, mem8(iy.get() + dis()));     break; --bit 0, (IY + d)
+				elseif f141 == 0x43 then bit(0, mem8(iy.get() + dis()));     break; --bit 0, (IY + d)
+				elseif f141 == 0x44 then bit(0, mem8(iy.get() + dis()));     break; --bit 0, (IY + d)
+				elseif f141 == 0x45 then bit(0, mem8(iy.get() + dis()));     break; --bit 0, (IY + d)
+				elseif f141 == 0x46 then bit(0, mem8(iy.get() + dis()));     break; --bit 0, (IY + d)
+				elseif f141 == 0x47 then bit(0, mem8(iy.get() + dis()));  	 break; --bit 0, (IY + d)  
 
-				elseif f141 == 0x48 then bit(1, mem8(iy.get() + dis()));     -- bit 1, (IY + d)
-				elseif f141 == 0x49 then bit(1, mem8(iy.get() + dis()));     -- bit 1, (IY + d)
-				elseif f141 == 0x4a then bit(1, mem8(iy.get() + dis()));     -- bit 1, (IY + d)
-				elseif f141 == 0x4b then bit(1, mem8(iy.get() + dis()));     -- bit 1, (IY + d)
-				elseif f141 == 0x4c then bit(1, mem8(iy.get() + dis()));     -- bit 1, (IY + d)
-				elseif f141 == 0x4d then bit(1, mem8(iy.get() + dis()));     -- bit 1, (IY + d)
-				elseif f141 == 0x4e then bit(1, mem8(iy.get() + dis()));     -- bit 1, (IY + d)
-				elseif f141 == 0x4f then bit(1, mem8(iy.get() + dis()));  	 -- bit 1, (IY + d)  
+				elseif f141 == 0x48 then bit(1, mem8(iy.get() + dis()));     break; --bit 1, (IY + d)
+				elseif f141 == 0x49 then bit(1, mem8(iy.get() + dis()));     break; --bit 1, (IY + d)
+				elseif f141 == 0x4a then bit(1, mem8(iy.get() + dis()));     break; --bit 1, (IY + d)
+				elseif f141 == 0x4b then bit(1, mem8(iy.get() + dis()));     break; --bit 1, (IY + d)
+				elseif f141 == 0x4c then bit(1, mem8(iy.get() + dis()));     break; --bit 1, (IY + d)
+				elseif f141 == 0x4d then bit(1, mem8(iy.get() + dis()));     break; --bit 1, (IY + d)
+				elseif f141 == 0x4e then bit(1, mem8(iy.get() + dis()));     break; --bit 1, (IY + d)
+				elseif f141 == 0x4f then bit(1, mem8(iy.get() + dis()));  	 break; --bit 1, (IY + d)  
 
-				elseif f141 == 0x50 then bit(2, mem8(iy.get() + dis()));     -- bit 2, (IY + d)
-				elseif f141 == 0x51 then bit(2, mem8(iy.get() + dis()));     -- bit 2, (IY + d)
-				elseif f141 == 0x52 then bit(2, mem8(iy.get() + dis()));     -- bit 2, (IY + d)
-				elseif f141 == 0x53 then bit(2, mem8(iy.get() + dis()));     -- bit 2, (IY + d)
-				elseif f141 == 0x54 then bit(2, mem8(iy.get() + dis()));     -- bit 2, (IY + d)
-				elseif f141 == 0x55 then bit(2, mem8(iy.get() + dis()));     -- bit 2, (IY + d)
-				elseif f141 == 0x56 then bit(2, mem8(iy.get() + dis()));     -- bit 2, (IY + d)
-				elseif f141 == 0x57 then bit(2, mem8(iy.get() + dis()));  	 -- bit 2, (IY + d)  
+				elseif f141 == 0x50 then bit(2, mem8(iy.get() + dis()));     break; --bit 2, (IY + d)
+				elseif f141 == 0x51 then bit(2, mem8(iy.get() + dis()));     break; --bit 2, (IY + d)
+				elseif f141 == 0x52 then bit(2, mem8(iy.get() + dis()));     break; --bit 2, (IY + d)
+				elseif f141 == 0x53 then bit(2, mem8(iy.get() + dis()));     break; --bit 2, (IY + d)
+				elseif f141 == 0x54 then bit(2, mem8(iy.get() + dis()));     break; --bit 2, (IY + d)
+				elseif f141 == 0x55 then bit(2, mem8(iy.get() + dis()));     break; --bit 2, (IY + d)
+				elseif f141 == 0x56 then bit(2, mem8(iy.get() + dis()));     break; --bit 2, (IY + d)
+				elseif f141 == 0x57 then bit(2, mem8(iy.get() + dis()));  	 break; --bit 2, (IY + d)  
 
-				elseif f141 == 0x58 then bit(3, mem8(iy.get() + dis()));     -- bit 3, (IY + d) 
-				elseif f141 == 0x59 then bit(3, mem8(iy.get() + dis()));     -- bit 3, (IY + d) 
-				elseif f141 == 0x5a then bit(3, mem8(iy.get() + dis()));     -- bit 3, (IY + d) 
-				elseif f141 == 0x5b then bit(3, mem8(iy.get() + dis()));     -- bit 3, (IY + d) 
-				elseif f141 == 0x5c then bit(3, mem8(iy.get() + dis()));     -- bit 3, (IY + d) 
-				elseif f141 == 0x5d then bit(3, mem8(iy.get() + dis()));     -- bit 3, (IY + d) 
-				elseif f141 == 0x5e then bit(3, mem8(iy.get() + dis()));     -- bit 3, (IY + d) 
-				elseif f141 == 0x5f then bit(3, mem8(iy.get() + dis()));  	 -- bit 3, (IY + d)  
+				elseif f141 == 0x58 then bit(3, mem8(iy.get() + dis()));     break; --bit 3, (IY + d) 
+				elseif f141 == 0x59 then bit(3, mem8(iy.get() + dis()));     break; --bit 3, (IY + d) 
+				elseif f141 == 0x5a then bit(3, mem8(iy.get() + dis()));     break; --bit 3, (IY + d) 
+				elseif f141 == 0x5b then bit(3, mem8(iy.get() + dis()));     break; --bit 3, (IY + d) 
+				elseif f141 == 0x5c then bit(3, mem8(iy.get() + dis()));     break; --bit 3, (IY + d) 
+				elseif f141 == 0x5d then bit(3, mem8(iy.get() + dis()));     break; --bit 3, (IY + d) 
+				elseif f141 == 0x5e then bit(3, mem8(iy.get() + dis()));     break; --bit 3, (IY + d) 
+				elseif f141 == 0x5f then bit(3, mem8(iy.get() + dis()));  	 break; --bit 3, (IY + d)  
 
-				elseif f141 == 0x60 then bit(4, mem8(iy.get() + dis()));     -- bit 4, (IY + d)
-				elseif f141 == 0x61 then bit(4, mem8(iy.get() + dis()));     -- bit 4, (IY + d)
-				elseif f141 == 0x62 then bit(4, mem8(iy.get() + dis()));     -- bit 4, (IY + d)
-				elseif f141 == 0x63 then bit(4, mem8(iy.get() + dis()));     -- bit 4, (IY + d)
-				elseif f141 == 0x64 then bit(4, mem8(iy.get() + dis()));     -- bit 4, (IY + d)
-				elseif f141 == 0x65 then bit(4, mem8(iy.get() + dis()));     -- bit 4, (IY + d)
-				elseif f141 == 0x66 then bit(4, mem8(iy.get() + dis()));     -- bit 4, (IY + d)
-				elseif f141 == 0x67 then bit(4, mem8(iy.get() + dis()));  	 -- bit 4, (IY + d)  
+				elseif f141 == 0x60 then bit(4, mem8(iy.get() + dis()));     break; --bit 4, (IY + d)
+				elseif f141 == 0x61 then bit(4, mem8(iy.get() + dis()));     break; --bit 4, (IY + d)
+				elseif f141 == 0x62 then bit(4, mem8(iy.get() + dis()));     break; --bit 4, (IY + d)
+				elseif f141 == 0x63 then bit(4, mem8(iy.get() + dis()));     break; --bit 4, (IY + d)
+				elseif f141 == 0x64 then bit(4, mem8(iy.get() + dis()));     break; --bit 4, (IY + d)
+				elseif f141 == 0x65 then bit(4, mem8(iy.get() + dis()));     break; --bit 4, (IY + d)
+				elseif f141 == 0x66 then bit(4, mem8(iy.get() + dis()));     break; --bit 4, (IY + d)
+				elseif f141 == 0x67 then bit(4, mem8(iy.get() + dis()));  	 break; --bit 4, (IY + d)  
 
-				elseif f141 == 0x68 then bit(5, mem8(iy.get() + dis()));     -- bit 5, (IY + d)
-				elseif f141 == 0x69 then bit(5, mem8(iy.get() + dis()));     -- bit 5, (IY + d)
-				elseif f141 == 0x6a then bit(5, mem8(iy.get() + dis()));     -- bit 5, (IY + d)
-				elseif f141 == 0x6b then bit(5, mem8(iy.get() + dis()));     -- bit 5, (IY + d)
-				elseif f141 == 0x6c then bit(5, mem8(iy.get() + dis()));     -- bit 5, (IY + d)
-				elseif f141 == 0x6d then bit(5, mem8(iy.get() + dis()));     -- bit 5, (IY + d)
-				elseif f141 == 0x6e then bit(5, mem8(iy.get() + dis()));     -- bit 5, (IY + d)
-				elseif f141 == 0x6f then bit(5, mem8(iy.get() + dis()));  	 -- bit 5, (IY + d)  
+				elseif f141 == 0x68 then bit(5, mem8(iy.get() + dis()));     break; --bit 5, (IY + d)
+				elseif f141 == 0x69 then bit(5, mem8(iy.get() + dis()));     break; --bit 5, (IY + d)
+				elseif f141 == 0x6a then bit(5, mem8(iy.get() + dis()));     break; --bit 5, (IY + d)
+				elseif f141 == 0x6b then bit(5, mem8(iy.get() + dis()));     break; --bit 5, (IY + d)
+				elseif f141 == 0x6c then bit(5, mem8(iy.get() + dis()));     break; --bit 5, (IY + d)
+				elseif f141 == 0x6d then bit(5, mem8(iy.get() + dis()));     break; --bit 5, (IY + d)
+				elseif f141 == 0x6e then bit(5, mem8(iy.get() + dis()));     break; --bit 5, (IY + d)
+				elseif f141 == 0x6f then bit(5, mem8(iy.get() + dis()));  	 break; --bit 5, (IY + d)  
 
-				elseif f141 == 0x70 then bit(6, mem8(iy.get() + dis()));     -- bit 6, (IY + d)
-				elseif f141 == 0x71 then bit(6, mem8(iy.get() + dis()));     -- bit 6, (IY + d)
-				elseif f141 == 0x72 then bit(6, mem8(iy.get() + dis()));     -- bit 6, (IY + d)
-				elseif f141 == 0x73 then bit(6, mem8(iy.get() + dis()));     -- bit 6, (IY + d)
-				elseif f141 == 0x74 then bit(6, mem8(iy.get() + dis()));     -- bit 6, (IY + d)
-				elseif f141 == 0x75 then bit(6, mem8(iy.get() + dis()));     -- bit 6, (IY + d)
-				elseif f141 == 0x76 then bit(6, mem8(iy.get() + dis()));     -- bit 6, (IY + d)
-				elseif f141 == 0x77 then bit(6, mem8(iy.get() + dis()));  	 -- bit 6, (IY + d)  
+				elseif f141 == 0x70 then bit(6, mem8(iy.get() + dis()));     break; --bit 6, (IY + d)
+				elseif f141 == 0x71 then bit(6, mem8(iy.get() + dis()));     break; --bit 6, (IY + d)
+				elseif f141 == 0x72 then bit(6, mem8(iy.get() + dis()));     break; --bit 6, (IY + d)
+				elseif f141 == 0x73 then bit(6, mem8(iy.get() + dis()));     break; --bit 6, (IY + d)
+				elseif f141 == 0x74 then bit(6, mem8(iy.get() + dis()));     break; --bit 6, (IY + d)
+				elseif f141 == 0x75 then bit(6, mem8(iy.get() + dis()));     break; --bit 6, (IY + d)
+				elseif f141 == 0x76 then bit(6, mem8(iy.get() + dis()));     break; --bit 6, (IY + d)
+				elseif f141 == 0x77 then bit(6, mem8(iy.get() + dis()));  	 break; --bit 6, (IY + d)  
 
-				elseif f141 == 0x78 then bit(7, mem8(iy.get() + dis()));     -- bit 7, (IY + d)
-				elseif f141 == 0x79 then bit(7, mem8(iy.get() + dis()));     -- bit 7, (IY + d)
-				elseif f141 == 0x7a then bit(7, mem8(iy.get() + dis()));     -- bit 7, (IY + d)
-				elseif f141 == 0x7b then bit(7, mem8(iy.get() + dis()));     -- bit 7, (IY + d)
-				elseif f141 == 0x7c then bit(7, mem8(iy.get() + dis()));     -- bit 7, (IY + d)
-				elseif f141 == 0x7d then bit(7, mem8(iy.get() + dis()));     -- bit 7, (IY + d)
-				elseif f141 == 0x7e then bit(7, mem8(iy.get() + dis()));     -- bit 7, (IY + d)
-				elseif f141 == 0x7f then bit(7, mem8(iy.get() + dis()));  	 -- bit 7, (IY + d)  
+				elseif f141 == 0x78 then bit(7, mem8(iy.get() + dis()));     break; --bit 7, (IY + d)
+				elseif f141 == 0x79 then bit(7, mem8(iy.get() + dis()));     break; --bit 7, (IY + d)
+				elseif f141 == 0x7a then bit(7, mem8(iy.get() + dis()));     break; --bit 7, (IY + d)
+				elseif f141 == 0x7b then bit(7, mem8(iy.get() + dis()));     break; --bit 7, (IY + d)
+				elseif f141 == 0x7c then bit(7, mem8(iy.get() + dis()));     break; --bit 7, (IY + d)
+				elseif f141 == 0x7d then bit(7, mem8(iy.get() + dis()));     break; --bit 7, (IY + d)
+				elseif f141 == 0x7e then bit(7, mem8(iy.get() + dis()));     break; --bit 7, (IY + d)
+				elseif f141 == 0x7f then bit(7, mem8(iy.get() + dis()));  	 break; --bit 7, (IY + d)  
 
-				elseif f141 == 0x80 then res_m_r(0, iy.get() + dis(), b);  	 -- res 0, (IY + d), B  
-				elseif f141 == 0x81 then res_m_r(0, iy.get() + dis(), c);  	 -- res 0, (IY + d), C  
-				elseif f141 == 0x82 then res_m_r(0, iy.get() + dis(), d);  	 -- res 0, (IY + d), D  
-				elseif f141 == 0x83 then res_m_r(0, iy.get() + dis(), e);  	 -- res 0, (IY + d), E  
-				elseif f141 == 0x84 then res_m_r(0, iy.get() + dis(), h);  	 -- res 0, (IY + d), H  
-				elseif f141 == 0x85 then res_m_r(0, iy.get() + dis(), l);  	 -- res 0, (IY + d), L  
-				elseif f141 == 0x86 then res_m(0, iy.get() + dis());       	 -- res 0, (IY + d)  
-				elseif f141 == 0x87 then res_m_r(0, iy.get() + dis(), a);  	 -- res 0, (IY + d), A  
+				elseif f141 == 0x80 then res_m_r(0, iy.get() + dis(), b);  	 break; --res 0, (IY + d), B  
+				elseif f141 == 0x81 then res_m_r(0, iy.get() + dis(), c);  	 break; --res 0, (IY + d), C  
+				elseif f141 == 0x82 then res_m_r(0, iy.get() + dis(), d);  	 break; --res 0, (IY + d), D  
+				elseif f141 == 0x83 then res_m_r(0, iy.get() + dis(), e);  	 break; --res 0, (IY + d), E  
+				elseif f141 == 0x84 then res_m_r(0, iy.get() + dis(), h);  	 break; --res 0, (IY + d), H  
+				elseif f141 == 0x85 then res_m_r(0, iy.get() + dis(), l);  	 break; --res 0, (IY + d), L  
+				elseif f141 == 0x86 then res_m(0, iy.get() + dis());       	 break; --res 0, (IY + d)  
+				elseif f141 == 0x87 then res_m_r(0, iy.get() + dis(), a);  	 break; --res 0, (IY + d), A  
 
-				elseif f141 == 0x88 then res_m_r(1, iy.get() + dis(), b);  	 -- res 1, (IY + d), B  
-				elseif f141 == 0x89 then res_m_r(1, iy.get() + dis(), c);  	 -- res 1, (IY + d), C  
-				elseif f141 == 0x8a then res_m_r(1, iy.get() + dis(), d);  	 -- res 1, (IY + d), D  
-				elseif f141 == 0x8b then res_m_r(1, iy.get() + dis(), e);  	 -- res 1, (IY + d), E  
-				elseif f141 == 0x8c then res_m_r(1, iy.get() + dis(), h);  	 -- res 1, (IY + d), H  
-				elseif f141 == 0x8d then res_m_r(1, iy.get() + dis(), l);  	 -- res 1, (IY + d), L  
-				elseif f141 == 0x8e then res_m(1, iy.get() + dis());       	 -- res 1, (IY + d)  
-				elseif f141 == 0x8f then res_m_r(1, iy.get() + dis(), a);  	 -- res 1, (IY + d), A  
+				elseif f141 == 0x88 then res_m_r(1, iy.get() + dis(), b);  	 break; --res 1, (IY + d), B  
+				elseif f141 == 0x89 then res_m_r(1, iy.get() + dis(), c);  	 break; --res 1, (IY + d), C  
+				elseif f141 == 0x8a then res_m_r(1, iy.get() + dis(), d);  	 break; --res 1, (IY + d), D  
+				elseif f141 == 0x8b then res_m_r(1, iy.get() + dis(), e);  	 break; --res 1, (IY + d), E  
+				elseif f141 == 0x8c then res_m_r(1, iy.get() + dis(), h);  	 break; --res 1, (IY + d), H  
+				elseif f141 == 0x8d then res_m_r(1, iy.get() + dis(), l);  	 break; --res 1, (IY + d), L  
+				elseif f141 == 0x8e then res_m(1, iy.get() + dis());       	 break; --res 1, (IY + d)  
+				elseif f141 == 0x8f then res_m_r(1, iy.get() + dis(), a);  	 break; --res 1, (IY + d), A  
 
-				elseif f141 == 0x90 then res_m_r(2, iy.get() + dis(), b);  	 -- res 2, (IY + d), B  
-				elseif f141 == 0x91 then res_m_r(2, iy.get() + dis(), c);  	 -- res 2, (IY + d), C  
-				elseif f141 == 0x92 then res_m_r(2, iy.get() + dis(), d);  	 -- res 2, (IY + d), D  
-				elseif f141 == 0x93 then res_m_r(2, iy.get() + dis(), e);  	 -- res 2, (IY + d), E  
-				elseif f141 == 0x94 then res_m_r(2, iy.get() + dis(), h);  	 -- res 2, (IY + d), H  
-				elseif f141 == 0x95 then res_m_r(2, iy.get() + dis(), l);  	 -- res 2, (IY + d), L  
-				elseif f141 == 0x96 then res_m(2, iy.get() + dis());       	 -- res 2, (IY + d)  
-				elseif f141 == 0x97 then res_m_r(2, iy.get() + dis(), a);  	 -- res 2, (IY + d), A  
+				elseif f141 == 0x90 then res_m_r(2, iy.get() + dis(), b);  	 break; --res 2, (IY + d), B  
+				elseif f141 == 0x91 then res_m_r(2, iy.get() + dis(), c);  	 break; --res 2, (IY + d), C  
+				elseif f141 == 0x92 then res_m_r(2, iy.get() + dis(), d);  	 break; --res 2, (IY + d), D  
+				elseif f141 == 0x93 then res_m_r(2, iy.get() + dis(), e);  	 break; --res 2, (IY + d), E  
+				elseif f141 == 0x94 then res_m_r(2, iy.get() + dis(), h);  	 break; --res 2, (IY + d), H  
+				elseif f141 == 0x95 then res_m_r(2, iy.get() + dis(), l);  	 break; --res 2, (IY + d), L  
+				elseif f141 == 0x96 then res_m(2, iy.get() + dis());       	 break; --res 2, (IY + d)  
+				elseif f141 == 0x97 then res_m_r(2, iy.get() + dis(), a);  	 break; --res 2, (IY + d), A  
 
-				elseif f141 == 0x98 then res_m_r(3, iy.get() + dis(), b);  	 -- res 3, (IY + d), B  
-				elseif f141 == 0x99 then res_m_r(3, iy.get() + dis(), c);  	 -- res 3, (IY + d), C  
-				elseif f141 == 0x9a then res_m_r(3, iy.get() + dis(), d);  	 -- res 3, (IY + d), D  
-				elseif f141 == 0x9b then res_m_r(3, iy.get() + dis(), e);  	 -- res 3, (IY + d), E  
-				elseif f141 == 0x9c then res_m_r(3, iy.get() + dis(), h);  	 -- res 3, (IY + d), H  
-				elseif f141 == 0x9d then res_m_r(3, iy.get() + dis(), l);  	 -- res 3, (IY + d), L  
-				elseif f141 == 0x9e then res_m(3, iy.get() + dis());       	 -- res 3, (IY + d)  
-				elseif f141 == 0x9f then res_m_r(3, iy.get() + dis(), a);  	 -- res 3, (IY + d), A  
+				elseif f141 == 0x98 then res_m_r(3, iy.get() + dis(), b);  	 break; --res 3, (IY + d), B  
+				elseif f141 == 0x99 then res_m_r(3, iy.get() + dis(), c);  	 break; --res 3, (IY + d), C  
+				elseif f141 == 0x9a then res_m_r(3, iy.get() + dis(), d);  	 break; --res 3, (IY + d), D  
+				elseif f141 == 0x9b then res_m_r(3, iy.get() + dis(), e);  	 break; --res 3, (IY + d), E  
+				elseif f141 == 0x9c then res_m_r(3, iy.get() + dis(), h);  	 break; --res 3, (IY + d), H  
+				elseif f141 == 0x9d then res_m_r(3, iy.get() + dis(), l);  	 break; --res 3, (IY + d), L  
+				elseif f141 == 0x9e then res_m(3, iy.get() + dis());       	 break; --res 3, (IY + d)  
+				elseif f141 == 0x9f then res_m_r(3, iy.get() + dis(), a);  	 break; --res 3, (IY + d), A  
 
-				elseif f141 == 0xa0 then res_m_r(4, iy.get() + dis(), b);  	 -- res 4, (IY + d), B  
-				elseif f141 == 0xa1 then res_m_r(4, iy.get() + dis(), c);  	 -- res 4, (IY + d), C  
-				elseif f141 == 0xa2 then res_m_r(4, iy.get() + dis(), d);  	 -- res 4, (IY + d), D  
-				elseif f141 == 0xa3 then res_m_r(4, iy.get() + dis(), e);  	 -- res 4, (IY + d), E  
-				elseif f141 == 0xa4 then res_m_r(4, iy.get() + dis(), h);  	 -- res 4, (IY + d), H  
-				elseif f141 == 0xa5 then res_m_r(4, iy.get() + dis(), l);  	 -- res 4, (IY + d), L  
-				elseif f141 == 0xa6 then res_m(4, iy.get() + dis());       	 -- res 4, (IY + d)  
-				elseif f141 == 0xa7 then res_m_r(4, iy.get() + dis(), a);  	 -- res 4, (IY + d), A  
+				elseif f141 == 0xa0 then res_m_r(4, iy.get() + dis(), b);  	 break; --res 4, (IY + d), B  
+				elseif f141 == 0xa1 then res_m_r(4, iy.get() + dis(), c);  	 break; --res 4, (IY + d), C  
+				elseif f141 == 0xa2 then res_m_r(4, iy.get() + dis(), d);  	 break; --res 4, (IY + d), D  
+				elseif f141 == 0xa3 then res_m_r(4, iy.get() + dis(), e);  	 break; --res 4, (IY + d), E  
+				elseif f141 == 0xa4 then res_m_r(4, iy.get() + dis(), h);  	 break; --res 4, (IY + d), H  
+				elseif f141 == 0xa5 then res_m_r(4, iy.get() + dis(), l);  	 break; --res 4, (IY + d), L  
+				elseif f141 == 0xa6 then res_m(4, iy.get() + dis());       	 break; --res 4, (IY + d)  
+				elseif f141 == 0xa7 then res_m_r(4, iy.get() + dis(), a);  	 break; --res 4, (IY + d), A  
 
-				elseif f141 == 0xa8 then res_m_r(5, iy.get() + dis(), b);  	 -- res 5, (IY + d), B  
-				elseif f141 == 0xa9 then res_m_r(5, iy.get() + dis(), c);  	 -- res 5, (IY + d), C  
-				elseif f141 == 0xaa then res_m_r(5, iy.get() + dis(), d);  	 -- res 5, (IY + d), D  
-				elseif f141 == 0xab then res_m_r(5, iy.get() + dis(), e);  	 -- res 5, (IY + d), E  
-				elseif f141 == 0xac then res_m_r(5, iy.get() + dis(), h);  	 -- res 5, (IY + d), H  
-				elseif f141 == 0xad then res_m_r(5, iy.get() + dis(), l);  	 -- res 5, (IY + d), L  
-				elseif f141 == 0xae then res_m(5, iy.get() + dis());       	 -- res 5, (IY + d)  
-				elseif f141 == 0xaf then res_m_r(5, iy.get() + dis(), a);  	 -- res 5, (IY + d), A  
+				elseif f141 == 0xa8 then res_m_r(5, iy.get() + dis(), b);  	 break; --res 5, (IY + d), B  
+				elseif f141 == 0xa9 then res_m_r(5, iy.get() + dis(), c);  	 break; --res 5, (IY + d), C  
+				elseif f141 == 0xaa then res_m_r(5, iy.get() + dis(), d);  	 break; --res 5, (IY + d), D  
+				elseif f141 == 0xab then res_m_r(5, iy.get() + dis(), e);  	 break; --res 5, (IY + d), E  
+				elseif f141 == 0xac then res_m_r(5, iy.get() + dis(), h);  	 break; --res 5, (IY + d), H  
+				elseif f141 == 0xad then res_m_r(5, iy.get() + dis(), l);  	 break; --res 5, (IY + d), L  
+				elseif f141 == 0xae then res_m(5, iy.get() + dis());       	 break; --res 5, (IY + d)  
+				elseif f141 == 0xaf then res_m_r(5, iy.get() + dis(), a);  	 break; --res 5, (IY + d), A  
 
-				elseif f141 == 0xb0 then res_m_r(6, iy.get() + dis(), b);  	 -- res 6, (IY + d), B  
-				elseif f141 == 0xb1 then res_m_r(6, iy.get() + dis(), c);  	 -- res 6, (IY + d), C  
-				elseif f141 == 0xb2 then res_m_r(6, iy.get() + dis(), d);  	 -- res 6, (IY + d), D  
-				elseif f141 == 0xb3 then res_m_r(6, iy.get() + dis(), e);  	 -- res 6, (IY + d), E  
-				elseif f141 == 0xb4 then res_m_r(6, iy.get() + dis(), h);  	 -- res 6, (IY + d), H  
-				elseif f141 == 0xb5 then res_m_r(6, iy.get() + dis(), l);  	 -- res 6, (IY + d), L  
-				elseif f141 == 0xb6 then res_m(6, iy.get() + dis());       	 -- res 6, (IY + d)  
-				elseif f141 == 0xb7 then res_m_r(6, iy.get() + dis(), a);  	 -- res 6, (IY + d), A  
+				elseif f141 == 0xb0 then res_m_r(6, iy.get() + dis(), b);  	 break; --res 6, (IY + d), B  
+				elseif f141 == 0xb1 then res_m_r(6, iy.get() + dis(), c);  	 break; --res 6, (IY + d), C  
+				elseif f141 == 0xb2 then res_m_r(6, iy.get() + dis(), d);  	 break; --res 6, (IY + d), D  
+				elseif f141 == 0xb3 then res_m_r(6, iy.get() + dis(), e);  	 break; --res 6, (IY + d), E  
+				elseif f141 == 0xb4 then res_m_r(6, iy.get() + dis(), h);  	 break; --res 6, (IY + d), H  
+				elseif f141 == 0xb5 then res_m_r(6, iy.get() + dis(), l);  	 break; --res 6, (IY + d), L  
+				elseif f141 == 0xb6 then res_m(6, iy.get() + dis());       	 break; --res 6, (IY + d)  
+				elseif f141 == 0xb7 then res_m_r(6, iy.get() + dis(), a);  	 break; --res 6, (IY + d), A  
 
-				elseif f141 == 0xb8 then res_m_r(7, iy.get() + dis(), b);  	 -- res 7, (IY + d), B  
-				elseif f141 == 0xb9 then res_m_r(7, iy.get() + dis(), c);  	 -- res 7, (IY + d), C  
-				elseif f141 == 0xba then res_m_r(7, iy.get() + dis(), d);  	 -- res 7, (IY + d), D  
-				elseif f141 == 0xbb then res_m_r(7, iy.get() + dis(), e);  	 -- res 7, (IY + d), E  
-				elseif f141 == 0xbc then res_m_r(7, iy.get() + dis(), h);  	 -- res 7, (IY + d), H  
-				elseif f141 == 0xbd then res_m_r(7, iy.get() + dis(), l);  	 -- res 7, (IY + d), L  
-				elseif f141 == 0xbe then res_m(7, iy.get() + dis());       	 -- res 7, (IY + d)  
-				elseif f141 == 0xbf then res_m_r(7, iy.get() + dis(), a);  	 -- res 7, (IY + d), A  
+				elseif f141 == 0xb8 then res_m_r(7, iy.get() + dis(), b);  	 break; --res 7, (IY + d), B  
+				elseif f141 == 0xb9 then res_m_r(7, iy.get() + dis(), c);  	 break; --res 7, (IY + d), C  
+				elseif f141 == 0xba then res_m_r(7, iy.get() + dis(), d);  	 break; --res 7, (IY + d), D  
+				elseif f141 == 0xbb then res_m_r(7, iy.get() + dis(), e);  	 break; --res 7, (IY + d), E  
+				elseif f141 == 0xbc then res_m_r(7, iy.get() + dis(), h);  	 break; --res 7, (IY + d), H  
+				elseif f141 == 0xbd then res_m_r(7, iy.get() + dis(), l);  	 break; --res 7, (IY + d), L  
+				elseif f141 == 0xbe then res_m(7, iy.get() + dis());       	 break; --res 7, (IY + d)  
+				elseif f141 == 0xbf then res_m_r(7, iy.get() + dis(), a);  	 break; --res 7, (IY + d), A  
 
-				elseif f141 == 0xc0 then set_m_r(0, iy.get() + dis(), b);  	 -- set 0, (IY + d), B  
-				elseif f141 == 0xc1 then set_m_r(0, iy.get() + dis(), c);  	 -- set 0, (IY + d), C  
-				elseif f141 == 0xc2 then set_m_r(0, iy.get() + dis(), d);  	 -- set 0, (IY + d), D  
-				elseif f141 == 0xc3 then set_m_r(0, iy.get() + dis(), e);  	 -- set 0, (IY + d), E  
-				elseif f141 == 0xc4 then set_m_r(0, iy.get() + dis(), h);  	 -- set 0, (IY + d), H  
-				elseif f141 == 0xc5 then set_m_r(0, iy.get() + dis(), l);  	 -- set 0, (IY + d), L  
-				elseif f141 == 0xc6 then set_m(0, iy.get() + dis());       	 -- set 0, (IY + d)  
-				elseif f141 == 0xc7 then set_m_r(0, iy.get() + dis(), a);  	 -- set 0, (IY + d), A  
+				elseif f141 == 0xc0 then set_m_r(0, iy.get() + dis(), b);  	 break; --set 0, (IY + d), B  
+				elseif f141 == 0xc1 then set_m_r(0, iy.get() + dis(), c);  	 break; --set 0, (IY + d), C  
+				elseif f141 == 0xc2 then set_m_r(0, iy.get() + dis(), d);  	 break; --set 0, (IY + d), D  
+				elseif f141 == 0xc3 then set_m_r(0, iy.get() + dis(), e);  	 break; --set 0, (IY + d), E  
+				elseif f141 == 0xc4 then set_m_r(0, iy.get() + dis(), h);  	 break; --set 0, (IY + d), H  
+				elseif f141 == 0xc5 then set_m_r(0, iy.get() + dis(), l);  	 break; --set 0, (IY + d), L  
+				elseif f141 == 0xc6 then set_m(0, iy.get() + dis());       	 break; --set 0, (IY + d)  
+				elseif f141 == 0xc7 then set_m_r(0, iy.get() + dis(), a);  	 break; --set 0, (IY + d), A  
 
-				elseif f141 == 0xc8 then set_m_r(1, iy.get() + dis(), b);  	 -- set 1, (IY + d), B  
-				elseif f141 == 0xc9 then set_m_r(1, iy.get() + dis(), c);  	 -- set 1, (IY + d), C  
-				elseif f141 == 0xca then set_m_r(1, iy.get() + dis(), d);  	 -- set 1, (IY + d), D  
-				elseif f141 == 0xcb then set_m_r(1, iy.get() + dis(), e);  	 -- set 1, (IY + d), E  
-				elseif f141 == 0xcc then set_m_r(1, iy.get() + dis(), h);  	 -- set 1, (IY + d), H  
-				elseif f141 == 0xcd then set_m_r(1, iy.get() + dis(), l);  	 -- set 1, (IY + d), L  
-				elseif f141 == 0xce then set_m(1, iy.get() + dis());       	 -- set 1, (IY + d)  
-				elseif f141 == 0xcf then set_m_r(1, iy.get() + dis(), a);  	 -- set 1, (IY + d), A  
+				elseif f141 == 0xc8 then set_m_r(1, iy.get() + dis(), b);  	 break; --set 1, (IY + d), B  
+				elseif f141 == 0xc9 then set_m_r(1, iy.get() + dis(), c);  	 break; --set 1, (IY + d), C  
+				elseif f141 == 0xca then set_m_r(1, iy.get() + dis(), d);  	 break; --set 1, (IY + d), D  
+				elseif f141 == 0xcb then set_m_r(1, iy.get() + dis(), e);  	 break; --set 1, (IY + d), E  
+				elseif f141 == 0xcc then set_m_r(1, iy.get() + dis(), h);  	 break; --set 1, (IY + d), H  
+				elseif f141 == 0xcd then set_m_r(1, iy.get() + dis(), l);  	 break; --set 1, (IY + d), L  
+				elseif f141 == 0xce then set_m(1, iy.get() + dis());       	 break; --set 1, (IY + d)  
+				elseif f141 == 0xcf then set_m_r(1, iy.get() + dis(), a);  	 break; --set 1, (IY + d), A  
 
-				elseif f141 == 0xd0 then set_m_r(2, iy.get() + dis(), b);  	 -- set 2, (IY + d), B  
-				elseif f141 == 0xd1 then set_m_r(2, iy.get() + dis(), c);  	 -- set 2, (IY + d), C  
-				elseif f141 == 0xd2 then set_m_r(2, iy.get() + dis(), d);  	 -- set 2, (IY + d), D  
-				elseif f141 == 0xd3 then set_m_r(2, iy.get() + dis(), e);  	 -- set 2, (IY + d), E  
-				elseif f141 == 0xd4 then set_m_r(2, iy.get() + dis(), h);  	 -- set 2, (IY + d), H  
-				elseif f141 == 0xd5 then set_m_r(2, iy.get() + dis(), l);  	 -- set 2, (IY + d), L  
-				elseif f141 == 0xd6 then set_m(2, iy.get() + dis());       	 -- set 2, (IY + d)  
-				elseif f141 == 0xd7 then set_m_r(2, iy.get() + dis(), a);  	 -- set 2, (IY + d), A  
+				elseif f141 == 0xd0 then set_m_r(2, iy.get() + dis(), b);  	 break; --set 2, (IY + d), B  
+				elseif f141 == 0xd1 then set_m_r(2, iy.get() + dis(), c);  	 break; --set 2, (IY + d), C  
+				elseif f141 == 0xd2 then set_m_r(2, iy.get() + dis(), d);  	 break; --set 2, (IY + d), D  
+				elseif f141 == 0xd3 then set_m_r(2, iy.get() + dis(), e);  	 break; --set 2, (IY + d), E  
+				elseif f141 == 0xd4 then set_m_r(2, iy.get() + dis(), h);  	 break; --set 2, (IY + d), H  
+				elseif f141 == 0xd5 then set_m_r(2, iy.get() + dis(), l);  	 break; --set 2, (IY + d), L  
+				elseif f141 == 0xd6 then set_m(2, iy.get() + dis());       	 break; --set 2, (IY + d)  
+				elseif f141 == 0xd7 then set_m_r(2, iy.get() + dis(), a);  	 break; --set 2, (IY + d), A  
 
-				elseif f141 == 0xd8 then set_m_r(3, iy.get() + dis(), b);  	 -- set 3, (IY + d), B  
-				elseif f141 == 0xd9 then set_m_r(3, iy.get() + dis(), c);  	 -- set 3, (IY + d), C  
-				elseif f141 == 0xda then set_m_r(3, iy.get() + dis(), d);  	 -- set 3, (IY + d), D  
-				elseif f141 == 0xdb then set_m_r(3, iy.get() + dis(), e);  	 -- set 3, (IY + d), E  
-				elseif f141 == 0xdc then set_m_r(3, iy.get() + dis(), h);  	 -- set 3, (IY + d), H  
-				elseif f141 == 0xdd then set_m_r(3, iy.get() + dis(), l);  	 -- set 3, (IY + d), L  
-				elseif f141 == 0xde then set_m(3, iy.get() + dis());       	 -- set 3, (IY + d)  
-				elseif f141 == 0xdf then set_m_r(3, iy.get() + dis(), a);  	 -- set 3, (IY + d), A  
+				elseif f141 == 0xd8 then set_m_r(3, iy.get() + dis(), b);  	 break; --set 3, (IY + d), B  
+				elseif f141 == 0xd9 then set_m_r(3, iy.get() + dis(), c);  	 break; --set 3, (IY + d), C  
+				elseif f141 == 0xda then set_m_r(3, iy.get() + dis(), d);  	 break; --set 3, (IY + d), D  
+				elseif f141 == 0xdb then set_m_r(3, iy.get() + dis(), e);  	 break; --set 3, (IY + d), E  
+				elseif f141 == 0xdc then set_m_r(3, iy.get() + dis(), h);  	 break; --set 3, (IY + d), H  
+				elseif f141 == 0xdd then set_m_r(3, iy.get() + dis(), l);  	 break; --set 3, (IY + d), L  
+				elseif f141 == 0xde then set_m(3, iy.get() + dis());       	 break; --set 3, (IY + d)  
+				elseif f141 == 0xdf then set_m_r(3, iy.get() + dis(), a);  	 break; --set 3, (IY + d), A  
 
-				elseif f141 == 0xe0 then set_m_r(4, iy.get() + dis(), b);  	 -- set 4, (IY + d), B  
-				elseif f141 == 0xe1 then set_m_r(4, iy.get() + dis(), c);  	 -- set 4, (IY + d), C  
-				elseif f141 == 0xe2 then set_m_r(4, iy.get() + dis(), d);  	 -- set 4, (IY + d), D  
-				elseif f141 == 0xe3 then set_m_r(4, iy.get() + dis(), e);  	 -- set 4, (IY + d), E  
-				elseif f141 == 0xe4 then set_m_r(4, iy.get() + dis(), h);  	 -- set 4, (IY + d), H  
-				elseif f141 == 0xe5 then set_m_r(4, iy.get() + dis(), l);  	 -- set 4, (IY + d), L  
-				elseif f141 == 0xe6 then set_m(4, iy.get() + dis());       	 -- set 4, (IY + d)  
-				elseif f141 == 0xe7 then set_m_r(4, iy.get() + dis(), a);  	 -- set 4, (IY + d), A  
+				elseif f141 == 0xe0 then set_m_r(4, iy.get() + dis(), b);  	 break; --set 4, (IY + d), B  
+				elseif f141 == 0xe1 then set_m_r(4, iy.get() + dis(), c);  	 break; --set 4, (IY + d), C  
+				elseif f141 == 0xe2 then set_m_r(4, iy.get() + dis(), d);  	 break; --set 4, (IY + d), D  
+				elseif f141 == 0xe3 then set_m_r(4, iy.get() + dis(), e);  	 break; --set 4, (IY + d), E  
+				elseif f141 == 0xe4 then set_m_r(4, iy.get() + dis(), h);  	 break; --set 4, (IY + d), H  
+				elseif f141 == 0xe5 then set_m_r(4, iy.get() + dis(), l);  	 break; --set 4, (IY + d), L  
+				elseif f141 == 0xe6 then set_m(4, iy.get() + dis());       	 break; --set 4, (IY + d)  
+				elseif f141 == 0xe7 then set_m_r(4, iy.get() + dis(), a);  	 break; --set 4, (IY + d), A  
 
-				elseif f141 == 0xe8 then set_m_r(5, iy.get() + dis(), b);  	 -- set 5, (IY + d), B  
-				elseif f141 == 0xe9 then set_m_r(5, iy.get() + dis(), c);  	 -- set 5, (IY + d), C  
-				elseif f141 == 0xea then set_m_r(5, iy.get() + dis(), d);  	 -- set 5, (IY + d), D  
-				elseif f141 == 0xeb then set_m_r(5, iy.get() + dis(), e);  	 -- set 5, (IY + d), E  
-				elseif f141 == 0xec then set_m_r(5, iy.get() + dis(), h);  	 -- set 5, (IY + d), H  
-				elseif f141 == 0xed then set_m_r(5, iy.get() + dis(), l);  	 -- set 5, (IY + d), L  
-				elseif f141 == 0xee then set_m(5, iy.get() + dis());       	 -- set 5, (IY + d)  
-				elseif f141 == 0xef then set_m_r(5, iy.get() + dis(), a);  	 -- set 5, (IY + d), A  
+				elseif f141 == 0xe8 then set_m_r(5, iy.get() + dis(), b);  	 break; --set 5, (IY + d), B  
+				elseif f141 == 0xe9 then set_m_r(5, iy.get() + dis(), c);  	 break; --set 5, (IY + d), C  
+				elseif f141 == 0xea then set_m_r(5, iy.get() + dis(), d);  	 break; --set 5, (IY + d), D  
+				elseif f141 == 0xeb then set_m_r(5, iy.get() + dis(), e);  	 break; --set 5, (IY + d), E  
+				elseif f141 == 0xec then set_m_r(5, iy.get() + dis(), h);  	 break; --set 5, (IY + d), H  
+				elseif f141 == 0xed then set_m_r(5, iy.get() + dis(), l);  	 break; --set 5, (IY + d), L  
+				elseif f141 == 0xee then set_m(5, iy.get() + dis());       	 break; --set 5, (IY + d)  
+				elseif f141 == 0xef then set_m_r(5, iy.get() + dis(), a);  	 break; --set 5, (IY + d), A  
 
-				elseif f141 == 0xf0 then set_m_r(6, iy.get() + dis(), b);  	 -- set 6, (IY + d), B  
-				elseif f141 == 0xf1 then set_m_r(6, iy.get() + dis(), c);  	 -- set 6, (IY + d), C  
-				elseif f141 == 0xf2 then set_m_r(6, iy.get() + dis(), d);  	 -- set 6, (IY + d), D  
-				elseif f141 == 0xf3 then set_m_r(6, iy.get() + dis(), e);  	 -- set 6, (IY + d), E  
-				elseif f141 == 0xf4 then set_m_r(6, iy.get() + dis(), h);  	 -- set 6, (IY + d), H  
-				elseif f141 == 0xf5 then set_m_r(6, iy.get() + dis(), l);  	 -- set 6, (IY + d), L  
-				elseif f141 == 0xf6 then set_m(6, iy.get() + dis());       	 -- set 6, (IY + d)  
-				elseif f141 == 0xf7 then set_m_r(6, iy.get() + dis(), a);  	 -- set 6, (IY + d), A  
+				elseif f141 == 0xf0 then set_m_r(6, iy.get() + dis(), b);  	 break; --set 6, (IY + d), B  
+				elseif f141 == 0xf1 then set_m_r(6, iy.get() + dis(), c);  	 break; --set 6, (IY + d), C  
+				elseif f141 == 0xf2 then set_m_r(6, iy.get() + dis(), d);  	 break; --set 6, (IY + d), D  
+				elseif f141 == 0xf3 then set_m_r(6, iy.get() + dis(), e);  	 break; --set 6, (IY + d), E  
+				elseif f141 == 0xf4 then set_m_r(6, iy.get() + dis(), h);  	 break; --set 6, (IY + d), H  
+				elseif f141 == 0xf5 then set_m_r(6, iy.get() + dis(), l);  	 break; --set 6, (IY + d), L  
+				elseif f141 == 0xf6 then set_m(6, iy.get() + dis());       	 break; --set 6, (IY + d)  
+				elseif f141 == 0xf7 then set_m_r(6, iy.get() + dis(), a);  	 break; --set 6, (IY + d), A  
 
-				elseif f141 == 0xf8 then set_m_r(7, iy.get() + dis(), b);  	 -- set 7, (IY + d), B  
-				elseif f141 == 0xf9 then set_m_r(7, iy.get() + dis(), c);  	 -- set 7, (IY + d), C  
-				elseif f141 == 0xfa then set_m_r(7, iy.get() + dis(), d);  	 -- set 7, (IY + d), D  
-				elseif f141 == 0xfb then set_m_r(7, iy.get() + dis(), e);  	 -- set 7, (IY + d), E  
-				elseif f141 == 0xfc then set_m_r(7, iy.get() + dis(), h);  	 -- set 7, (IY + d), H  
-				elseif f141 == 0xfd then set_m_r(7, iy.get() + dis(), l);  	 -- set 7, (IY + d), L  
-				elseif f141 == 0xfe then set_m(7, iy.get() + dis());       	 -- set 7, (IY + d)  
-				elseif f141 == 0xff then set_m_r(7, iy.get() + dis(), a);  	 -- set 7, (IY + d), A  
+				elseif f141 == 0xf8 then set_m_r(7, iy.get() + dis(), b);  	 break; --set 7, (IY + d), B  
+				elseif f141 == 0xf9 then set_m_r(7, iy.get() + dis(), c);  	 break; --set 7, (IY + d), C  
+				elseif f141 == 0xfa then set_m_r(7, iy.get() + dis(), d);  	 break; --set 7, (IY + d), D  
+				elseif f141 == 0xfb then set_m_r(7, iy.get() + dis(), e);  	 break; --set 7, (IY + d), E  
+				elseif f141 == 0xfc then set_m_r(7, iy.get() + dis(), h);  	 break; --set 7, (IY + d), H  
+				elseif f141 == 0xfd then set_m_r(7, iy.get() + dis(), l);  	 break; --set 7, (IY + d), L  
+				elseif f141 == 0xfe then set_m(7, iy.get() + dis());       	 break; --set 7, (IY + d)  
+				elseif f141 == 0xff then set_m_r(7, iy.get() + dis(), a);  	 break; --set 7, (IY + d), A  
 				
 				end
 			
-			elseif f14 == 0xe1 then pop(iy);    	 -- pop IY  
-			elseif f14 == 0xe3 then ex_sp(iy);  	 -- ex (SP), IY  
-			elseif f14 == 0xe5 then push(iy);   	 -- push IY  
-			elseif f14 == 0xe9 then jp(1, iy);  	 -- jp (IY)  
-			elseif f14 == 0xf9 then ld16(sp, iy);  	 -- ld SP, IY  
+			elseif f14 == 0xe1 then pop(iy);    	 break; --pop IY  
+			elseif f14 == 0xe3 then ex_sp(iy);  	 break; --ex (SP), IY  
+			elseif f14 == 0xe5 then push(iy);   	 break; --push IY  
+			elseif f14 == 0xe9 then jp(1, iy);  	 break; --jp (IY)  
+			elseif f14 == 0xf9 then ld16(sp, iy);  	 break; --ld SP, IY  
 	
-		elseif f1 == 0xfe then cp(imm8());		-- cp n 
-		elseif f1 == 0xff then rst(0x38);		-- rst 38H
+			end
+
+		elseif f1 == 0xfe then cp(imm8());	   break; --cp n 
+		elseif f1 == 0xff then rst(0x38);	    break; --rst 38H
 		
 		end
 		
 		restStates = restStates - states;
 
-		--until (restStates <= 0)	
-		end
-
-		return 0
-
+	--until (restStates <= 0)	
 	end
+
+	return 0
+
 end
+
 return Z80
