@@ -501,6 +501,16 @@ local base = {
 -- private byte[][] rom;
 local rom = {{}}
 
+-- 根据 nr 的类型来返回不同的值:数字返回其本身,表返回 get() 方法
+local function nOrReg(nr)
+	local typeNr = type(nr)
+	if typeN == "number" then
+		return nr
+	elseif typeN == "table" then
+		return nr:get()
+	end
+end
+
 -- 输出日志 abstract void log(String message);
 function Z80:log(message)
 
@@ -534,12 +544,8 @@ end
 
 -- 读取内存（16位）int read16(int address | Register16 address)
 function Z80:read16(address)
-	local typeAddress = type(address)
-	if typeAddress == "number" then
-		return Z80:read8(address) | (Z80:read8((address + 1) & 0xffff) << 8);
-	elseif typeAddress == "table" then
-		return Z80:read8(address.get()) | ((Z80:read8(address.get() + 1) & 0xffff) << 8);
-	end
+	local address = nOrReg(address)
+	return Z80:read8(address) | (Z80:read8((address + 1) & 0xffff) << 8);
 end
 
 -- 写入内存（8位）abstract void write(int address, byte value);
@@ -557,16 +563,8 @@ end
 
 -- void write8(int address | Register16 address, int value | Register8 value)
 function Z80:write8(address, value)
-	local typeAddress, typeValue = type(address), type(value)
-	if typeAddress == "number" and typeValue == "number" then
-		Z80:write(address, value);
-	elseif typeAddress == "table" and typeValue == "number" then
-		Z80:write(address.get(), value);
-	elseif typeAddress == "number" and typeValue == "table" then
-		Z80:write(address, value.get());
-	elseif typeAddress == "table" and typeValue == "table" then
-		Z80:write(address.get(), value.get());
-	end
+	local address, value = nOrReg(address), nOrReg(value)
+	Z80:write(address, value);
 end
 
 -- 写入内存（16位）void write16(int address | Register16 address, int value | Register16 value)
@@ -602,14 +600,8 @@ end
 
 -- void outport(Register8 address | int address, int value | Register8 value)
 function Z80:outport(address, value)
-	local typeAddress, typeValue = type(address), type(value)
-	if typeAddress == "table" and typeValue == "number" then
-		Z80:outport(address.get(), value);
-	elseif typeAddress == "number" and typeValue == "table" then
-		Z80:outport(address, value.get());
-	elseif typeAddress == "table" and typeValue == "table" then
-		Z80:outport(address.get(), value.get());
-	end
+	local address, value = nOrReg(address), nOrReg(value)
+	Z80:outport(address, value);
 end
 
 -- 子程序 abstract int subroutine(int address)
@@ -646,23 +638,14 @@ end
 
 -- 改变奇偶校验/溢出标志（奇偶校验）int setP(int acc | Register8 r)
 local function setP(accr)
-	local typeAccr = type(accr)
-	if typeAccr == "number" then 
-		return parity[acc & 0xff];
-	elseif typeAccr == "table" then
-		return parity[r.get() & 0xff];
-	end
+	local accr = nOrReg(accr)
+	return parity[accr & 0xff];
 end
 
 -- 改变奇偶校验/溢出标志（8位加法）int setV8(int acc, int x | Register8 x, int y)
 local function setV8(acc, x, y)
-	local typeX = type(x)
-	if typeX == "number" then
-		return (((x ~ y) & 0x80) ~= 0 and {0} or {(((x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]})[1];
-	elseif typeX == "table" then
-		local _x = x.get();
-		return (((_x ~ y) & 0x80) ~= 0 and {0} or {(((_x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]})[1];
-	end
+	local x = nOrReg(x)
+	return (((x ~ y) & 0x80) ~= 0 and {0} or {(((x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]})[1];
 end
 
 -- 改变奇偶校验/溢出标志（16位加法）int setV16(int acc, Register16 x, Register16 y)
@@ -674,15 +657,8 @@ end
 
 -- 改变奇偶校验/溢出标志（8位减法）int setV8S(int acc, int x | Register8 x, int y | Register8 y)
 local function setV8S(acc, x, y)
-	local typeX, typeY = type(x), type(y)
-	if typeX == "number" and typeY == "number" then
-		return (((x ~ y) & 0x80) ~= 0 and {(((x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]} or {0})[1];
-	elseif typeX == "table" and typeY == "number" then
-		local _x = x.get();
-		return (((_x ~ y) & 0x80) ~= 0 and {(((_x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]} or {0})[1];
-	elseif typeX == "number" and typeY == "table" then
-		return (((x ~ y.get()) & 0x80) ~= 0 and {(((x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]} or {0})[1];
-	end	
+	local x, y = nOrReg(x), nOrReg(y)
+	return (((x ~ y) & 0x80) ~= 0 and {(((x ~ acc) & 0x80) ~= 0 and {MASK_PV} or {0})[1]} or {0})[1];
 end
 
 -- 改变奇偶校验/溢出标志（16位减法）int setV16S(int acc, Register16 x, Register16 y)
@@ -693,28 +669,22 @@ end
 
 -- 更改半进位标志（8位加法）int setHC8(Register8 x | int x, int y, int cy)
 local function setHC8(x, y, cy)
-	local typeX = type(x) 
+	local x = nOrReg(x) 
 	if cy ~= nil then
 		return ((x.get() & 0x0f) + (y & 0x0f) + cy) & 0x10;
-	elseif cy == nil and typeX == "number" then
+	elseif cy == nil then
 		return ((x & 0x0f) + (y & 0x0f)) & 0x10;
-	elseif cy == nil and typeX == "table" then  
-		return ((x.get() & 0x0f) + (y & 0x0f)) & 0x10;
 	end
 end
 
 
 -- 更改半进位标志（8位减法）int setHC8S(Register8 x | int x, int y | Register8 y, int cy)
 local function setHC8S(x, y, cy)
-	local typeX, typeY = type(x), type(y)
-	if cy ~= nil and typeX == "table" and typeY == "number" then
-		return ((x.get() & 0x0f) - (y & 0x0f) - cy) & 0x10;
-	elseif cy == nil and typeX == "number" and typeY == "number" then
+	local x, y = nOrReg(x), nOrReg(y)
+	if cy ~= nil  then
+		return ((x & 0x0f) - (y & 0x0f) - cy) & 0x10;
+	elseif cy == nil then
 		return ((x & 0x0f) - (y & 0x0f)) & 0x10;
-	elseif cy == nil and typeX == "table" and typeY == "number" then
-		return ((x.get() & 0x0f) - (y & 0x0f)) & 0x10;
-	elseif cy == nil and typeX == "number" and typeY == "table" then
-		return ((x & 0x0f) - (y.get() & 0x0f)) & 0x10;
 	end 	
 end
 
@@ -734,12 +704,8 @@ end
 
 -- 改变零标志位（8位）int setZ8(int acc | Register8 r)
 local function setZ8(accr)
-	local typeAccr = type(accr)
-	if typeAccr == "number" then
-		return ((acc & 0xff) ~= 0 and {0} or {MASK_Z})[1];
-	elseif typeAccr == "table" then
-		return ((r.get() & 0xff) ~= 0 and {0} or {MASK_Z})[1];
-	end
+	local accr = nOrReg(accr)
+	return ((accr & 0xff) ~= 0 and {0} or {MASK_Z})[1];
 end
 
 -- 改变零标志位（16位）int setZ16(int acc)
@@ -749,12 +715,8 @@ end
 
 -- 更改符号标志（8位）int setS8(int acc | Register8 r)
 local function setS8(accr)
-	local typeAccr = type(accr)
-	if typeAccr == "number" then
-		return ((acc & 0x80) ~= 0 and {MASK_S} or {0})[1];
-	elseif typeAccr == "table" then
-		return ((r.get() & 0x80) ~= 0 and {MASK_S} or {0})[1];
-	end
+	local accr = nOrReg(accr)
+	return ((accr & 0x80) ~= 0 and {MASK_S} or {0})[1];
 end
 
 -- 更改符号标志（16位）int setS16(int acc)
@@ -785,15 +747,6 @@ end
 		adc IYL
 --]]
 
--- 根据 nr 的类型来返回不同的值:数字返回其本身,表返回 get() 方法
-local function nOrReg(nr)
-	local typeNr = type(nr)
-	if typeN == "number" then
-		return nr
-	elseif typeN == "table" then
-		return nr:get()
-	end
-end
 
 -- void adc8(int n | Register8 r)
 local function adc8(nr)
