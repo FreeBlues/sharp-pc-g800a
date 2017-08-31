@@ -2061,810 +2061,886 @@ local function in1f()
 	return keyBreak | pin11In;
 end
 
-			11pinI/Fの入力 (outportの下請け)
-		private void out1f(int x)
-	{
-	}
+--11pinI/Fの入力 (outportの下請け)
+--private void out1f(int x)
+local function out1f(x)	
 
-			VRAMのオフセットを得る (PC-E200)
-		private int e200VramOffset(int x, int row, int begin)
-	{
-		row = (row - begin + 8) % 8;
+end
 
-		if(x == 0x3c)
-			return row * E200_VRAM_WIDTH + (E200_VRAM_WIDTH - 1);
+--VRAMのオフセットを得る (PC-E200)
+--private int e200VramOffset(int x, int row, int begin)
+local function e200VramOffset(x, row, begin)
+	row = (row - begin + 8) % 8;
 
-		if(row < 4)
-			return (row - 0) * E200_VRAM_WIDTH + x;
-		else
-			return (row - 4) * E200_VRAM_WIDTH + (E200_VRAM_WIDTH - x - 2);
-	}
+	if(x == 0x3c) then
+		return row * E200_VRAM_WIDTH + (E200_VRAM_WIDTH - 1);
+	end
 
-			ディスプレイコントロール (PC-E200) (outportの下請け)
-		private void out58_e200(int val)
-	{
-		switch(val & 0xc0) {
-		case 0x00:
-			break;
-		case 0x40:
-			lcdX = val & 0x3f;
-			break;
-		case 0x80:
-			lcdY = val & 0x07;
-			break;
-		case 0xc0:
-			int row, x, begin_prev;
+	if(row < 4) then
+		return (row - 0) * E200_VRAM_WIDTH + x;
+	else
+		return (row - 4) * E200_VRAM_WIDTH + (E200_VRAM_WIDTH - x - 2);
+	end
+end
 
-			System.arraycopy(vram, 0, tmpVram, 0, vram.length);
+--ディスプレイコントロール (PC-E200) (outportの下請け)
+--private void out58_e200(int val)
+local function out58_e200(val)
+	--switch(val & 0xc0) 
+	local valc = val & 0xc0
+	if valc ==  0x00 then
+		break;
+	elseif valc == 0x40 then
+		lcdX = val & 0x3f;
+		break;
+	elseif valc == 0x80 then
+		lcdY = val & 0x07;
+		break;
+	elseif valc == 0xc0 then
+		int row, x, begin_prev;
 
-			begin_prev = lcdBegin;
-			lcdBegin = (val >> 3) & 0x07;
+		System.arraycopy(vram, 0, tmpVram, 0, vram.length);
 
-			for(row = 0; row < 8; row++)
-				for(x = 0; x < 0x3d; x++)
-					vram[e200VramOffset(x, row, lcdBegin)] = tmpVram[e200VramOffset(x, row, begin_prev)];
-			break;
-		}
-	}
+		begin_prev = lcdBegin;
+		lcdBegin = (val >> 3) & 0x07;
 
-			ディスプレイコントロール (PC-E200) (inportの下請け)
-		private int in59_e200()
-	{
-		return 0;
-	}
+		for row = 0, 8, 1 do
+			for x = 0, 0x3d, 1 do
+				vram[e200VramOffset(x, row, lcdBegin)] = tmpVram[e200VramOffset(x, row, begin_prev)];
+			end
+		end	
+	break;
+	end
+end
 
-			ディスプレイ WRITE (PC-E200) (outportの下請け)
-		private void out5a_e200(int val)
-	{
-		if(lcdX < 0x3d && lcdY < 8)
-			vram[e200VramOffset(lcdX++, lcdY, lcdBegin)] = (byte) val;
-	}
+--ディスプレイコントロール (PC-E200) (inportの下請け)
+--private int in59_e200()
+local function in59_e200()	
+	return 0;
+end
 
-			ディスプレイ READ (PC-E200) (inportの下請け)
-		private int in5b_e200()
-	{
-		if(lcdX > 0 && lcdX < 0x3d && lcdY < 8)
+--ディスプレイ WRITE (PC-E200) (outportの下請け)
+--private void out5a_e200(int val)
+local function ou55a_e200(val)
+	if(lcdX < 0x3d && lcdY < 8) then
+		vram[e200VramOffset(lcdX++, lcdY, lcdBegin)] = (byte) val;
+	end
+end
+
+--ディスプレイ READ (PC-E200) (inportの下請け)
+--private int in5b_e200()
+	local function in5b_e200()
+		if(lcdX > 0 && lcdX < 0x3d && lcdY < 8) then
 			return vram[e200VramOffset(lcdX++ - 1, lcdY, lcdBegin)];
+		end	
 		return 0;
-	}
+	end
 
-			VRAMのオフセット(PC-G815)
-		private int g815VramOffset(int x, int row, int begin)
-	{
+--VRAMのオフセット(PC-G815)
+--private int g815VramOffset(int x, int row, int begin)
+local function g815VramOffset(x, row, begin)
 		row = (row - begin + 8) % 8;
 
-		if(x == 0x7b)
-			return row * G815_VRAM_WIDTH + (G815_VRAM_WIDTH - 1);
-		if(row < 4)
+		if(x == 0x7b) then
+			return row * G815_VRAM_WIDTH + (G815_VRAM_WIDTH - 1); end
+
+		if(row < 4) then
 			return (row - 0) * G815_VRAM_WIDTH + x;
 		else
 			return (row - 4) * G815_VRAM_WIDTH + (G815_VRAM_WIDTH - x - 2);
-	}
+		end
+end
 
-			ディスプレイコントロール (PC-G815) (outportの下請け)
-		private void out50_g815(int val)
-	{
-		switch(val & 0xc0) {
-		case 0x00:
+--ディスプレイコントロール (PC-G815) (outportの下請け)
+--private void out50_g815(int val)
+local function out50_g815(val)
+		--switch(val & 0xc0) {
+		local valc = val & 0xc0
+		if valc ==  0x00 then
 			break;
-		case 0x40:
-			lcdX2 = lcdX = val & 0x3f;
+		elseif valc == 0x40 then
+			lcdX = val & 0x3f;
+			lcdX2 = lcdX
 			break;
-		case 0x80:
-			lcdY2 = lcdY = val & 0x07;
+		elseif valc == 0x80 then
+			lcdY = val & 0x07;
+			lcdY2 == lcdY
 			break;
-		case 0xc0:
-			int row, x, begin_prev;
+		elseif valc == 0xc0 then
+			--int row, x, begin_prev;
 
-			begin_prev = lcdBegin;
-			lcdBegin = (val >> 3) & 0x07;
+			local begin_prev = lcdBegin;
+			local lcdBegin = (val >> 3) & 0x07;
 
 			System.arraycopy(vram, 0, tmpVram, 0, vram.length);
-			for(row = 0; row < 8; row++)
-				for(x = 0; x < 0x49; x++)
+			for row = 0, 8, 1 do
+				for x = 0, 0x49, 1 do
 					vram[g815VramOffset(x, row, lcdBegin)] = tmpVram[g815VramOffset(x, row, begin_prev)];
+				end
+			end			
 			break;
-		}
-	}
+		end
+	end
 
-			ディスプレイコントロール (PC-G815) (inportの下請け)
-		private int in51_g815()
-	{
-		return 0;
-	}
+--ディスプレイコントロール (PC-G815) (inportの下請け)
+--private int in51_g815()
+local function in51_g815()
+	return 0;
+end
 
-			ディスプレイコントロール (PC-G815) (outportの下請け)
-		private void out54_g815(int val)
-	{
-		switch(val & 0xc0) {
-		case 0x00:
-			break;
-		case 0x40:
-			lcdX2 = val & 0x3f;
-			break;
-		case 0x80:
-			lcdY2 = val & 0x07;
-			break;
-		case 0xc0:
-			out50_g815(val);
-			break;
-		}
-	}
+--ディスプレイコントロール (PC-G815) (outportの下請け)
+--private void out54_g815(int val)
+local function out54_g815(val)
+	--switch(val & 0xc0) {
+	local valc == val & 0xc0
+	if valc == 0x00 then
+		break;
+	elseif valc == 0x40 then
+		lcdX2 = val & 0x3f;
+		break;
+	elseif valc == 0x80 then
+		lcdY2 = val & 0x07;
+		break;
+	elseif valc == 0xc0 then
+		out50_g815(val);
+		break;
+	end
+end
 
-			ディスプレイコントロール (PC-G815) (inportの下請け)
-		private int in55_g815()
-	{
-		return 0;
-	}
+--ディスプレイコントロール (PC-G815) (inportの下請け)
+--private int in55_g815()
+local function in55_g815()
+	return 0;
+end
 
-			ディスプレイコントロール (PC-G815) (outportの下請け)
-		private void out58_g815(int val)
-	{
-		switch(val & 0xc0) {
-		case 0x00:
+--ディスプレイコントロール (PC-G815) (outportの下請け)
+--private void out58_g815(int val)
+	local function out58_g815(val)
+		--		switch(val & 0xc0) {
+		local valc = val & 0xc0
+		if valc == 0x00 then
 			break;
-		case 0x40:
+		elseif valc == 0x40 then
 			lcdX = val & 0x3f;
 			break;
-		case 0x80:
+		elseif valc == 0x80 then
 			lcdY = val & 0x07;
 			break;
-		case 0xc0:
+		elseif valc == 0xc0 then
 			out50_g815(val);
 			break;
-		}
-	}
+	end
+end
 
-			ディスプレイコントロール (PC-G815) (inportの下請け)
-		private int in59_g815()
-	{
+--ディスプレイコントロール (PC-G815) (inportの下請け)
+--private int in59_g815()
+local function in59_g815()
 		return 0;
-	}
+end
 
-			ディスプレイ WRITE (PC-G815) (outportの下請け)
-		private void out56_g815(int x)
-	{
-		if(lcdX2 < 0x3c && lcdY2 < 8)
-			vram[g815VramOffset(lcdX2++, lcdY2, lcdBegin)] = (byte )x;
-	}
+--ディスプレイ WRITE (PC-G815) (outportの下請け)
+--private void out56_g815(int x)
+	local function out56_g815(x)
+		if(lcdX2 < 0x3c && lcdY2 < 8) then
+			vram[g815VramOffset(lcdX2++, lcdY2, lcdBegin)] = x;
+	end
+end
 
-			ディスプレイ READ (PC-G815) (inportの下請け)
-		private int in57_g815()
-	{
-		if(lcdX2 - 1 < 0x3c && lcdX2 > 0 && lcdY2 < 8)
+--ディスプレイ READ (PC-G815) (inportの下請け)
+--private int in57_g815()
+local function in57_g815()
+		if(lcdX2 - 1 < 0x3c && lcdX2 > 0 && lcdY2 < 8) then
 			return vram[g815VramOffset(lcdX2++ - 1, lcdY2, lcdBegin)];
+		end
 		return 0;
-	}
+	end
 
-			ディスプレイ WRITE (PC-G815) (outportの下請け)
-		private void out5a_g815(int x)
-	{
-		if((0x3c + lcdX < 0x49 || 0x3c + lcdX == 0x7b) && lcdY < 8)
-			vram[g815VramOffset(0x3c + lcdX++, lcdY, lcdBegin)] = (byte )x;
-	}
+--ディスプレイ WRITE (PC-G815) (outportの下請け)
+--private void out5a_g815(int x)
+	local function out5a_g815(x)
+		if((0x3c + lcdX < 0x49 || 0x3c + lcdX == 0x7b) && lcdY < 8) then
+			vram[g815VramOffset(0x3c + lcdX++, lcdY, lcdBegin)] = x;
+end
+end	
 
-			ディスプレイ READ (PC-G815) (inportの下請け)
-		private int in5b_g815()
-	{
-		if(0x3c + lcdX - 1 < 0x49 && lcdY < 8)
+--ディスプレイ READ (PC-G815) (inportの下請け)
+--private int in5b_g815()
+local function in5b_g815()
+		if(0x3c + lcdX - 1 < 0x49 && lcdY < 8) then
 			return vram[g815VramOffset(0x3c + lcdX++ - 1, lcdY, lcdBegin)];
+	end
 		return 0;
-	}
+	end
 
-			ディスプレイ WRITE (PC-G815) (outportの下請け)
-		private void out52_g815(int x)
-	{
+--ディスプレイ WRITE (PC-G815) (outportの下請け)
+--private void out52_g815(int x)
+local function out52_g815(x)
 		out56_g815(x);
 		out5a_g815(x);
-	}
+end
 
-			VRAMのオフセット(PC-G850)
-		private int g850VramOffset(int x, int row)
-	{
+--VRAMのオフセット(PC-G850)
+--private int g850VramOffset(int x, int row)
+local function g850VramOffset(x, row)
 		return row * G850_VRAM_WIDTH + x;
-	}
+end
 
-			ディスプレイコントロール (PC-G850) (inportの下請け)
-		private int in40_g850()
-	{
+--ディスプレイコントロール (PC-G850) (inportの下請け)
+--private int in40_g850()
+local function in40_g850()
 		return 0;
-	}
+end
 
-			ディスプレイコントロール (PC-G850) (outportの下請け)
-		private void out40_g850(int x)
-	{
-		switch(x & 0xf0) {
-		case 0x00:
+--ディスプレイコントロール (PC-G850) (outportの下請け)
+--private void out40_g850(int x)
+local function out40_g850(x)
+		--switch(x & 0xf0) {
+	local xf = x & 0xf0
+		if xf == 0x00 then
 			lcdX = (lcdX & 0xf0) | (x & 0x0f);
 			break;
-		case 0x10:
+		elseif xf == 0x10 then
 			lcdX = ((x << 4) & 0xf0) | (lcdX & 0x0f);
 			break;
-		case 0x20:
-			if(x == 0x24)
+		elseif xf == 0x20 then
+			if(x == 0x24) then
 				lcdDisabled = true;
-			else if(x == 0x25)
+			elseif(x == 0x25) then
 				lcdDisabled = false;
+			end
 			break;
-		case 0x30:
+		elseif xf == 0x30 then
 			timerInterval = 16192 * ((x & 0x0f) + 1);
 			break;
-		case 0x40:
-		case 0x50:
-		case 0x60:
-		case 0x70:
+		elseif xf == 0x40 then
+		elseif xf == 0x50 then
+		elseif xf == 0x60 then
+		elseif xf == 0x70 then
 			lcdTop = x - 0x40;
 			break;
-		case 0x80:
-		case 0x90:
+		elseif xf == 0x80 then
+		elseif xf == 0x90 then
 			lcdContrast = x - 0x80;
 			break;
-		case 0xa0:
-			switch(x) {
-			case 0xa0:
+		elseif xf == 0xa0 then
+			--switch(x) {
+			if x ==  0xa0 then
 				lcdEffectMirror = false;
 				break;
-			case 0xa1:
+			elseif x == 0xa1 then
 				lcdEffectMirror = true;
 				break;
-			case 0xa4:
+			elseif x == 0xa4 then
 				lcdEffectBlack = false;
 				break;
-			case 0xa5:
+			elseif x == 0xa5 then
 				lcdEffectBlack = true;
 				lcdEffectWhite = false;
 				break;
-			case 0xa6:
+			elseif x == 0xa6 then
 				lcdEffectReverse = false;
 				break;
-			case 0xa7:
+			elseif x == 0xa7 then
 				lcdEffectReverse = true;
 				break;
-			case 0xa8:
+			elseif x == 0xa8 then
 				lcdEffectDark = true;
 				break;
-			case 0xa9:
+			elseif x == 0xa9 then
 				lcdEffectDark = false;
 				break;
-			case 0xae:
+			elseif x == 0xae then
 				lcdEffectWhite = true;
 				lcdEffectBlack = false;
 				break;
-			case 0xaf:
+			elseif x == 0xaf then
 				lcdEffectWhite = false;
 				break;
-			}
+			end
 			break;
-		case 0xb0:
+		elseif xf == 0xb0 then
 			lcdY = x & 0x0f;
 			break;
-		case 0xc0:
+		elseif xf == 0xc0 then
 			lcdTrim = x & 0x0f;
 			break;
-		case 0xd0:
+		elseif xf == 0xd0 then
 			break;
-		case 0xe0:
-			if(x == 0xe2)
+		elseif xf == 0xe0 then
+			if(x == 0xe2) then
 				lcdContrast = 0;
+			end
 			break;
-		case 0xf0:
+		elseif xf == 0xf0 then
 			break;
-		}
-	}
+		end
+	end
 
-			ディスプレイ READ (PC-G850) (inportの下請け)
-		private int in41_g850()
-	{
-		if(lcdX == 0) {
-			lcdX++;
+--ディスプレイ READ (PC-G850) (inportの下請け)
+--private int in41_g850()
+local function in41_g850()
+		if(lcdX == 0) then
+			lcdX = lcdX + 1
 			return 0x10;
-		} else if(lcdY >= 8)
+		elseif(lcdY >= 8) then
 			return 0xff;
-		else if(lcdX < 166 - 1)
+		elseif(lcdX < 166 - 1) then
 			return vram[g850VramOffset(lcdX++ - 1, lcdY)];
 		else
 			return 0xff;
-	}
+	end
+end
 
-			ディスプレイ WRITE (PC-G850) (outportの下請け)
-		private void out41_g850(int x)
-	{
-		if(lcdX < 166 && lcdY < 8)
-			vram[g850VramOffset(lcdX++, lcdY)] = (byte) x;
-	}
+--ディスプレイ WRITE (PC-G850) (outportの下請け)
+--private void out41_g850(int x)
+	local function out41_g850(x)
+		if(lcdX < 166 && lcdY < 8) then
+			vram[g850VramOffset(lcdX++, lcdY)] = x;
+	end
+end
 
-			11pin I/Fの動作 (inportの下請け)
-		private int in60_g850()
-	{
-		-- 未対応 		return 0;
-	}
+--11pin I/Fの動作 (inportの下請け)
+--private int in60_g850()
+	local function in60_g850()
+		-- 未対応 		
+	return 0;
+end
 
-			11pin I/Fの動作 (outportの下請け)
-		private void out60_g850(int x)
-	{
-		-- 未対応 	}
+--11pin I/Fの動作 (outportの下請け)
+--private void out60_g850(int x)
+	local function out60_g850(x)
+		-- 未対応 	
+end
 
-			パラレルI/Oの入出力方向 (inportの下請け)
-		private int in61_g850()
-	{
+--パラレルI/Oの入出力方向 (inportの下請け)
+--private int in61_g850()
+	local function in61_g850()
 		return 0;
-	}
+	end
 
-			パラレルI/Oの入出力方向 (outportの下請け)
-		private void out61_g850(int x)
-	{
-		-- 未対応 	}
+--パラレルI/Oの入出力方向 (outportの下請け)
+--private void out61_g850(int x)
+	local function out61_g850(x)
+		-- 未対応 	
+end
 
-			パラレルI/Oのデータレジスタ (inportの下請け)
-		private int in62_g850()
-	{
-		-- 未対応 		return 0;
-	}
+--パラレルI/Oのデータレジスタ (inportの下請け)
+--private int in62_g850()
+local function in62_g850()
+		-- 未対応 		
+return 0;
+end
 
-			パラレルI/Oのデータレジスタ (outportの下請け)
-		private void out62_g850(int x)
-	{
-		-- 未対応 	}
+--パラレルI/Oのデータレジスタ (outportの下請け)
+--private void out62_g850(int x)
+local function out62_g850(x)
+		-- 未対応 	
+end
 
-			UARTフロー制御 (inportの下請け)
-		private int in63_g850()
-	{
-		-- 未対応 		return 0;
-	}
+--UARTフロー制御 (inportの下請け)
+--private int in63_g850()
+local function in63_g850()
+		-- 未対応 		
+return 0;
+end
 
-			UARTフロー制御 (outportの下請け)
-		private void out63_g850(int x)
-	{
-		-- 未対応 	}
+--UARTフロー制御 (outportの下請け)
+--private void out63_g850(int x)
+local function out63_g850(x)
+		-- 未対応 	
+end
 
-			CD信号によるON制御 (inportの下請け)
-		private int in64_g850()
-	{
-		-- 未対応 		return 0;
-	}
+--CD信号によるON制御 (inportの下請け)
+--private int in64_g850()
+	local function in64_g850()
+		-- 未対応 		
+return 0;
+end
 
-			CD信号によるON制御 (outportの下請け)
-		private void out64_g850(int x)
-	{
-		-- 未対応 	}
+--CD信号によるON制御 (outportの下請け)
+--private void out64_g850(int x)
+local function out64_g850(x)
+		-- 未対応 	
+end
 
-			M1信号後wait制御 (inportの下請け)
-		private int in65_g850()
-	{
+--M1信号後wait制御 (inportの下請け)
+--private int in65_g850()
+	local function in65_g850()
 		return 0;
-	}
+	end
 
-			M1信号後wait制御 (outportの下請け)
-		private void out65_g850(int x)
-	{
-		-- 未対応 	}
+--M1信号後wait制御 (outportの下請け)
+--private void out65_g850(int x)
+local function out65_g850(x)
+		-- 未対応 	
+end
 
-			I/O wait (inportの下請け)
-		private int in66_g850()
-	{
-		-- 未対応 		return 0;
-	}
+--I/O wait (inportの下請け)
+--private int in66_g850()
+	local function in66_g850()
+		-- 未対応 		
+return 0;
+end
 
-			I/O wait (outportの下請け)
-		private void out66_g850(int x)
-	{
-		-- 未対応 	}
+--I/O wait (outportの下請け)
+--private void out66_g850(int x)
+	local function out66_g850(x)
+		-- 未対応 	
+end
 
-			CPUクロック高速/低速切り替え (PC-G850) (inportの下請け)
-		private int in67_g850()
-	{
-		-- 未対応 		return 0;
-	}
+--CPUクロック高速/低速切り替え (PC-G850) (inportの下請け)
+--private int in67_g850()
+	local function in67_g850()
+		-- 未対応 		
+return 0;
+end
 
-			CPUクロック高速/低速切り替え (PC-G850) (outportの下請け)
-		private void out67_g850(int x)
-	{
-		-- 未対応 	}
+--CPUクロック高速/低速切り替え (PC-G850) (outportの下請け)
+--private void out67_g850(int x)
+	local function out67_g850(x)
+		-- 未対応 	
+end
 
-			タイマ信号/LCDドライバ周期 (inportの下請け)
-		private int in68_g850()
-	{
-		-- 未対応 		return 0;
-	}
+--タイマ信号/LCDドライバ周期 (inportの下請け)
+--private int in68_g850()
+	local function in68_g850()
+		-- 未対応 		
+return 0;
+	end
 
-			タイマ信号/LCDドライバ周期 (outportの下請け)
-		private void out68_g850(int x)
-	{
-		-- 未対応 	}
+--タイマ信号/LCDドライバ周期 (outportの下請け)
+--private void out68_g850(int x)
+local function out68_g850(x)
+		-- 未対応 	
+end
 
-			ROMバンク切り替え (PC-G850) (inportの下請け)
-		private int in69_g850()
-	{
+--ROMバンク切り替え (PC-G850) (inportの下請け)
+		--private int in69_g850()
+	local function in69_g850()
 		return romBank;
-	}
+	end
 
-			ROMバンク切り替え (PC-G850) (outportの下請け)
-		private void out69_g850(int x)
-	{
+	--		ROMバンク切り替え (PC-G850) (outportの下請け)
+	--	private void out69_g850(int x)
+	local function out69_g850(x)
 		romBank = x;
-		if(rom[romBank] != null)
+		if(rom[romBank] ~= nil) then
 			System.arraycopy(rom[romBank], 0, memory, 0xc000, 0x4000);
 		else
 			Arrays.fill(memory, 0xc000, 0x4000, (byte) 0xff);
-	}
+	end
+end
 
-			? (inportの下請け)
-		private int in6a_g850()
-	{
+--? (inportの下請け)
+--private int in6a_g850()
+	local function in6a_g850()
 		return 0;
-	}
+	end
 
-			? (outportの下請け)
-		private void out6a_g850(int x)
-	{
-	}
+	--		? (outportの下請け)
+	--	private void out6a_g850(int x)
+	local function out6a_g850(x)
+	end
 
-			UARTの入力選択 (inportの下請け)
-		private int in6b_g850()
-	{
-		-- 未対応 		return 0;
-	}
+	--		UARTの入力選択 (inportの下請け)
+	--	private int in6b_g850()
+	local function in6b_g850()
+		-- 未対応 		
+		return 0;
+	end
 
-			UARTの入力選択 (outportの下請け)
-		private void out6b_g850(int x)
-	{
-		-- 未対応 	}
+	--		UARTの入力選択 (outportの下請け)
+	--	private void out6b_g850(int x)
+	local function out6b_g850(x)
+		-- 未対応 	
+end
 
-			UARTモードレジスタ (inportの下請け)
-		private int in6c_g850()
-	{
-		-- 未対応 		return 0;
-	}
+	--		UARTモードレジスタ (inportの下請け)
+	--	private int in6c_g850()
+	local function in6c_g850()
+		-- 未対応 		
+return 0;
+	end
 
-			UARTモードレジスタ (outportの下請け)
-		private void out6c_g850(int x)
-	{
-		-- 未対応 	}
+	--		UARTモードレジスタ (outportの下請け)
+	--	private void out6c_g850(int x)
+	local function out6c_g850(x)
+		-- 未対応 
+end
 
-			UARTコマンドレジスタ (inportの下請け)
-		private int in6d_g850()
-	{
-		-- 未対応 		return 0;
-	}
+	--	UARTコマンドレジスタ (inportの下請け)
+	--	private int in6d_g850()
+	local function in6d_g850()
+		-- 未対応 		
+return 0;
+	end
 
-			UARTコマンドレジスタ (outportの下請け)
-		private void out6d_g850(int x)
-	{
-		-- 未対応 	}
+	--		UARTコマンドレジスタ (outportの下請け)
+	--	private void out6d_g850(int x)
+	local function out6d_g850(x)
+		-- 未対応 	
+end
 
-			UARTステータスレジスタ (inportの下請け)
-		private int in6e_g850()
-	{
-		-- 未対応 		return 0;
-	}
+	--		UARTステータスレジスタ (inportの下請け)
+	--	private int in6e_g850()
+	local function in6e_g850()
+		-- 未対応 		
+	return 0;
+end
 
-			UARTステータスレジスタ (outportの下請け)
-		private void out6e_g850(int x)
-	{
-		-- 未対応 	}
+	--		UARTステータスレジスタ (outportの下請け)
+	--	private void out6e_g850(int x)
+	local function out6e_g850(x)
+		-- 未対応 	
+end
 
-			UART送受信レジスタ (inportの下請け)
-		private int in6f_g850()
-	{
-		-- 未対応 		return 0;
-	}
+	--		UART送受信レジスタ (inportの下請け)
+	--	private int in6f_g850()
+	local function in6f_g850()
+		-- 未対応 		
+return 0;
+	end
 
-			UART送受信レジスタ (outportの下請け)
-		private void out6f_g850(int x)
-	{
-		-- 未対応 	}
+	--UART送受信レジスタ (outportの下請け)
+--private void out6f_g850(int x)
+	local function out6f_g850(x)
+		-- 未対応 	
+end
 
-			I/Oから入力を得る (オーバーライド)
-		@Override public int inport(int address)
-	{
-		-- ディスプレイ用・その他(機種依存) 		switch(machine) {
-		case MACHINE_E200:
-			switch(address) {
-			case 0x51:
-			case 0x59:
+--I/Oから入力を得る (オーバーライド)
+--@Override public int inport(int address)
+	function inport(address)
+		-- ディスプレイ用・その他(機種依存) 		
+		--switch(machine) {
+		if machine ==  MACHINE_E200 then
+			--switch(address) {
+			if address == 0x51 then
+			elseif address == 0x59 then
 				return in59_e200();
-			case 0x57:
-			case 0x5b:
+			elseif address == 0x57 then
+			elseif address == 0x5b then
 				return in5b_e200();
-			}
+			end
 			break;
-		case MACHINE_G815:
-			switch(address) {
-			case 0x51:
+		elseif machine == MACHINE_G815 then
+			--switch(address) {
+			if address == 0x51 then
 				return in51_g815();
-			case 0x55:
+			elseif address == 0x55 then
 				return in55_g815();
-			case 0x57:
+			elseif address == 0x57 then
 				return in57_g815();
-			case 0x59:
+			elseif address == 0x59 then
 				return in59_g815();
-			case 0x5b:
+			elseif address == 0x5b then
 				return in5b_g815();
-			}
+			end
 			break;
-		case MACHINE_G850:
-			switch(address) {
-			case 0x40:
-			case 0x42:
-			case 0x44:
-			case 0x46:
-			case 0x48:
-			case 0x4a:
-			case 0x4c:
-			case 0x4e:
-			case 0x50:
-			case 0x52:
-			case 0x54:
-			case 0x56:
-			case 0x58:
-			case 0x5a:
-			case 0x5c:
-			case 0x5e:
+		elseif machine == MACHINE_G850 then
+			--switch(address) {
+			if address == 0x40 then
+			elseif address == 0x42 then
+			elseif address == 0x44 then
+			elseif address == 0x46 then
+			elseif address == 0x48 then
+			elseif address == 0x4a then
+			elseif address == 0x4c then
+			elseif address == 0x4e then
+			elseif address == 0x50 then
+			elseif address == 0x52 then
+			elseif address == 0x54 then
+			elseif address == 0x56 then
+			elseif address == 0x58 then
+			elseif address == 0x5a then
+			elseif address == 0x5c then
+			elseif address == 0x5e then
 				return in40_g850();
-			case 0x41:
-			case 0x43:
-			case 0x45:
-			case 0x47:
-			case 0x49:
-			case 0x4b:
-			case 0x4d:
-			case 0x4f:
-			case 0x51:
-			case 0x53:
-			case 0x55:
-			case 0x57:
-			case 0x59:
-			case 0x5b:
-			case 0x5d:
-			case 0x5f:
+			elseif address == 0x41 then
+			elseif address == 0x43 then
+			elseif address == 0x45 then
+			elseif address == 0x47 then
+			elseif address == 0x49 then
+			elseif address == 0x4b then
+			elseif address == 0x4d then
+			elseif address == 0x4f then
+			elseif address == 0x51 then
+			elseif address == 0x53 then
+			elseif address == 0x55 then
+			elseif address == 0x57 then
+			elseif address == 0x59 then
+			elseif address == 0x5b then
+			elseif address == 0x5d then
+			elseif address == 0x5f then
 				return in41_g850();
-			case 0x60:
+			elseif address == 0x60 then
 				return in60_g850();
-			case 0x61:
+			elseif address == 0x61 then
 				return in61_g850();
-			case 0x62:
+			elseif address == 0x62 then
 				return in62_g850();
-			case 0x63:
+			elseif address == 0x63 then
 				return in63_g850();
-			case 0x64:
+			elseif address == 0x64 then
 				return in64_g850();
-			case 0x65:
+			elseif address == 0x65 then
 				return in65_g850();
-			case 0x66:
+			elseif address == 0x66 then
 				return in66_g850();
-			case 0x67:
+			elseif address == 0x67 then
 				return in67_g850();
-			case 0x68:
+			elseif address == 0x68 then
 				return in68_g850();
-			case 0x69:
+			elseif address == 0x69 then
 				return in69_g850();
-			case 0x6a:
+			elseif address == 0x6a then
 				return in6a_g850();
-			case 0x6b:
+			elseif address == 0x6b then
 				return in6b_g850();
-			case 0x6c:
+			elseif address == 0x6c then
 				return in6c_g850();
-			case 0x6d:
+			elseif address == 0x6d then
 				return in6d_g850();
-			case 0x6e:
+			elseif address == 0x6e then
 				return in6e_g850();
-			case 0x6f:
+			elseif address == 0x6f then
 				return in6f_g850();
-			}
+			end
 			break;
-		}
+		end
 
-		-- システムポート(共通) 		switch(address) {
-		case 0x10:
+		-- システムポート(共通) 		
+		--switch(address) {
+		if address == 0x10 then
 			return in10();
-		case 0x11:
+		elseif address == 0x11 then
 			return in11();
-		case 0x12:
+		elseif address == 0x12 then
 			return in12();
-		case 0x13:
+		elseif address == 0x13 then
 			return in13();
-		case 0x14:
+		elseif address == 0x14 then
 			return in14();
-		case 0x15:
+		elseif address == 0x15 then
 			return in15();
-		case 0x16:
+		elseif address == 0x16 then
 			return in16();
-		case 0x17:
+		elseif address == 0x17 then
 			return in17();
-		case 0x18:
+		elseif address == 0x18 then
 			return in18();
-		case 0x19:
+		elseif address == 0x19 then
 			return in19();
-		case 0x1a:
+		elseif address == 0x1a then
 			return in1a();
-		case 0x1b:
+		elseif address == 0x1b then
 			return in1b();
-		case 0x1c:
+		elseif address == 0x1c then
 			return in1c();
-		case 0x1d:
+		elseif address == 0x1d then
 			return in1d();
-		case 0x1e:
+		elseif address == 0x1e then
 			return in1e();
-		case 0x1f:
+		elseif address == 0x1f then
 			return in1f();
-		}
+		end
 
 		return 0x78;
-	}
+	end
 
-			I/Oに出力する (オーバーライド)
-		@Override public void outport(int address, int value)
-	{
-		-- ディスプレイ用・その他(機種依存) 		switch(machine) {
-		case MACHINE_E200:
-			switch(address) {
-			case 0x50:
-			case 0x58:
-				out58_e200(value); break;
-			case 0x56:
-			case 0x5a:
-				out5a_e200(value); break;
-			}
-			break;
-		case MACHINE_G815:
-			switch(address) {
-			case 0x50:
-				out50_g815(value); break;
-			case 0x52:
-				out52_g815(value); break;
-			case 0x54:
-				out54_g815(value); break;
-			case 0x56:
-				out56_g815(value); break;
-			case 0x58:
-				out58_g815(value); break;
-			case 0x5a:
-				out5a_g815(value); break;
-			}
-			break;
-		case MACHINE_G850:
-			switch(address) {
-			case 0x40:
-			case 0x42:
-			case 0x44:
-			case 0x46:
-			case 0x48:
-			case 0x4a:
-			case 0x4c:
-			case 0x4e:
-			case 0x50:
-			case 0x52:
-			case 0x54:
-			case 0x56:
-			case 0x58:
-			case 0x5a:
-			case 0x5c:
-			case 0x5e:
-				out40_g850(value); break;
-			case 0x41:
-			case 0x43:
-			case 0x45:
-			case 0x47:
-			case 0x49:
-			case 0x4b:
-			case 0x4d:
-			case 0x4f:
-			case 0x51:
-			case 0x53:
-			case 0x55:
-			case 0x57:
-			case 0x59:
-			case 0x5b:
-			case 0x5d:
-			case 0x5f:
-				out41_g850(value); break;
-			case 0x60:
-				out60_g850(value); break;
-			case 0x61:
-				out61_g850(value); break;
-			case 0x62:
-				out62_g850(value); break;
-			case 0x63:
-				out63_g850(value); break;
-			case 0x64:
-				out64_g850(value); break;
-			case 0x65:
-				out65_g850(value); break;
-			case 0x66:
-				out66_g850(value); break;
-			case 0x67:
-				out67_g850(value); break;
-			case 0x68:
-				out68_g850(value); break;
-			case 0x69:
-				out69_g850(value); break;
-			case 0x6a:
-				out6a_g850(value); break;
-			case 0x6b:
-				out6b_g850(value); break;
-			case 0x6c:
-				out6c_g850(value); break;
-			case 0x6d:
-				out6d_g850(value); break;
-			case 0x6e:
-				out6e_g850(value); break;
-			case 0x6f:
-				out6f_g850(value); break;
-			}
-			break;
-		}
+--		I/Oに出力する (オーバーライド)
+--	@Override public void outport(int address, int value)
+function outport(address, value)
+	-- ディスプレイ用・その他(機種依存) 		
+	--switch(machine) {
+	if machine == MACHINE_E200 then
+		--switch(address) {
+		if address == 0x50 then
+		elseif address == 0x58 then
+			out58_e200(value); break;
+		elseif address == 0x56 then
+		elseif address == 0x5a then
+			out5a_e200(value); break;
+		end
+		break;
+	elseif machine == MACHINE_G815  then
+		--switch(address) {
+		if address == 0x50 then
+			out50_g815(value); break;
+		elseif address == 0x52 then
+			out52_g815(value); break;
+		elseif address == 0x54 then
+			out54_g815(value); break;
+		elseif address == 0x56 then
+			out56_g815(value); break;
+		elseif address == 0x58 then
+			out58_g815(value); break;
+		elseif address == 0x5a then
+			out5a_g815(value); break;
+		end
+		break;
+	elseif machine == MACHINE_G850 then
+		--switch(address) {
+		if address == 0x40 then
+		elseif address == 0x42 then
+		elseif address == 0x44 then
+		elseif address == 0x46 then
+		elseif address == 0x48 then
+		elseif address == 0x4a then
+		elseif address == 0x4c then
+		elseif address == 0x4e then
+		elseif address == 0x50 then
+		elseif address == 0x52 then
+		elseif address == 0x54 then
+		elseif address == 0x56 then
+		elseif address == 0x58 then
+		elseif address == 0x5a then
+		elseif address == 0x5c then
+		elseif address == 0x5e then
+			out40_g850(value); break;
+		elseif address == 0x41 then
+		elseif address == 0x43 then
+		elseif address == 0x45 then
+		elseif address == 0x47 then
+		elseif address == 0x49 then
+		elseif address == 0x4b then
+		elseif address == 0x4d then
+		elseif address == 0x4f then
+		elseif address == 0x51 then
+		elseif address == 0x53 then
+		elseif address == 0x55 then
+		elseif address == 0x57 then
+		elseif address == 0x59 then
+		elseif address == 0x5b then
+		elseif address == 0x5d then
+		elseif address == 0x5f then
+			out41_g850(value); break;
+		elseif address == 0x60 then
+			out60_g850(value); break;
+		elseif address == 0x61 then
+			out61_g850(value); break;
+		elseif address == 0x62 then
+			out62_g850(value); break;
+		elseif address == 0x63 then
+			out63_g850(value); break;
+		elseif address == 0x64 then
+			out64_g850(value); break;
+		elseif address == 0x65 then
+			out65_g850(value); break;
+		elseif address == 0x66 then
+			out66_g850(value); break;
+		elseif address == 0x67 then
+			out67_g850(value); break;
+		elseif address == 0x68 then
+			out68_g850(value); break;
+		elseif address == 0x69 then
+			out69_g850(value); break;
+		elseif address == 0x6a then
+			out6a_g850(value); break;
+		elseif address == 0x6b then
+			out6b_g850(value); break;
+		elseif address == 0x6c then
+			out6c_g850(value); break;
+		elseif address == 0x6d then
+			out6d_g850(value); break;
+		elseif address == 0x6e then
+			out6e_g850(value); break;
+		elseif address ==0x6f then
+			out6f_g850(value); break;
+		end
+		break;
+	end
 
-		-- システムポート(共通) 		switch(address) {
-		case 0x10:
-			out10(value); break;
-		case 0x11:
-			out11(value); break;
-		case 0x12:
-			out12(value); break;
-		case 0x13:
-			out13(value); break;
-		case 0x14:
-			out14(value); break;
-		case 0x15:
-			out15(value); break;
-		case 0x16:
-			out16(value); break;
-		case 0x17:
-			out17(value); break;
-		case 0x18:
-			out18(value); break;
-		case 0x19:
-			out19(value); break;
-		case 0x1a:
-			out1a(value); break;
-		case 0x1b:
-			out1b(value); break;
-		case 0x1c:
-			out1c(value); break;
-		case 0x1e:
-			out1e(value); break;
-		case 0x1f:
-			out1f(value); break;
-		}
-	}
+	-- システムポート(共通) 		
+	--switch(address) {
+	if address == 0x10 then
+		out10(value); break;
+	elseif address == 0x11 then
+		out11(value); break;
+	elseif address == 0x12 then
+		out12(value); break;
+	elseif address == 0x13 then
+		out13(value); break;
+	elseif address ==	0x14 then
+		out14(value); break;
+	elseif address == 0x15 then
+		out15(value); break;
+	elseif address == 0x16 then
+		out16(value); break;
+	elseif address == 0x17 then
+		out17(value); break;
+	elseif address == 0x18 then
+		out18(value); break;
+	elseif address == 0x19 then
+		out19(value); break;
+	elseif address == 0x1a then
+		out1a(value); break;
+	elseif address == 0x1b then
+		out1b(value); break;
+	elseif address == 0x1c then
+		out1c(value); break;
+	elseif address == 0x1e then
+		out1e(value); break;
+	elseif address == 0x1f then
+		out1f(value); break;
+	end
+end
 
-			破壊された16bitレジスタの値を得る (下請け)
-		private int destroy16()
-	{
+--破壊された16bitレジスタの値を得る (下請け)
+--private int destroy16()
+	local function destroy16()
 		random = random * 65541 + 1;
-		return random >>> 16;
-	}
+		--return random >>> 16;
+	return random >> 16;
+	end
 
-			破壊された8bitレジスタの値を得る (下請け)
-		private int destroy8()
-	{
-		return destroy16() >>> 8;
-	}
+--破壊された8bitレジスタの値を得る (下請け)
+--private int destroy8()
+	local function destroy8()
+	--return destroy16() >>> 8;
+	return destroy16() >>8
+	end
 
-			VRAMのオフセットを得る (下請け)
-		private int vramOffset(int x, int row)
-	{
+--VRAMのオフセットを得る (下請け)
+--private int vramOffset(int x, int row)
+	local function vramOffset(x, row)
 		return (row % 8) * vramWidth + x;
-	}
+	end
 
-			VRAMのオフセットを得る (下請け)
-		private int lcdOffset(int x, int row)
-	{
-		if(machine == MACHINE_G850)
+	--VRAMのオフセットを得る (下請け)
+	--private int lcdOffset(int x, int row)
+	local function lcdOffset(x, row)
+		if(machine == MACHINE_G850) then
 			return vramOffset(x, row + read8(0x790d));
 		else
 			return vramOffset(x, row);
-	}
+		end
+	end
 
-			パターンを表示する (下請け)
-		private void putPattern(int col, int row, byte[] pattern, int length)
-	{
-		int offset = lcdOffset(col * cellWidth, row), p = 0;
+	--パターンを表示する (下請け)
+	--private void putPattern(int col, int row, byte[] pattern, int length)
+local function putPattern(col, row, pattern, length)
+		local typePattern = type(pattern)
+		
+		local offset = lcdOffset(col * cellWidth, row)
+		local p = 0;
+	if typePattern == "table" then
+		while (length > 0) do
+			length = length - 1 
+			vram[offset] = pattern[p];
+			offset = offset + 1
+			p = p + 1
+		end
+	elseif typePattern == "number" then
+		while (length > 0) do 
+             length = length - 1 
+             vram[offset] = read(pattern);
+			offset = offset + 1
+			address = address +1 
+		end
+	end
+end
 
-		while (length-- > 0)
-			vram[offset++] = pattern[p++];
-	}
-
+--[[
 			パターンを表示する (下請け)
 		private void putPattern(int col, int row, int address, int length)
 	{
@@ -2873,31 +2949,32 @@ end
 		while (length-- > 0)
 			vram[offset++] = read(address++);
 	}
+--]]
+			
+--行を消去する (下請け)
+--private void clearLine(int row)
+local function clearLine(row)
+		local offset = lcdOffset(0, row)
 
-			行を消去する (下請け)
-		private void clearLine(int row)
-	{
-		int offset = lcdOffset(0, row), x;
-
-		for(x = 0; x < vramWidth - 1; x++)
+		for x = 0, vramWidth - 1 1 do
 			vram[offset++] = 0;
-	}
+	end
+end
 
-			画面全体を消去する (下請け)
-		private void clearAll()
-	{
-		int row;
+--画面全体を消去する (下請け)
+--private void clearAll()
+	local function clearAll()
 
-		for(row = 0; row < vramRows; row++)
+		for row = 0, vramRows, 1 do
 			clearLine(row);
-	}
+	end
 
-			上にスクロールする
-		private void scrollUp()
-	{
-		byte tmp;
+--上にスクロールする
+--private void scrollUp()
+	local function scrollUp()
+		
 
-		tmp = vram[vramOffset(lcdWidth, 7)];
+		local tmp = vram[vramOffset(lcdWidth, 7)];
 		vram[vramOffset(lcdWidth, 7)] = vram[vramOffset(lcdWidth, 6)];
 		vram[vramOffset(lcdWidth, 6)] = vram[vramOffset(lcdWidth, 5)];
 		vram[vramOffset(lcdWidth, 5)] = vram[vramOffset(lcdWidth, 4)];
@@ -2908,866 +2985,905 @@ end
 		vram[vramOffset(lcdWidth, 0)] = tmp;
 
 		clearLine(0);
-		switch(machine) {
-		case MACHINE_E200:
+		--switch(machine) {
+		if machine == MACHINE_E200 then
 			write8(0x790d, (read8(0x790d) + 1) % 8);
 			outport(0x58, (read8(0x790d) << 3) | 0xc0);
 			break;
-		case MACHINE_G815:
+		elseif machine == MACHINE_G815 then
 			write8(0x790d, (read8(0x790d) + 1) % 8);
 			outport(0x50, (read8(0x790d) << 3) | 0xc0);
 			break;
-		case MACHINE_G850:
+		elseif machine == MACHINE_G850 then
 			clearLine(6);
 			clearLine(7);
 			write8(0x790d, (read8(0x790d) + 1) % vramRows);
 			outport(0x40, (read8(0x790d) * 8) % (vramRows * 8) | 0x40);
 			break;
-		}
-	}
+		end
+	end
 
-			下にスクロールする
-		private void scrollDown(int row, int col)
-	{
-		int length, r, x;
+--下にスクロールする
+--private void scrollDown(int row, int col)
+local function scroolDown(row, col)
+		--int length, r, x;
 
-		length = lcdWidth - row * cellWidth;
-
-		for(r = vramRows - 1; r != row; r--)
-			for(x = col * cellWidth; x < lcdWidth * cellWidth; x++)
+		local length = lcdWidth - row * cellWidth;
+-----
+		for r = vramRows - 1,  r != row; -1 do
+			for x = col * cellWidth, lcdWidth * cellWidth,1 do
 				vram[lcdOffset(x, r)] = vram[lcdOffset(x, r - 1)];
-
+			end
+		end
 		clearLine(r);
-	}
+	end
 
-			文字を表示する (下請け)
-		private void putChar(int col, int row, int chr)
-	{
+--文字を表示する (下請け)
+--private void putChar(int col, int row, int chr)
+	local function putChar(col, row, chr)
 		putPattern(col, row, font[chr], cellWidth);
-	}
+	end
 
-			最初の文字を表示する (下請け)
-		private void putCharFirst(int col, int row, int chr)
-	{
+	--		最初の文字を表示する (下請け)
+	--	private void putCharFirst(int col, int row, int chr)
+	local function putCharFirst(col, row, chr)
 		curCol = col;
 		curRow = row;
 
 		putChar(curCol, curRow, chr);
-	}
+	end
 
-			次の文字を表示する (下請け)
-		private boolean putCharNext(int chr)
-	{
-		if(curCol < lcdCols - 1) {
-			curCol++;
+	--		次の文字を表示する (下請け)
+	--	private boolean putCharNext(int chr)
+	local function putCharNext(chr)
+		if(curCol < lcdCols - 1)  then
+			curCol = curCol +1;
 
 			putChar(curCol, curRow, chr);
 			return false;
-		} else if(curRow < lcdRows - 1) {
+		elseif(curRow < lcdRows - 1) then
 			curCol = 0;
-			curRow++;
+			curRow = curRow + 1;
 
 			putChar(curCol, curRow, chr);
 			return false;
-		} else {
+		else 
 			curCol = 0;
 			curRow = lcdRows - 1;
 
 			scrollUp();
 			putChar(curCol, curRow, chr);
 			return true;
-		}
-	}
+		end
+	end
 
-			文字列を表示する (下請け)
-		private void putString(int col, int row, String text)
-	{
-		int i;
+	--		文字列を表示する (下請け)
+	--	private void putString(int col, int row, String text)
+	local function putString(col, row, text)
+		--int i;
 
 		putCharFirst(col, row, (int) text.charAt(0));
-		for(i = 1; i < text.length(); i++)
+		for i = 1,  text.length(), 1 do
 			putCharNext((int) text.charAt(i));
-	}
+		end
+end
 
-			LCD上にドットがあるか調べる
-		private int point(int x, int y)
-	{
-		if(x < 0 || y < 0 || x >= lcdWidth || y >= lcdHeight)
+--			LCD上にドットがあるか調べる
+--		private int point(int x, int y)
+	local function point(x, y)
+		if(x < 0 || y < 0 || x >= lcdWidth || y >= lcdHeight) then
 			return 0;
+	end
 
 		return vram[lcdOffset(x, y / 8)];
-	}
+	end
 
-			LCD上に点を描く
-		private void pset(int x, int y, int mode)
-	{
-		int mask;
+	--		LCD上に点を描く
+	--	private void pset(int x, int y, int mode)
+	local function pset(x, y, mode)
+		--int mask;
 
-		if(x < 0 || y < 0 || x >= lcdWidth || y >= lcdHeight)
+		if(x < 0 || y < 0 || x >= lcdWidth || y >= lcdHeight) then
 			return;
+		end
 
-		mask = 1 << (y % 8);
+	-- ??
+		local mask = 1 << (y % 8);
 
-		switch(mode) {
-		case 0:
-			vram[lcdOffset(x, y / 8)] &= ~mask;
+		--switch(mode) {
+		if mode == 0 then
+			vram[lcdOffset(x, y / 8)] = vram[lcdOffset(x, y / 8)] & ~mask;
 			break;
-		case 1:
-			vram[lcdOffset(x, y / 8)] |= mask;
+		elseif mode == 1 then
+			vram[lcdOffset(x, y / 8)] = vram[lcdOffset(x, y / 8)] | mask;
 			break;
-		default:
-			vram[lcdOffset(x, y / 8)] ^= mask;
+		else
+			vram[lcdOffset(x, y / 8)] = vram[lcdOffset(x, y / 8)] ~  mask;
 			break;
-		}
-	}
+		end
+	end
 
-			LCD上に線を描く
-		private void line(int x1, int y1, int x2, int y2, int mode)
-	{
-		int dx, dx0, dy, dy0, e, x, y, tmp;
+--LCD上に線を描く
+--private void line(int x1, int y1, int x2, int y2, int mode)
+	local function line(x1, y1, x2, y2, mode)
+		--int dx, dx0, dy, dy0, e, x, y, tmp;
 
-		dx0 = x2 - x1;
-		dx = (dx0 > 0 ? dx0 : -dx0);
-		dy0 = y2 - y1;
-		dy = (dy0 > 0 ? dy0 : -dy0);
+		local dx0 = x2 - x1;
+		local dx = (dx0 > 0 and {dx0} or {-dx0})[1];
+		local dy0 = y2 - y1;
+		local dy = (dy0 > 0 and {dy0} or {-dy0})[1];
 
-		if(dx > dy) {
-			if(dx0 < 0) {
+		if(dx > dy)  then
+			if(dx0 < 0) then
 				tmp = x1; x1 = x2; x2 = tmp;
 				tmp = y1; y1 = y2; y2 = tmp;
 				dy0 = -dy0;
-			}
-			for(x = x1, y = y1, e = 0; x <= x2; x++) {
-				e += dy;
-				if(e > dx) {
-					e -= dx;
-					y += (dy0 > 0 ? 1 : -1);
-				}
+			end
+			--for(x = x1, y = y1, e = 0; x <= x2; x++) {
+			for x = x1, x2, 1 do
+				y, e = y1, 0
+				e = e + dy;
+				if(e > dx) then
+					e = e - dx;
+					y = y + (dy0 > 0 and {1} or {-1})[1];
+				end
 				pset(x, y, mode);
-			}
-		} else {
-			if(dy0 < 0) {
+			end
+		else 
+			if(dy0 < 0) then
 				tmp = x1; x1 = x2; x2 = tmp;
 				tmp = y1; y1 = y2; y2 = tmp;
 				dx0 = -dx0;
-			}
-			for(y = y1, x = x1, e = 0; y <= y2; y++) {
-				e += dx;
-				if(e > dy) {
-					e -= dy;
-					x += (dx0 > 0 ? 1 : -1);
-				}
+			end
+			--for(y = y1, x = x1, e = 0; y <= y2; y++) {
+			for y = y1, y2, 1 do
+				x = x1
+				e = 0
+				e = e + dx;
+				if(e > dy) then
+					e = e - dy;
+					x = x + (dx0 > 0 and {1} or {-1})[1];
+				end
 				pset(x, y, mode);
-			}
-		}
-	}
+			end
+		end
+	end
 
-			LCD上に四角を描く
-		private void box(int x1, int y1, int x2, int y2, int mode)
-	{
-		int i, tmp;
+	--		LCD上に四角を描く
+	--	private void box(int x1, int y1, int x2, int y2, int mode)
+	local function box(x1, y1, x2, y2, mode)
+		--int i, tmp;
 
-		if(x1 > x2) {
+		if(x1 > x2) then
 			tmp = x1; x1 = x2; x2 = tmp;
-		}
-		if(y1 > y2) {
+		end
+		if(y1 > y2) then
 			tmp = y1; y1 = y2; y2 = tmp;
-		}
+		end
 
-		for(i = x1; i <= x2; i++)
+		for i = x1, x2+1, 1 do
 			pset(i, y1, mode);
-		for(i = y1 + 1; i <= y2 - 1; i++)
+		end
+		for i = y1 + 1, y2 - 1, 1 do
 			pset(x1, i, mode);
-		if(x1 != x2)
-			for(i = y1 + 1; i <= y2 - 1; i++)
+		end
+		if(x1 ~= x2) then
+			for i = y1 + 1, y2 - 1, 1 do
 				pset(x2, i, mode);
-		if(y1 != y2)
-			for(i = x1; i <= x2; i++)
+			end
+		end
+		if(y1 ~= y2) then
+			for i = x1, x2, 1 do
 				pset(i, y2, mode);
-	}
+			end
+		end
+end
 
-			LCD上に塗りつぶした四角を描く
-		private void boxfill(int x1, int y1, int x2, int y2, int mode)
-	{
-		int i, j;
+		--	LCD上に塗りつぶした四角を描く
+		--private void boxfill(int x1, int y1, int x2, int y2, int mode)
+	local function boxfill(x1, y1, x2, y2, mode)
+		--int i, j;
 
-		for(j = y1; j <= y2; j++)
-			for(i = x1; i <= x2; i++)
+		for j = y1, y2, 1 do
+			for i = x1, x2,  1 do
 				pset(i, j, mode);
-	}
+			end
+		end
+	end
+	
 
-			LCD上にパターンを描く
-		private void gprint(int x, int y, int pat)
-	{
-		pset(x, y - 7, ((pat & 0x01) != 0 ? 1 : 0));
-		pset(x, y - 6, ((pat & 0x02) != 0 ? 1 : 0));
-		pset(x, y - 5, ((pat & 0x04) != 0 ? 1 : 0));
-		pset(x, y - 4, ((pat & 0x08) != 0 ? 1 : 0));
-		pset(x, y - 3, ((pat & 0x10) != 0 ? 1 : 0));
-		pset(x, y - 2, ((pat & 0x20) != 0 ? 1 : 0));
-		pset(x, y - 1, ((pat & 0x40) != 0 ? 1 : 0));
-		pset(x, y - 0, ((pat & 0x80) != 0 ? 1 : 0));
-	}
+	--		LCD上にパターンを描く
+	--	private void gprint(int x, int y, int pat)
+	local function gprint(x, y, pat)
+		pset(x, y - 7, ((pat & 0x01) != 0 and {1} or {0})[1]);
+		pset(x, y - 6, ((pat & 0x02) != 0 and {1} or {0})[1]);
+		pset(x, y - 5, ((pat & 0x04) != 0 and {1} or {0})[1]);
+		pset(x, y - 4, ((pat & 0x08) != 0 and {1} or {0})[1]);
+		pset(x, y - 3, ((pat & 0x10) != 0 and {1} or {0})[1]);
+		pset(x, y - 2, ((pat & 0x20) != 0 and {1} or {0})[1]);
+		pset(x, y - 1, ((pat & 0x40) != 0 and {1} or {0})[1]);
+		pset(x, y - 0, ((pat & 0x80) != 0 and {1} or {0})[1]);
+	end
 
-			押されている按键を得る(waitなし) (下請け)
-		private int getKey()
-	{
-		int key, i;
+	--		押されている按键を得る(waitなし) (下請け)
+	--	private int getKey()
+	local getKey()
+		--int key, i;
 
-		if(keyBreak != 0)
+		if(keyBreak ~= 0) then
 			return GKEY_BREAK;
-		for(key = GKEY_OFF - 1; key <= GKEY_CLS - 1; key++)
-			if((keyMatrix[key / 8] & (1 << (key % 8))) != 0) {
-				for(i = key + 1; i <= GKEY_CLS - 1; i++)
-					if((keyMatrix[i / 8] & (1 << (i % 8))) != 0)
+		end
+		for key = GKEY_OFF - 1, GKEY_CLS - 1, 1 do
+			if((keyMatrix[key / 8] & (1 << (key % 8))) ~= 0) then
+				for i = key + 1, GKEY_CLS - 1, 1 do
+					if((keyMatrix[i / 8] & (1 << (i % 8))) ~= 0) then
 						return GKEY_DOUBLE;
+					end 
+				end
 
-				return (key + 1) | (keyShift != 0 ? 0x80 : 0);
-			}
-
+				return (key + 1) | (keyShift ~= 0 and {0x80} or {0})[1];
+			end
+		end
 		return GKEY_NONE;
-	}
+	end
 
-			押されている按键を得る(waitあり) (下請け)
-		private int getKeyWait()
-	{
-		if(pressedKey != GKEY_NONE) {
-			if(getKey() == GKEY_NONE)
+	--		押されている按键を得る(waitあり) (下請け)
+	--	private int getKeyWait()
+	local function getKeyWit()
+		if(pressedKey ~= GKEY_NONE) then
+			if(getKey() == GKEY_NONE) then
 				pressedKey = GKEY_NONE;
+			end	
 			return GKEY_NONE;
-		}
-		if((pressedKey = getKey()) == GKEY_NONE)
+		end
+		if((pressedKey = getKey()) == GKEY_NONE) then
 			return GKEY_NONE;
-
+		end
 		return pressedKey;
-	}
+	end
 
-			按键コードをASCIIコードに変換する (下請け)
-		private int keyToAscii(int key, boolean upper)
-	{
-		if(upper && key < 0x49)
+	--		按键コードをASCIIコードに変換する (下請け)
+	--	private int keyToAscii(int key, boolean upper)
+	local function keyToAscii(key, upper)
+		if(upper && key < 0x49) then
 			return keyToAsciiUpper[key];
 		else
 			return keyToAsciiLower[key];
-	}
+		end
+	end
 
-			全レジスタを表示する (subroutineの下請け)
-		private int iocs_bd03()
-	{
+	--		全レジスタを表示する (subroutineの下請け)
+	--	private int iocs_bd03()
+	local function iocs_bd03()
 		clearAll();
 		putString(0, 0, String.format("PC=%04X  AF=%02X %02X", pc, a.get(), f.get()));
 		putString(0, 1, String.format("SP=%04X  BC=%02X %02X", sp.get(), b.get(), c.get()));
 		putString(0, 2, String.format("IX=%04X  DE=%02X %02X", ix.get(), d.get(), e.get()));
 		putString(0, 3, String.format("IY=%04X  HL=%02X %02X", iy.get(), h.get(), l.get()));
 
-		if(getKeyWait() == GKEY_NONE)
+		if(getKeyWait() == GKEY_NONE) then
 			return 0;
+		end
 		return 1000;
-	}
+	end
 
-			少し待つ (PC-G850専用) (subroutineの下請け)
-		private int iocs_8aad()
-	{
+	--		少し待つ (PC-G850専用) (subroutineの下請け)
+	--	private int iocs_8aad()
+	local function iocs_8aad()
 		return 1500;
-	}
-
-			ドットの状態を得る (PC-G815専用) (subroutineの下請け)
-		private int iocs_02_f9f8()
-	{
-		a.set(point(hl.get(), de.get()));
-		c.set(1 << (de.get() % 8));
-		return 1000;
-	}
-
-			ドットを描く (PC-G815専用) (subroutineの下請け)
-		private int iocs_0d_c76e()
-	function 
-		pset(hl.get(), de.get(), read8(0x7f0f));
-		return 1000;
 	end
 
-	--線分を描く (PC-G815専用) (subroutineの下請け)
-	--private int iocs_0d_c5fc()
-	function iocs_0d_c5fc()
-		int x1 = hl.get();
-		int y1 = de.get();
-		int x2 = read16(0x7968);
-		int y2 = read16(0x796a);
-
-		line(x1, y1, x2, y2, read8(0x7f0f));
-		return 6000;
-	end
-
-	--四角を描く (PC-G815専用) (subroutineの下請け)
-	--private int iocs_0d_c4a9()
-	function iocs_0d_c4a9()
-		int x1 = hl.get();
-		int y1 = de.get();
-		int x2 = read16(0x7968);
-		int y2 = read16(0x796a);
-
-		de.set(y2);
-		box(x1, y1, x2, y2, read8(0x7f0f));
-		return 8000;
-	end
-
-	--四角を描く (PC-G815専用) (subroutineの下請け)
-	--private int iocs_0d_c442()
-	function iocs_0d_c442()
-		int x1 = hl.get();
-		int y1 = de.get();
-		int x2 = read16(0x7968);
-		int y2 = read16(0x796a);
-
-		de.set(y2);
-		box(x1, y1, x2, y2, read8(0x777f));
-		return 10000;
-	end
-
-	--塗りつぶした四角を描く (PC-G815専用) (subroutineの下請け)
-	--private int iocs_0d_c532()
-	function iocs_0d_c532()
-		int x1 = hl.get();
-		int y1 = de.get();
-		int x2 = read16(0x7968);
-		int y2 = read16(0x796a);
-
-		de.set(y2);
-		boxfill(x1, y1, x2, y2, read8(0x7f0f));
-		return 10000;
-	end
-
-	--線分を描く (PC-G815専用) (subroutineの下請け)
-	--private int iocs_0d_c595()
-	function iocs_0d_c595()
-		int x1 = hl.get();
-		int y1 = de.get();
-		int x2 = read16(0x7968);
-		int y2 = read16(0x796a);
-
-		line(x1, y1, x2, y2, read8(0x777f));
-		return 6000;
-	end	
-
-	--文字を描く (PC-G815専用) (subroutineの下請け)
-	--private int iocs_02_f892()
-	function iocs_02_f892()
-		int x = read16(0x79dc);
-		int y = read16(0x79de);
-
-		write8(0x79db, read8(0x79db) + 1);
-		if(read8(0x79db) == 0) then
-			write8(0x79dc, read8(0x79dc) + 1);
-		end
-		hl.set(x);
-		de.set(y & 0xff80);
-		gprint(x, y, a.get());
-		return 4000;
-	end
-
-	--グラフィック処理 (PC-G815専用) (subroutineの下請け)
-	--private int iocs_9490()
-	function iocs_9490()
-		int address, page;
-
-		page = read8(pc);
-		address = read16(pc + 1);
-
-		pc = read16(sp);
-		sp.add(2);
-
-		--switch(page) {
-		if page ==  0x02 then
-			--switch(address) {
-			if address ==  0xf892 then
-				return iocs_02_f892();
-			elseif address ==  0xf9f8 then
-				return iocs_02_f9f8();
-			end
-			break;
-		elseif page == 0x0d then
-			--switch(address) {
-			if address == 0xc76e then
-				return iocs_0d_c76e();
-			elseif address == 0xc5fc then
-				return iocs_0d_c5fc();
-			elseif address == 0xc4a9 then
-				return iocs_0d_c4a9();
-			elseif address == 0xc442 then
-				return iocs_0d_c442();
-			elseif address == 0xc532 then
-				return iocs_0d_c532();
-			elseif address == 0xc595 then
-				return iocs_0d_c595();
-			end
-			break;
-		end
-
-		return 1000;
-	end
-
-	--ドットの状態を得る (PC-G850専用) (subroutineの下請け)
-	--private int iocs_0e_ffca()
-	function iocs_0e_ffca()
+	--		ドットの状態を得る (PC-G815専用) (subroutineの下請け)
+	--	private int iocs_02_f9f8()
+	local function iocs_02_f9f8()
 		a.set(point(hl.get(), de.get()));
 		c.set(1 << (de.get() % 8));
 		return 1000;
 	end
 
-	--ドットを描く (PC-G850専用) (subroutineの下請け)
-	--private int iocs_0d_ffd0()
-	function iocs_0d_ffd0()
-		pset(hl.get(), de.get(), read8(0x777f));
-		return 1000;
+--ドットを描く (PC-G815専用) (subroutineの下請け)
+--private int iocs_0d_c76e()
+local function iocs_0d_c76e()
+	pset(hl.get(), de.get(), read8(0x7f0f));
+	return 1000;
+end
+
+--線分を描く (PC-G815専用) (subroutineの下請け)
+--private int iocs_0d_c5fc()
+local function iocs_0d_c5fc()
+	int x1 = hl.get();
+	int y1 = de.get();
+	int x2 = read16(0x7968);
+	int y2 = read16(0x796a);
+
+	line(x1, y1, x2, y2, read8(0x7f0f));
+	return 6000;
+end
+
+--四角を描く (PC-G815専用) (subroutineの下請け)
+--private int iocs_0d_c4a9()
+local function iocs_0d_c4a9()
+	int x1 = hl.get();
+	int y1 = de.get();
+	int x2 = read16(0x7968);
+	int y2 = read16(0x796a);
+
+	de.set(y2);
+	box(x1, y1, x2, y2, read8(0x7f0f));
+	return 8000;
+end
+
+--四角を描く (PC-G815専用) (subroutineの下請け)
+--private int iocs_0d_c442()
+function iocs_0d_c442()
+	int x1 = hl.get();
+	int y1 = de.get();
+	int x2 = read16(0x7968);
+	int y2 = read16(0x796a);
+
+	de.set(y2);
+	box(x1, y1, x2, y2, read8(0x777f));
+	return 10000;
+end
+
+--塗りつぶした四角を描く (PC-G815専用) (subroutineの下請け)
+--private int iocs_0d_c532()
+function iocs_0d_c532()
+	int x1 = hl.get();
+	int y1 = de.get();
+	int x2 = read16(0x7968);
+	int y2 = read16(0x796a);
+
+	de.set(y2);
+	boxfill(x1, y1, x2, y2, read8(0x7f0f));
+	return 10000;
+end
+
+--線分を描く (PC-G815専用) (subroutineの下請け)
+--private int iocs_0d_c595()
+function iocs_0d_c595()
+	int x1 = hl.get();
+	int y1 = de.get();
+	int x2 = read16(0x7968);
+	int y2 = read16(0x796a);
+
+	line(x1, y1, x2, y2, read8(0x777f));
+	return 6000;
+end	
+
+--文字を描く (PC-G815専用) (subroutineの下請け)
+--private int iocs_02_f892()
+local function iocs_02_f892()
+	int x = read16(0x79dc);
+	int y = read16(0x79de);
+
+	write8(0x79db, read8(0x79db) + 1);
+	if(read8(0x79db) == 0) then
+		write8(0x79dc, read8(0x79dc) + 1);
 	end
+	hl.set(x);
+	de.set(y & 0xff80);
+	gprint(x, y, a.get());
+	return 4000;
+end
 
-	--線分を描く (PC-G850専用) (subroutineの下請け)
-	--private int iocs_0d_ffd3()
-	function iocs_0d_ffd3()
-		int x1 = hl.get();
-		int y1 = de.get();
-		int x2 = read16(0x7967);
-		int y2 = read16(0x7969);
+--グラフィック処理 (PC-G815専用) (subroutineの下請け)
+--private int iocs_9490()
+local function iocs_9490()
+	int address, page;
 
-		line(x1, y1, x2, y2, read8(0x777f));
-		return 5000;
-	end
+	page = read8(pc);
+	address = read16(pc + 1);
 
-	--四角を描く (PC-G850専用) (subroutineの下請け)
-	--private int iocs_0d_ffd6()
-	function iocs_0d_ffd6()
-		int x1 = hl.get();
-		int y1 = de.get();
-		int x2 = read16(0x7967);
-		int y2 = read16(0x7969);
+	pc = read16(sp);
+	sp.add(2);
 
-		de.set(y2);
-		box(x1, y1, x2, y2, read8(0x777f));
-		return 6000;
-	end
-
-	--塗りつぶした四角を描く (PC-G850専用) (subroutineの下請け)
-	--private int iocs_0d_ffd9()
-	local function iocs_0d_ffd9()
-		int x1 = hl.get();
-		int y1 = de.get();
-		int x2 = read16(0x7967);
-		int y2 = read16(0x7969);
-
-		de.set(y2);
-		boxfill(x1, y1, x2, y2, read8(0x777f));
-		return 10000;
-	end
-
-	--文字を描く (PC-G850専用) (subroutineの下請け)
-	--private int iocs_0e_ffa3()
-	function iocs_0e_ffa3()
-		int x = read16(0x79db);
-		int y = read16(0x79dd);
-
-		write8(0x79db, read8(0x79db) + 1);
-		if(read8(0x79db) == 0) then
-			write8(0x79dc, read8(0x79dc) + 1);
+	--switch(page) {
+	if page ==  0x02 then
+		--switch(address) {
+		if address ==  0xf892 then
+			return iocs_02_f892();
+		elseif address ==  0xf9f8 then
+			return iocs_02_f9f8();
 		end
-		hl.set(x);
-		de.set(y & 0xff80);
-		gprint(x, y, a.get());
-		return 3000;
+		break;
+	elseif page == 0x0d then
+		--switch(address) {
+		if address == 0xc76e then
+			return iocs_0d_c76e();
+		elseif address == 0xc5fc then
+			return iocs_0d_c5fc();
+		elseif address == 0xc4a9 then
+			return iocs_0d_c4a9();
+		elseif address == 0xc442 then
+			return iocs_0d_c442();
+		elseif address == 0xc532 then
+			return iocs_0d_c532();
+		elseif address == 0xc595 then
+			return iocs_0d_c595();
+		end
+		break;
 	end
 
-	--グラフィック処理 (PC-G850専用) (subroutineの下請け)
-	--private int iocs_bb6b()
-	function iocs_bb6b()
-		int address, page;
+	return 1000;
+end
 
-		page = read8(pc);
-		address = read16(pc + 1);
+--ドットの状態を得る (PC-G850専用) (subroutineの下請け)
+--private int iocs_0e_ffca()
+local function iocs_0e_ffca()
+	a.set(point(hl.get(), de.get()));
+	c.set(1 << (de.get() % 8));
+	return 1000;
+end
 
-		pc = read16(sp);
-		sp.add(2);
+--ドットを描く (PC-G850専用) (subroutineの下請け)
+--private int iocs_0d_ffd0()
+local function iocs_0d_ffd0()
+	pset(hl.get(), de.get(), read8(0x777f));
+	return 1000;
+end
 
-		--switch(page) {
+--線分を描く (PC-G850専用) (subroutineの下請け)
+--private int iocs_0d_ffd3()
+local function iocs_0d_ffd3()
+	int x1 = hl.get();
+	int y1 = de.get();
+	int x2 = read16(0x7967);
+	int y2 = read16(0x7969);
 
-		if page ==  0x0d then
-			--switch(address) {
+	line(x1, y1, x2, y2, read8(0x777f));
+	return 5000;
+end
 
-			if     address ==  0xc76e then
-			elseif address ==  0xffd0 then
-				return iocs_0d_ffd0();
-			elseif address ==  0xc595 then
-			elseif address ==  0xffd3 then
-				return iocs_0d_ffd3();
-			elseif address ==  0xc442 then
-			elseif address ==  0xffd6 then
-				return iocs_0d_ffd6();
-			elseif address ==  0xc4cb then
-			elseif address ==  0xffd9 then
-				return iocs_0d_ffd9();
-			end
-			break;
-		elseif page ==  0x0e:
-			--switch(address) {
-			if 	   address ==  0xca08 then
-			elseif address ==  0xffca then
-				return iocs_0e_ffca();
-			elseif address ==  0xc92e then
-			elseif address ==  0xffa3 then
-				return iocs_0e_ffa3();
-			end
-			break;
+--四角を描く (PC-G850専用) (subroutineの下請け)
+--private int iocs_0d_ffd6()
+local function iocs_0d_ffd6()
+	int x1 = hl.get();
+	int y1 = de.get();
+	int x2 = read16(0x7967);
+	int y2 = read16(0x7969);
+
+	de.set(y2);
+	box(x1, y1, x2, y2, read8(0x777f));
+	return 6000;
+end
+
+--塗りつぶした四角を描く (PC-G850専用) (subroutineの下請け)
+--private int iocs_0d_ffd9()
+local function iocs_0d_ffd9()
+	int x1 = hl.get();
+	int y1 = de.get();
+	int x2 = read16(0x7967);
+	int y2 = read16(0x7969);
+
+	de.set(y2);
+	boxfill(x1, y1, x2, y2, read8(0x777f));
+	return 10000;
+end
+
+--文字を描く (PC-G850専用) (subroutineの下請け)
+--private int iocs_0e_ffa3()
+local function iocs_0e_ffa3()
+	int x = read16(0x79db);
+	int y = read16(0x79dd);
+
+	write8(0x79db, read8(0x79db) + 1);
+	if(read8(0x79db) == 0) then
+		write8(0x79dc, read8(0x79dc) + 1);
+	end
+	hl.set(x);
+	de.set(y & 0xff80);
+	gprint(x, y, a.get());
+	return 3000;
+end
+
+--グラフィック処理 (PC-G850専用) (subroutineの下請け)
+--private int iocs_bb6b()
+local function iocs_bb6b()
+	--int address, page;
+
+	page = read8(pc);
+	address = read16(pc + 1);
+
+	pc = read16(sp);
+	sp.add(2);
+
+	--switch(page) {
+
+	if page ==  0x0d then
+		--switch(address) {
+
+		if     address ==  0xc76e then
+		elseif address ==  0xffd0 then
+			return iocs_0d_ffd0();
+		elseif address ==  0xc595 then
+		elseif address ==  0xffd3 then
+			return iocs_0d_ffd3();
+		elseif address ==  0xc442 then
+		elseif address ==  0xffd6 then
+			return iocs_0d_ffd6();
+		elseif address ==  0xc4cb then
+		elseif address ==  0xffd9 then
+			return iocs_0d_ffd9();
 		end
-
-		return 1000;
+		break;
+	elseif page == 0x0e then
+		--switch(address) {
+		if 	   address ==  0xca08 then
+		elseif address ==  0xffca then
+			return iocs_0e_ffca();
+		elseif address ==  0xc92e then
+		elseif address ==  0xffa3 then
+			return iocs_0e_ffa3();
+		end
+		break;
 	end
 
-	--割り込み先 (PC-G850専用) (subroutineの下請け)
-	--private int iocs_bc37()
-	function iocs_bc37()
-		hlt = false;
-		iff = 0x03;
-		interruptMask = 0x0f;
+	return 1000;
+end
 
-		return 1000;
+--割り込み先 (PC-G850専用) (subroutineの下請け)
+--private int iocs_bc37()
+local function iocs_bc37()
+	hlt = false;
+	iff = 0x03;
+	interruptMask = 0x0f;
+
+	return 1000;
+end
+
+--押されている按键のASCIIコードを得る(waitあり) (PC-G850専用) (subroutineの下請け)
+--private int iocs_bcc4()
+local function iocs_bcc4()
+	int key;
+
+	if((key = keyToAscii(getKeyWait(), true)) == GKEY_NONE) then
+		return 0;
 	end
+	a.set(key);
+	f.set(0x01 | destroy8());
+	b.set(0);
+	c.set(destroy8());
+	hl.set(destroy16());
+	bc_d.set(destroy16());
+	de_d.set(destroy16());
+	hl_d.set(destroy16());
+	return 100000;
+end
 
-	--押されている按键のASCIIコードを得る(waitあり) (PC-G850専用) (subroutineの下請け)
-	--private int iocs_bcc4()
-	function iocs_bcc4()
-		int key;
+--押されている按键を得る(waitなし) (subroutineの下請け)
+--private int iocs_be53()
+local function iocs_be53()
+	int key = getKey();
 
-		if((key = keyToAscii(getKeyWait(), true)) == GKEY_NONE) then
-			return 0;
-		end
-		a.set(key);
-		f.set(0x01 | destroy8());
-		b.set(0);
-		c.set(destroy8());
-		hl.set(destroy16());
-		bc_d.set(destroy16());
-		de_d.set(destroy16());
-		hl_d.set(destroy16());
-		return 100000;
-	end
-
-	--押されている按键を得る(waitなし) (subroutineの下請け)
-	--private int iocs_be53()
-	function iocs_be53()
-		int key = getKey();
-
-		a.set(key);
-		if(key != 0) then
-			f.set(destroy8() | 0x01);
-			b.set(destroy8());
-		else
-			f.set(destroy8() & ~0x01);
-		end
-
-		bc_d.set(destroy16());
-		de_d.set(destroy16());
-		hl_d.set(destroy16());
-
-		--switch(machine) {
-		
-		if machine ==  MACHINE_E200 then
-		elseif machine == MACHINE_G815 then
-			return 18000;
-		elseif machine ==  MACHINE_G850 then
-		else
-			return 30000;
-		end
-	end
-
-	--按键コードをASCIIコードに変換する (subroutineの下請け)
-	--private int iocs_be56()
-	function iocs_be56()
-		if((read8(0x78f0) & 0x08) != 0) then
-			b.set(a.get());
-			f.set(0x10);
-		else
-			a.set(keyToAscii(a.get(), (read8(0x7901) & 0x02) != 0));
-			f.set(0x44);
-		end
-
-		return 500;
-	end
-
-	--1文字表示する(記号を含む) (subroutineの下請け)
-	--private int iocs_be5f()
-	function iocs_be5f()
-		if(e.get() >= vramCols || d.get() >= vramRows) then
-			return 100;
-		end
-		putChar(e.get(), d.get(), a.get());
-
-		af.set(destroy16());
-		b.set(0);
-		c.set(destroy8());
-		hl.set(destroy16());
-		return 1800;
-	end
-
-	--1文字表示する(記号を含まない) (subroutineの下請け)
-	--private int iocs_be62()
-	function iocs_be62()
-		if(e.get() >= vramCols || d.get() >= vramRows) then
-			return 100;
-		end
-
-		putChar(e.get(), d.get(), (a.get() > 0x20 ? a.get() : 0x20));
-
-		af.set(destroy16());
-		b.set(0);
-		c.set(destroy8());
-		hl.set(destroy16());
-		return 1800;
-	end
-
-	--下にスクロールする (subroutineの下請け)
-	--private int iocs_be65()
-	function iocs_be65()
-		if(e.get() >= vramCols || d.get() >= vramRows) then
-			return 100;
-		end
-
-		scrollDown(e.get(), d.get());
-
-		af.set(destroy16());
-		bc.set(0);
-		de.set(destroy16());
-		hl.set(destroy16());
-		return 5000;
-	end
-
-	--押されている按键を得る(waitあり) (subroutineの下請け)
-	--private int iocs_bcfd()
-	function iocs_bcfd()
-		int key;
-
-		if((key = getKeyWait()) == GKEY_NONE) then
-			return 0;
-		end
-
-		a.set(key);
+	a.set(key);
+	if(key != 0) then
 		f.set(destroy8() | 0x01);
-		bc_d.set(destroy16());
-		de_d.set(destroy16());
-		hl_d.set(destroy16());
-		return 20000;
+		b.set(destroy8());
+	else
+		f.set(destroy8() & ~0x01);
 	end
 
-	--16進数2桁の按键入力を得る (subroutineの下請け)
-	--private int iocs_bd09()
-	function iocs_bd09() 
-		return 100000;
+	bc_d.set(destroy16());
+	de_d.set(destroy16());
+	hl_d.set(destroy16());
+
+	--switch(machine) {
+	
+	if machine ==  MACHINE_E200 then
+	elseif machine == MACHINE_G815 then
+		return 18000;
+	elseif machine ==  MACHINE_G850 then
+	else
+		return 30000;
+	end
+end
+
+--按键コードをASCIIコードに変換する (subroutineの下請け)
+--private int iocs_be56()
+local function iocs_be56()
+	if((read8(0x78f0) & 0x08) != 0) then
+		b.set(a.get());
+		f.set(0x10);
+	else
+		a.set(keyToAscii(a.get(), (read8(0x7901) & 0x02) != 0));
+		f.set(0x44);
 	end
 
-	--16進数4桁の按键入力を得る (subroutineの下請け)
-	--private int iocs_bd0f()
-	function iocs_bd0f()
-		return 100000;
+	return 500;
+end
+
+--1文字表示する(記号を含む) (subroutineの下請け)
+--private int iocs_be5f()
+local function iocs_be5f()
+	if(e.get() >= vramCols || d.get() >= vramRows) then
+		return 100;
+	end
+	putChar(e.get(), d.get(), a.get());
+
+	af.set(destroy16());
+	b.set(0);
+	c.set(destroy8());
+	hl.set(destroy16());
+	return 1800;
+end
+
+--1文字表示する(記号を含まない) (subroutineの下請け)
+--private int iocs_be62()
+local function iocs_be62()
+	if(e.get() >= vramCols || d.get() >= vramRows) then
+		return 100;
 	end
 
-	--パターンを表示する (subroutineの下請け)
-	--private int iocs_bfd0()
-	function iocs_bfd0()
-		int n, state;
+	putChar(e.get(), d.get(), (a.get() > 0x20 ? a.get() : 0x20));
 
-		if(e.get() >= vramCols || d.get() >= vramRows || b.get() == 0) then
-			return 100;
+	af.set(destroy16());
+	b.set(0);
+	c.set(destroy8());
+	hl.set(destroy16());
+	return 1800;
+end
+
+--下にスクロールする (subroutineの下請け)
+--private int iocs_be65()
+local function iocs_be65()
+	if(e.get() >= vramCols || d.get() >= vramRows) then
+		return 100;
+	end
+
+	scrollDown(e.get(), d.get());
+
+	af.set(destroy16());
+	bc.set(0);
+	de.set(destroy16());
+	hl.set(destroy16());
+	return 5000;
+end
+
+--押されている按键を得る(waitあり) (subroutineの下請け)
+--private int iocs_bcfd()
+local function iocs_bcfd()
+	int key;
+
+	if((key = getKeyWait()) == GKEY_NONE) then
+		return 0;
+	end
+
+	a.set(key);
+	f.set(destroy8() | 0x01);
+	bc_d.set(destroy16());
+	de_d.set(destroy16());
+	hl_d.set(destroy16());
+	return 20000;
+end
+
+--16進数2桁の按键入力を得る (subroutineの下請け)
+--private int iocs_bd09()
+local function iocs_bd09() 
+	return 100000;
+end
+
+--16進数4桁の按键入力を得る (subroutineの下請け)
+--private int iocs_bd0f()
+local function iocs_bd0f()
+	return 100000;
+end
+
+--パターンを表示する (subroutineの下請け)
+--private int iocs_bfd0()
+local function iocs_bfd0()
+	int n, state;
+
+	if(e.get() >= vramCols || d.get() >= vramRows || b.get() == 0) then
+		return 100;
+	end
+
+	n = e.get() + b.get() / cellWidth;
+	n = (n < vramCols ? n : vramCols);
+	putPattern(e.get(), d.get(), hl.get(), b.get());
+
+	state = 100 + 170 * b.get();
+	a.set(read8(hl.get()));
+	e.set(e.get() + b.get());
+	hl.set(hl.get() + b.get() - 1);
+	b.set(0);
+	f.set(destroy8());
+	return state;
+end
+
+--上にスクロールする (subroutineの下請け)
+--private int iocs_bfeb()
+local function iocs_bfeb()
+	scrollUp();
+
+	af.set(0x0044);
+	b.set(0);
+	hl.set(destroy16());
+	return 5000;
+end
+
+--n個の文字を表示する (subroutineの下請け)
+--private int iocs_bfee()
+local function iocs_bfee()
+	int state;
+
+	if(e.get() >= vramCols || d.get() >= vramRows || b.get() == 0) then
+		return 100;
+	end
+
+	state = 100 + 1800 * b.get();
+
+	putCharFirst(e.get(), d.get(), a.get());
+	while (b.add(-1) != 0) do
+		putCharNext(a.get());
+	end
+	a.set(0);
+	f.set(destroy8());
+	hl.set(destroy16());
+	return state;
+end
+
+--文字列を表示する (subroutineの下請け)
+--private int iocs_bff1()
+local function iocs_bff1()
+	int state;
+
+	if(e.get() >= vramCols || d.get() >= vramRows || b.get() == 0) then
+		return 100;
+	end
+
+	state = 100 + 1800 * b.get();
+
+	c.set(0);
+	putCharFirst(e.get(), d.get(), read8(hl.get()));
+	while (b.add(-1) ~= 0) do
+		if(putCharNext(read8(hl.add(1)))) then
+			c.add(1);
 		end
-
-		n = e.get() + b.get() / cellWidth;
-		n = (n < vramCols ? n : vramCols);
-		putPattern(e.get(), d.get(), hl.get(), b.get());
-
-		state = 100 + 170 * b.get();
-		a.set(read8(hl.get()));
-		e.set(e.get() + b.get());
-		hl.set(hl.get() + b.get() - 1);
-		b.set(0);
-		f.set(destroy8());
-		return state;
 	end
 
-	--上にスクロールする (subroutineの下請け)
-	--private int iocs_bfeb()
-	function iocs_bfeb()
-		scrollUp();
+	af.set(destroy16());
+	return state;
+end
 
-		af.set(0x0044);
-		b.set(0);
-		hl.set(destroy16());
-		return 5000;
+--起動する (subroutineの下請け)
+--private int iocs_bff4()
+local function iocs_bff4()
+	setMode(MODE_MENU);
+	return 0;
+end
+
+--電源を切る (subroutineの下請け)
+--private int iocs_c110()
+local function iocs_c110()
+	off();
+	return 0;
+end
+
+--IOCSをエミュレートする (オーバーライド)
+--@Override public int subroutine(int address)
+function subroutine(address)
+	if(romBanks > 0) then
+		return -1;
+	end
+	if(address < 0x8000) then
+		return -1;
 	end
 
-	--n個の文字を表示する (subroutineの下請け)
-	--private int iocs_bfee()
-	function 
-		int state;
-
-		if(e.get() >= vramCols || d.get() >= vramRows || b.get() == 0)
-			return 100;
-
-		state = 100 + 1800 * b.get();
-
-		putCharFirst(e.get(), d.get(), a.get());
-		while (b.add(-1) != 0)
-			putCharNext(a.get());
-
-		a.set(0);
-		f.set(destroy8());
-		hl.set(destroy16());
-		return state;
+	--switch(address) {
+	if address == 0x0030 then
+		return iocs_bd03();
+	elseif address == 0xbcfd then
+		return iocs_bcfd();
+	elseif address == 0xbe53 then
+		return iocs_be53();
+	elseif address == 0xbe56 then
+		return iocs_be56();
+	elseif address == 0xbe5f then
+		return iocs_be5f();
+	elseif address == 0xbe62 then
+		return iocs_be62();
+	elseif address == 0xbe65 then
+		return iocs_be65();
+	elseif address == 0xbd03 then
+		return iocs_bd03();
+	elseif address == 0xbd09 then
+		return iocs_bd09();
+	elseif address == 0xbd0f then
+		return iocs_bd0f();
+	elseif address == 0xbfd0 then
+		return iocs_bfd0();
+	elseif address == 0xbfeb then
+		return iocs_bfeb();
+	elseif address == 0xbfee then
+		return iocs_bfee();
+	elseif address == 0xbff1 then
+		return iocs_bff1();
+	elseif address == 0xbff4 then
+		return iocs_bff4();
+	elseif address == 0xc110 then
+		return iocs_c110();
 	end
 
-	--文字列を表示する (subroutineの下請け)
-	--private int iocs_bff1()
-	function 
-		int state;
-
-		if(e.get() >= vramCols || d.get() >= vramRows || b.get() == 0)
-			return 100;
-
-		state = 100 + 1800 * b.get();
-
-		c.set(0);
-		putCharFirst(e.get(), d.get(), read8(hl.get()));
-		while (b.add(-1) != 0)
-			if(putCharNext(read8(hl.add(1))))
-				c.add(1);
-
-		af.set(destroy16());
-		return state;
+	--switch(machine) {
+	if machine == MACHINE_E200 then
+		break;
+	elseif machine == MACHINE_G815 then
+		--switch(address) {
+		if address == 0x93cd then
+		elseif address == 0x9490 then
+			return iocs_9490();
+		end
+		break;
+	elseif machine == MACHINE_G850 then
+		--switch(address) {
+		if  address == 0x8aad then
+			return iocs_8aad();
+		elseif address == 0x93cb then
+		elseif address == 0x93cd then
+		elseif address == 0xbb6b then
+			return iocs_bb6b();
+		elseif address == 0xbc37 then
+			return iocs_bc37();
+		elseif address == 0xbcc4 then
+			return iocs_bcc4();
+		end
+		break;
 	end
 
-	--起動する (subroutineの下請け)
-	--private int iocs_bff4()
-	function 
-		setMode(MODE_MENU);
-		return 0;
-	end
+	return 1000;
+end
 
-	--電源を切る (subroutineの下請け)
-	--private int iocs_c110()
-	function 
-		off();
-		return 0;
-	end
+--1周期分実行する
+--public void run()
+function run()
+	--int x, y, i, col, row, mask, screenx, screeny;
+	--boolean dot;
 
-	--IOCSをエミュレートする (オーバーライド)
-	--@Override public int subroutine(int address)
-	function subroutine(int address)
-		if(romBanks > 0)
-			return -1;
-		if(address < 0x8000)
-			return -1;
-
-		switch(address) {
-		case 0x0030:
-			return iocs_bd03();
-		case 0xbcfd:
-			return iocs_bcfd();
-		case 0xbe53:
-			return iocs_be53();
-		case 0xbe56:
-			return iocs_be56();
-		case 0xbe5f:
-			return iocs_be5f();
-		case 0xbe62:
-			return iocs_be62();
-		case 0xbe65:
-			return iocs_be65();
-		case 0xbd03:
-			return iocs_bd03();
-		case 0xbd09:
-			return iocs_bd09();
-		case 0xbd0f:
-			return iocs_bd0f();
-		case 0xbfd0:
-			return iocs_bfd0();
-		case 0xbfeb:
-			return iocs_bfeb();
-		case 0xbfee:
-			return iocs_bfee();
-		case 0xbff1:
-			return iocs_bff1();
-		case 0xbff4:
-			return iocs_bff4();
-		case 0xc110:
-			return iocs_c110();
-		}
-
-		switch(machine) {
-		case MACHINE_E200:
-			break;
-		case MACHINE_G815:
-			switch(address) {
-			case 0x93cd:
-			case 0x9490:
-				return iocs_9490();
-			}
-			break;
-		case MACHINE_G850:
-			switch(address) {
-			case 0x8aad:
-				return iocs_8aad();
-			case 0x93cb:
-			case 0x93cd:
-			case 0xbb6b:
-				return iocs_bb6b();
-			case 0xbc37:
-				return iocs_bc37();
-			case 0xbcc4:
-				return iocs_bcc4();
-			}
-			break;
-		}
-
-		return 1000;
-	}
-
-			1周期分実行する
-		public void run()
-	{
-		int x, y, i, col, row, mask, screenx, screeny;
-		boolean dot;
-
-		if(mode == MODE_EMULATOR) {
-			-- コードを実行する 			execute(cpuClocks / fps);
-
-			-- 按键割り込み 			if(intIA) {
-				if((interruptMask & INTERRUPT_IA) != 0) {
+		if(mode == MODE_EMULATOR) then
+			-- コードを実行する 		
+			execute(cpuClocks / fps);
+		
+			-- 按键割り込み 		
+			if(intIA) then
+				if((interruptMask & INTERRUPT_IA) ~= 0) then
 					interruptType |= INTERRUPT_IA;
 					int1();
-				}
+				end
 				intIA = false;
-			}
+			end
 
-			-- 按键割り込み(BREAK按键) 			if(intKON) {
-				if((interruptMask & INTERRUPT_KON) != 0) {
+			-- 按键割り込み(BREAK按键) 			
+			if(intKON)  then
+				if((interruptMask & INTERRUPT_KON) ~= 0) then
 					interruptType |= INTERRUPT_KON;
 					int1();
-				}
+				end
 				intKON = false;
-			}
+			end
 
-			-- タイマ割り込み 			if(timerCount-- <= 0) {
+			-- タイマ割り込み
+			timerCount == timerCount - 1 		
+			if(timerCount <= 0) then
 				timerCount = fps * timerInterval / 1000 / 1000;
 
-				if((interruptMask & INTERRUPT_1S) != 0) {
-					timer ^= 0x01;
+				if((interruptMask & INTERRUPT_1S) ~= 0) then
+					timer = time ~ 0x01;
 					interruptType |= INTERRUPT_1S;
 					int1();
-				}
-			}
+				end
+			end
 
-			-- リセット 			if(keyReset)
-				boot();
-		}
+			-- リセット 			
+			if(keyReset) then
+				boot()
+			end
+		end
 
-		-- LCDを更新する 		switch(machine) {
-		case MACHINE_E200:
-		case MACHINE_G815:
+		-- LCDを更新する 		
+		--switch(machine) {
+		if machine == MACHINE_E200 then
+		elseif machine == MACHINE_G815 then
 			x = screenx = 0;
 
 			for(row = 0; row < lcdRows; row++) {
@@ -3856,455 +3972,455 @@ end
 		first = false;
 	end
 
-	--ブートをエミュレートする
-	--public void boot()
-	function boot()
-		if(rom[0] != null) then
-			mode = MODE_EMULATOR;
-			System.arraycopy(rom[0], 0, memory, 0x8000, rom[0].length);
-			System.arraycopy(rom[0], 0, memory, 0xc000, rom[0].length);
-		else 
-			mode = MODE_MENU;
-			Arrays.fill(memory, 0x8000, 0x8000, (byte) 0xff);
+--ブートをエミュレートする
+--public void boot()
+function boot()
+	if(rom[0] ~= nil) then
+		mode = MODE_EMULATOR;
+		System.arraycopy(rom[0], 0, memory, 0x8000, rom[0].length);
+		System.arraycopy(rom[0], 0, memory, 0xc000, rom[0].length);
+	else 
+		mode = MODE_MENU;
+		Arrays.fill(memory, 0x8000, 0x8000, (byte) 0xff);
+	end
+
+	System.arraycopy(base, 0, memory, 0, base.length);
+
+	reset();
+
+	sp.set(0x7ff6);
+
+	outport(0x11, 0);
+	outport(0x12, 0);
+	outport(0x14, 0);
+	outport(0x15, 1);
+	outport(0x16, 0xff);
+	outport(0x17, 0xf);
+	outport(0x18, 0);
+	outport(0x19, 0);
+	outport(0x1b, 0);
+	outport(0x1c, 1);
+	timerInterval = 388643;
+	im = 1;
+	write8(0x790d, 0);
+
+	--switch(machine) {
+	if machine == MACHINE_E200 then
+		outport(0x58, 0xc0);
+		break;
+	elseif machine ==  MACHINE_G815 then
+		outport(0x50, 0xc0);
+		break;
+	elseif machine == MACHINE_G850 then
+		if(read8(0x779c) < 0x07 || read8(0x779c) > 0x1f) then
+			write8(0x779c, 0x1f);
 		end
-
-		System.arraycopy(base, 0, memory, 0, base.length);
-
-		reset();
-
-		sp.set(0x7ff6);
-
-		outport(0x11, 0);
-		outport(0x12, 0);
-		outport(0x14, 0);
-		outport(0x15, 1);
-		outport(0x16, 0xff);
-		outport(0x17, 0xf);
-		outport(0x18, 0);
-		outport(0x19, 0);
-		outport(0x1b, 0);
-		outport(0x1c, 1);
-		timerInterval = 388643;
-		im = 1;
-		write8(0x790d, 0);
-
-		--switch(machine) {
-		if machine == MACHINE_E200 then
-			outport(0x58, 0xc0);
-			break;
-		elseif machine ==  MACHINE_G815 then
-			outport(0x50, 0xc0);
-			break;
-		elseif machine == MACHINE_G850 then
-			if(read8(0x779c) < 0x07 || read8(0x779c) > 0x1f) then
-				write8(0x779c, 0x1f);
-			end
-			outport(0x40, 0x24);
-			outport(0x40, read(0x790d) + 0x40);
-			outport(0x40, read(0x779c) + 0x80);
-			outport(0x40, 0xa0);
-			outport(0x40, 0xa4);
-			outport(0x40, 0xa6);
-			outport(0x40, 0xa9);
-			outport(0x40, 0xaf);
-			outport(0x40, 0xc0);
-			outport(0x40, 0x25);
-			outport(0x60, 0);
-			outport(0x61, 0xff);
-			outport(0x62, 0);
-			outport(0x64, 0);
-			outport(0x65, 1);
-			outport(0x66, 1);
-			outport(0x67, 0);
-			outport(0x6b, 4);
-			outport(0x6c, 0);
-			outport(0x6d, 0);
-			outport(0x6e, 4);
-			break;
-		end
-
-		refreshLcd();
+		outport(0x40, 0x24);
+		outport(0x40, read(0x790d) + 0x40);
+		outport(0x40, read(0x779c) + 0x80);
+		outport(0x40, 0xa0);
+		outport(0x40, 0xa4);
+		outport(0x40, 0xa6);
+		outport(0x40, 0xa9);
+		outport(0x40, 0xaf);
+		outport(0x40, 0xc0);
+		outport(0x40, 0x25);
+		outport(0x60, 0);
+		outport(0x61, 0xff);
+		outport(0x62, 0);
+		outport(0x64, 0);
+		outport(0x65, 1);
+		outport(0x66, 1);
+		outport(0x67, 0);
+		outport(0x6b, 4);
+		outport(0x6c, 0);
+		outport(0x6d, 0);
+		outport(0x6e, 4);
+		break;
 	end
 
-	--電源をOFFにする
-	--public void off()
-	function off()
-		hlt = true;
-		iff = 0;
-		ioReset = 0;
-	end
+	refreshLcd();
+end
 
-	--電源OFFされたか?
-	--public boolean isOff()
-	function isOff()
-		return hlt && iff == 0;
-	end
+--電源をOFFにする
+--public void off()
+function off()
+	hlt = true;
+	iff = 0;
+	ioReset = 0;
+end
 
-	--按键を押した
-	--public void keyPress(int key)
-	function keyPress(int key)
-		if(GKEY_OFF <= key && key <= GKEY_CLS) then
-			key--;
-			if((keyMatrix[key / 8] & (1 << (key % 8))) != 0) then
-				return;
-			end
-			intIA = true;
-			keyMatrix[key / 8] |= (1 << (key % 8));
-		elseif(key == GKEY_BREAK) then
-			if (keyBreak != 0) then
-				return;
-			end
-			intKON = true;
-			keyBreak |= 0x80;
-		elseif(key == GKEY_SHIFT) then
-			keyShift |= 0x01;
-		elseif(key == GKEY_RESET) then
-			keyReset = true;
-		end
-	end
+--電源OFFされたか?
+--public boolean isOff()
+function isOff()
+	return hlt && iff == 0;
+end
 
-	--按键を離した
-	--public void keyRelease(int key)
-	function keyRelease(key)
-		if(GKEY_OFF <= key && key <= GKEY_CLS) then
-			key--;
-			keyMatrix[key / 8] &= ~(1 << (key % 8));
-		elseif(key == GKEY_BREAK) then
-			keyBreak &= ~0x80;
-		elseif(key == GKEY_SHIFT) then
-			keyShift &= ~0x01;
-		elseif(key == GKEY_RESET) then
-			keyReset = false;
-		end
-	end
-
-	--LCDの横ドット数を得る
-	--public int getLcdWidth()
-	function getLcdWidth()
-		if(machine == MACHINE_E200) then
-			return lcdWidth + lcdCols;
-		else
-			return lcdWidth;
-		end
-	end
-
-	--LCDの縦ドット数を得る
-	--public int getLcdHeight()
-	function getLcdHeight() 
-		if(machine == MACHINE_E200) then
-			return lcdHeight + lcdRows;
-		else
-			return lcdHeight;
-		end
-	end
-
-	--LCDの階調数を得る
-	--public int getLcdScales()
-	function getLcdScales()
-		return lcdScales;
-	end
-
-	--LCDの状態を得る
-	--public int getLcdScale(int x, int y)
-	function getLcdScale(int x, int y)						
-		return lcdScale[y][x];
-	end
-
-	--LCDの状態が変わったか?
-	--public boolean isLcdChanged(int x, int y)
-	function  isLcdChanged(int x, int y)
-		return lcdChanged[y][x];
-	end
-
-	--LCDが全て変わったことにする
-	--public void refreshLcd()
-	function refreshLcd()
-		first = true;
-	end
-
-	--11ピン端子の状態を得る
-	--public int get11Pin()
-	function get11Pin()
-		return
-		((pin11Out & PIN11_OUT_FO2)  == 0 ? 0: 0x008) | -- BUSY 		
-		((pin11Out & PIN11_OUT_FO1)  == 0 ? 0: 0x010) | -- Dout 		
-		((pin11In  & PIN11_IN_XIN)   == 0 ? 0: 0x020) | -- Xin 		
-		((pin11Out & PIN11_OUT_XOUT) == 0 ? 0: 0x040) | -- Xout 		
-		((pin11In  & PIN11_IN_IB1)   == 0 ? 0: 0x080) | -- Din 		
-		((pin11In  & PIN11_IN_IB2)   == 0 ? 0: 0x100);  -- ACK 	}
-	end
-
-	--波形を得る
-	--public final byte[] getWave()
-	function getWave()
-		return wave;
-	end
-
-	--SIOモードを得る
-	--public int getSioMode()
-	function getSioMode()
-		return sioMode;
-	end
-
-	--SIOモードを設定する
-	--public void setSioMode(int sio_mode)
-	function  setSioMode(sio_mode)
-		sioMode = sio_mode;
-		sioCount = 0;
-	end
-
-
-	--SIOから入力するファイルを得る
-	--public String getSioInfile()
-	function 
-		return sioInPathname;
-	end
-
-			SIOから入力するファイルを設定する
-	-- public void setSioInfile(String pathname)
-	function setSioInfile(String pathname)
-		sioInPathname = pathname;
-	end
-
-	--SIOへ出力するファイルを得る
-	--public String getSioOutfile()
-	function  getSioOutfile()
-		return sioOutPathname;
-	end
-
-	--SIOへ出力するファイルを設定する
-	--public void setSioOutfile(String pathname)
-	function  setSioOutfile(String pathname)
-		sioBuffer = new byte[0x8000 * 10];
-		sioOutPathname = pathname;
-	end
-
-	--SIOバッファを得る
-	--public byte[] getSioBuffer()
-	function getSioBuffer()
-		return sioBuffer;
-	end
-
-	--SIOバッファの読み込み/書き込み位置を得る
-	--public int getSioPos()
-	function getSioPos() 
-		if(sioMode == SIO_MODE_IN) then
-			return sioCount / 14;
-		elseif(sioMode == SIO_MODE_OUT) then
-			return sioCount / 10;
-		else
-			return 0;
-		end
-
-	end
-
-	--I/O更新周期を得る
-	--public int getFps()
-	function getFps()
-		return fps;
-	end
-
-	--RAMのアドレスを得る
-	--public byte[] getRam()
-	function getRam() 
-		return memory;
-	end
-
-	--ROMのアドレスを得る
-	--public byte[] getRom(int page)
-	function getRom(int page)
-		return rom[page];
-	end
-
-	--モードを得る
-	--public int getMode()
-	function getMode()
-		return mode;
-	end
-
-	--モードを設定する
-	--public void setMode(int mode)
-	function setMode(mode)
-		this.mode = mode;
-	end
-
-	--エミュレート対象の機種を得る
-	--public int getMachine()
-	function getMachine()
-		return machine;
-	end
-
-	--CPUのクロック周波数を得る
-	--public int getCpuClocks()
-	function getCpuClocks()
-		return cpuClocks;
-	end
-
-	--原点座標を設定する
-	--public void setOffset(int offset_x, int offset_y)
-	function setOffset(offset_x, offset_y)
-		offsetX = offset_x;
-		offsetY = offset_y;
-	end
-
-	--原点のX座標を得る
-	--public int getOffsetX()
-	function getOffsetX()
-		return offsetX;
-	end
-
-	--原点のY座標を得る
-	--public int getOffsetY()
-	function getOffsetY()
-		return offsetY;
-	end
-
-	--倍率を設定する
-	--public void setZoom(int zoom_x, int zoom_y)
-	function setZoom(zoom_x, zoom_y)
-		zoomX = zoom_x;
-		zoomY = zoom_y;
-	end
-
-	--X方向の倍率を得る
-	--public int getZoomX()
-	function getZoomX()
-		return zoomX;
-	end
-
-	--Y方向の倍率を得る
-	--public int getZoomY()
-	function getZoomY()
-		return zoomY;
-	end
-
-	--レイアウトを得る
-	--public Area getLayout(int index, int offset_x, int offset_y, int zoom_x, int zoom_y)
-	function
-		Area area;
-
-		if((area = layout[index][machine]) == nil) then
-			return nil;
-		end
-		return Area:init(offset_x + area.x * zoom_x, offset_y + area.y * zoom_y, area.width * zoom_x, area.height * zoom_y, area.text, area.foreColor, area.backColor);
-	end
-
-	--レイアウトを得る
-	--public Area getLayout(int index)
-	function getLayout(index) 
-		return getLayout(index, offsetX, offsetY, zoomX, zoomY);
-	end
-
-	--バイナリのROMイメージを読み込む
-	--public int readRom(InputStream in) throws IOException
-	function  readRom(in)
-		int page;
-
-		if(in.read(base, 0, base.length) != base.length) {
-			System.arraycopy(base, 0, memory, 0, base.length);
-			return 0;
-		}
-
-		for(page = 0;; page++) {
-			rom[page] = new byte[0x4000];
-
-			try {
-				if(in.read(rom[page], 0, rom[page].length) != rom[page].length)
-					break;
-			} catch (IOException e) {
-				break;
-			}
-		}
-		rom[page] = null;
-		romBanks = page;
-		return romBanks;
-	end
-
-	--ROMイメージをバイナリで書き込む
-	--public void writeRom(OutputStream out) throws IOException
-	function writeRom(out)
-		int page;
-
-		if(rom[0] == null)
+--按键を押した
+--public void keyPress(int key)
+function keyPress(key)
+	if(GKEY_OFF <= key && key <= GKEY_CLS) then
+		key = key - 1 ;
+		if((keyMatrix[key / 8] & (1 << (key % 8))) != 0) then
 			return;
-
-		out.write(base, 0, base.length);
-
-		for(page = 0; rom[page] != null; page++) {
-			out.write(rom[page], 0, rom[page].length);
-		}
-	end
-
-	--バイナリのRAMを読み込む
-	--public void readRam(InputStream in) throws IOException
-	function readRam(in)
-		in.read(memory, 0, memory.length);
-	end
-
-	--RAMをバイナリで読み込む
-	--public void writeRam(OutputStream out) throws IOException
-	function writeRam(OutputStream out)
-		out.write(memory, 0, memory.length);
-	end
-
-	
-	--ROMイメージファイルを1ページ読み込む (下請け)
-	--private int readRom1page(byte[] buf, String basename) throws Exception
-	function readRom1page(buf, base_name)
-		String file_name;
-
-		file_name = base_name + ".txt";
-		if((new File(file_name)).exists()) then
-			return HexFile.readFileAbs(buf, file_name, 0x0000);
-		else
-			return BinFile.readFile(buf, base_name + ".bin");
 		end
+		intIA = true;
+		keyMatrix[key / 8] = keyMatrix[key / 8] |  (1 << (key % 8));
+	elseif(key == GKEY_BREAK) then
+		if (keyBreak ~= 0) then
+			return;
+		end
+		intKON = true;
+		keyBreak = keyBreak | 0x80;
+	elseif(key == GKEY_SHIFT) then
+		keyShift = keyShift | 0x01;
+	elseif(key == GKEY_RESET) then
+		keyReset = true;
+	end
+end
+
+--按键を離した
+--public void keyRelease(int key)
+function keyRelease(key)
+	if(GKEY_OFF <= key && key <= GKEY_CLS) then
+		key = key - 1;
+		keyMatrix[key / 8] = keyMatrix[key / 8] & ~(1 << (key % 8));
+	elseif(key == GKEY_BREAK) then
+		keyBreak = keyBreak &  ~0x80;
+	elseif(key == GKEY_SHIFT) then
+		keyShift = keyShift  & ~0x01;
+	elseif(key == GKEY_RESET) then
+		keyReset = false;
+	end
+end
+
+--LCDの横ドット数を得る
+--public int getLcdWidth()
+function getLcdWidth()
+	if(machine == MACHINE_E200) then
+		return lcdWidth + lcdCols;
+	else
+		return lcdWidth;
+	end
+end
+
+--LCDの縦ドット数を得る
+--public int getLcdHeight()
+function getLcdHeight() 
+	if(machine == MACHINE_E200) then
+		return lcdHeight + lcdRows;
+	else
+		return lcdHeight;
+	end
+end
+
+--LCDの階調数を得る
+--public int getLcdScales()
+function getLcdScales()
+	return lcdScales;
+end
+
+--LCDの状態を得る
+--public int getLcdScale(int x, int y)
+function getLcdScale(int x, int y)						
+	return lcdScale[y][x];
+end
+
+--LCDの状態が変わったか?
+--public boolean isLcdChanged(int x, int y)
+function  isLcdChanged(int x, int y)
+	return lcdChanged[y][x];
+end
+
+--LCDが全て変わったことにする
+--public void refreshLcd()
+function refreshLcd()
+	first = true;
+end
+
+--11ピン端子の状態を得る
+--public int get11Pin()
+function get11Pin()
+	return
+	((pin11Out & PIN11_OUT_FO2)  == 0 and {0} or {0x008})[1] | -- BUSY 		
+	((pin11Out & PIN11_OUT_FO1)  == 0 and {0} or {0x010})[1] | -- Dout 		
+	((pin11In  & PIN11_IN_XIN)   == 0 and {0} or {0x020})[1] | -- Xin 		
+	((pin11Out & PIN11_OUT_XOUT) == 0 and {0} or {0x040})[1] | -- Xout 		
+	((pin11In  & PIN11_IN_IB1)   == 0 and {0} or {0x080})[1] | -- Din 		
+	((pin11In  & PIN11_IN_IB2)   == 0 and {0} or {0x100})[1];  -- ACK 	}
+end
+
+--波形を得る
+--public final byte[] getWave()
+function getWave()
+	return wave;
+end
+
+--SIOモードを得る
+--public int getSioMode()
+function getSioMode()
+	return sioMode;
+end
+
+--SIOモードを設定する
+--public void setSioMode(int sio_mode)
+function  setSioMode(sio_mode)
+	sioMode = sio_mode;
+	sioCount = 0;
+end
+
+
+--SIOから入力するファイルを得る
+--public String getSioInfile()
+function 
+	return sioInPathname;
+end
+
+		SIOから入力するファイルを設定する
+-- public void setSioInfile(String pathname)
+function setSioInfile(String pathname)
+	sioInPathname = pathname;
+end
+
+--SIOへ出力するファイルを得る
+--public String getSioOutfile()
+function  getSioOutfile()
+	return sioOutPathname;
+end
+
+--SIOへ出力するファイルを設定する
+--public void setSioOutfile(String pathname)
+function  setSioOutfile(String pathname)
+	sioBuffer = new byte[0x8000 * 10];
+	sioOutPathname = pathname;
+end
+
+--SIOバッファを得る
+--public byte[] getSioBuffer()
+function getSioBuffer()
+	return sioBuffer;
+end
+
+--SIOバッファの読み込み/書き込み位置を得る
+--public int getSioPos()
+function getSioPos() 
+	if(sioMode == SIO_MODE_IN) then
+		return sioCount / 14;
+	elseif(sioMode == SIO_MODE_OUT) then
+		return sioCount / 10;
+	else
+		return 0;
 	end
 
-		--IntelHex形式のROMイメージファイルを読み込む (ファイル名)
-	--public int loadHexFileIntoRom(String dir_name) throws Exception
-	function loadHexFileIntoRom(dir_name)
-		int page;
+end
 
-		readRom1page(memory, dir_name + "/base");
-		System.arraycopy(memory, 0, base, 0, 0x40);
+--I/O更新周期を得る
+--public int getFps()
+function getFps()
+	return fps;
+end
 
-		for(page = 0;; page++) {
-			rom[page] = new byte[0x4000];
-			try {
-				readRom1page(rom[page], dir_name + "/rom" + String.format("%02x", page));
-			} catch (IOException e) {
-				rom[page] = null;
-				romBanks = page;
-				return romBanks;
-			}
+--RAMのアドレスを得る
+--public byte[] getRam()
+function getRam() 
+	return memory;
+end
+
+--ROMのアドレスを得る
+--public byte[] getRom(int page)
+function getRom(int page)
+	return rom[page];
+end
+
+--モードを得る
+--public int getMode()
+function getMode()
+	return mode;
+end
+
+--モードを設定する
+--public void setMode(int mode)
+function setMode(mode)
+	this.mode = mode;
+end
+
+--エミュレート対象の機種を得る
+--public int getMachine()
+function getMachine()
+	return machine;
+end
+
+--CPUのクロック周波数を得る
+--public int getCpuClocks()
+function getCpuClocks()
+	return cpuClocks;
+end
+
+--原点座標を設定する
+--public void setOffset(int offset_x, int offset_y)
+function setOffset(offset_x, offset_y)
+	offsetX = offset_x;
+	offsetY = offset_y;
+end
+
+--原点のX座標を得る
+--public int getOffsetX()
+function getOffsetX()
+	return offsetX;
+end
+
+--原点のY座標を得る
+--public int getOffsetY()
+function getOffsetY()
+	return offsetY;
+end
+
+--倍率を設定する
+--public void setZoom(int zoom_x, int zoom_y)
+function setZoom(zoom_x, zoom_y)
+	zoomX = zoom_x;
+	zoomY = zoom_y;
+end
+
+--X方向の倍率を得る
+--public int getZoomX()
+function getZoomX()
+	return zoomX;
+end
+
+--Y方向の倍率を得る
+--public int getZoomY()
+function getZoomY()
+	return zoomY;
+end
+
+--レイアウトを得る
+--public Area getLayout(int index, int offset_x, int offset_y, int zoom_x, int zoom_y)
+function
+	Area area;
+
+	if((area = layout[index][machine]) == nil) then
+		return nil;
+	end
+	return Area:init(offset_x + area.x * zoom_x, offset_y + area.y * zoom_y, area.width * zoom_x, area.height * zoom_y, area.text, area.foreColor, area.backColor);
+end
+
+--レイアウトを得る
+--public Area getLayout(int index)
+function getLayout(index) 
+	return getLayout(index, offsetX, offsetY, zoomX, zoomY);
+end
+
+--バイナリのROMイメージを読み込む
+--public int readRom(InputStream in) throws IOException
+function  readRom(in)
+	int page;
+
+	if(in.read(base, 0, base.length) != base.length) {
+		System.arraycopy(base, 0, memory, 0, base.length);
+		return 0;
+	}
+
+	for(page = 0;; page++) {
+		rom[page] = new byte[0x4000];
+
+		try {
+			if(in.read(rom[page], 0, rom[page].length) != rom[page].length)
+				break;
+		} catch (IOException e) {
+			break;
 		}
-	end
+	}
+	rom[page] = null;
+	romBanks = page;
+	return romBanks;
+end
 
-	--IntelHex形式のファイルを読み込む (ファイル名) 
-	--public int loadHexFileIntoRam(String pathname) throws Exception
-	function loadHexFileIntoRam(pathname)
-		return HexFile.readFile(memory, pathname);
-	end
+--ROMイメージをバイナリで書き込む
+--public void writeRom(OutputStream out) throws IOException
+function writeRom(out)
+	int page;
 
-	--IntelHex形式のファイルを読み込む (URL) 
-	--public int loadHexURLIntoRam(String url) throws Exception
-	function loadHexURLIntoRam(String url)
-		return HexFile.readURL(memory, url);
-	end
+	if(rom[0] == null)
+		return;
 
-	--Zip圧縮されたIntelHex形式のファイルを読み込む (ファイル名) 
-	--public int loadZippedHexFileIntoRam(String zipname, String entryname) throws Exception
-	function loadZippedHexFileIntoRam(zipname, entryname)
-		return HexFile.readZipFile(memory, zipname, entryname);
-	end
+	out.write(base, 0, base.length);
 
-	--Zip圧縮されたIntelHex形式のファイルを読み込む (URL) 
-	--public int loadZippedHexURLIntoRam(String url, String entryname) throws Exception
-	function loadZippedHexURLIntoRam(url, entryname)
-		return HexFile.readZipURL(memory, url, entryname);
+	for(page = 0; rom[page] != null; page++) {
+		out.write(rom[page], 0, rom[page].length);
+	}
+end
 
+--バイナリのRAMを読み込む
+--public void readRam(InputStream in) throws IOException
+function readRam(in)
+	in.read(memory, 0, memory.length);
+end
+
+--RAMをバイナリで読み込む
+--public void writeRam(OutputStream out) throws IOException
+function writeRam(OutputStream out)
+	out.write(memory, 0, memory.length);
+end
+
+
+--ROMイメージファイルを1ページ読み込む (下請け)
+--private int readRom1page(byte[] buf, String basename) throws Exception
+function readRom1page(buf, base_name)
+	String file_name;
+
+	file_name = base_name + ".txt";
+	if((new File(file_name)).exists()) then
+		return HexFile.readFileAbs(buf, file_name, 0x0000);
+	else
+		return BinFile.readFile(buf, base_name + ".bin");
 	end
+end
+
+	--IntelHex形式のROMイメージファイルを読み込む (ファイル名)
+--public int loadHexFileIntoRom(String dir_name) throws Exception
+function loadHexFileIntoRom(dir_name)
+	int page;
+
+	readRom1page(memory, dir_name + "/base");
+	System.arraycopy(memory, 0, base, 0, 0x40);
+
+	for(page = 0;; page++) {
+		rom[page] = new byte[0x4000];
+		try {
+			readRom1page(rom[page], dir_name + "/rom" + String.format("%02x", page));
+		} catch (IOException e) {
+			rom[page] = null;
+			romBanks = page;
+			return romBanks;
+		}
+	}
+end
+
+--IntelHex形式のファイルを読み込む (ファイル名) 
+--public int loadHexFileIntoRam(String pathname) throws Exception
+function loadHexFileIntoRam(pathname)
+	return HexFile.readFile(memory, pathname);
+end
+
+--IntelHex形式のファイルを読み込む (URL) 
+--public int loadHexURLIntoRam(String url) throws Exception
+function loadHexURLIntoRam(String url)
+	return HexFile.readURL(memory, url);
+end
+
+--Zip圧縮されたIntelHex形式のファイルを読み込む (ファイル名) 
+--public int loadZippedHexFileIntoRam(String zipname, String entryname) throws Exception
+function loadZippedHexFileIntoRam(zipname, entryname)
+	return HexFile.readZipFile(memory, zipname, entryname);
+end
+
+--Zip圧縮されたIntelHex形式のファイルを読み込む (URL) 
+--public int loadZippedHexURLIntoRam(String url, String entryname) throws Exception
+function loadZippedHexURLIntoRam(url, entryname)
+	return HexFile.readZipURL(memory, url, entryname);
+
+end
 
 --]===]
 

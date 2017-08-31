@@ -529,12 +529,8 @@ end
 
 -- int read8(int address | Register16 address)
 function Z80:read8(address)
-	local typeAddress = type(address)
-	if typeAddress == "number" then
-		return (Z80:read(address)) & 0xff;
-	elseif typeAddress == "table" then
-		return (Z80:read(address.get())) & 0xff;
-	end
+	local address = nOrReg(address)
+	return (Z80:read(address)) & 0xff;
 end
 
 function Z80:read8(address)
@@ -671,7 +667,7 @@ end
 local function setHC8(x, y, cy)
 	local x = nOrReg(x) 
 	if cy ~= nil then
-		return ((x.get() & 0x0f) + (y & 0x0f) + cy) & 0x10;
+		return ((x & 0x0f) + (y & 0x0f) + cy) & 0x10;
 	elseif cy == nil then
 		return ((x & 0x0f) + (y & 0x0f)) & 0x10;
 	end
