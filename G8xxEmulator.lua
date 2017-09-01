@@ -62,19 +62,19 @@ function Area:init(x, y, width, height, text, fore_color, back_color)
 end
 
 --  X座標 public int x;
-x = G8xx.x
+local x = G8xx.x
 --  Y座標 public int y;
-y = G8xx.y
+local y = G8xx.y
 --  幅 public int width;
-width = G8xx.width
+local width = G8xx.width
 --  高さ public int height;
-height = G8xx.height
+local height = G8xx.height
 
-text = G8xx.text
+local text = G8xx.text
 --  文字 public String text;
-foreColor = G8xx.foreColor
+local foreColor = G8xx.foreColor
 --  前景色 public int foreColor;
-backColor = G8xx.backColor
+local backColor = G8xx.backColor
 --  背景色 public int backColor;
 
 
@@ -659,703 +659,1027 @@ local layout = {
 
 --  按键布局 BREAK按键 static public final int 
 G8xx.LAYOUT_KEY_BREAK = 0;
-
 -- 按键布局 OFF按键 static public final int 
 G8xx.LAYOUT_KEY_OFF = 1;
-
 -- 按键布局 ANS按键 static public final int 
 G8xx.LAYOUT_KEY_ANS = 2;
-
 -- 按键布局 CONST按键 static public final int 
 G8xx.LAYOUT_KEY_CONST = 3;
-
 -- 按键布局 TEXT按键 static public final int 
 G8xx.LAYOUT_KEY_TEXT = 4;
-
 -- 按键布局 BASIC按键 static public final int 
 G8xx.LAYOUT_KEY_BASIC = 5;
-
 -- 按键布局 CLS按键 static public final int 
 G8xx.LAYOUT_KEY_CLS = 6;
-
 -- 按键布局 F←→E按键 	static public final int 
 G8xx.LAYOUT_KEY_FE = 7;
+-- 按键布局 tan按键 	static public final int 
+G8xx.LAYOUT_KEY_TAN = 8;
+-- 按键布局 cos按键 	static public final int 
+G8xx.LAYOUT_KEY_COS = 9;
+-- 按键布局 sin按键 	static public final int 
+G8xx.LAYOUT_KEY_SIN = 10;
+-- 按键布局 2ndF按键 	static public final int 
+G8xx.LAYOUT_KEY_2NDF = 11;
+-- 按键布局 MDF按键 	static public final int 
+G8xx.LAYOUT_KEY_MDF = 12;
+-- 按键布局 1/x按键 	static public final int 
+G8xx.LAYOUT_KEY_RCP = 13;
 
--- 按键布局 tan按键 	static public final int LAYOUT_KEY_TAN = 8;
+-- 按键布局 log按键 	static public final int 
+G8xx.LAYOUT_KEY_LOG = 14;
 
--- 按键布局 cos按键 	static public final int LAYOUT_KEY_COS = 9;
+-- 按键布局 ln按键 	static public final int 
+G8xx.LAYOUT_KEY_LN = 15;
 
--- 按键布局 sin按键 	static public final int LAYOUT_KEY_SIN = 10;
+-- 按键布局 →DEG按键 	static public final int 
+G8xx.LAYOUT_KEY_DEG = 16;
 
--- 按键布局 2ndF按键 	static public final int LAYOUT_KEY_2NDF = 11;
+-- 按键布局 nPr按键 	static public final int 
+G8xx.LAYOUT_KEY_NPR = 17;
 
--- 按键布局 MDF按键 	static public final int LAYOUT_KEY_MDF = 12;
+-- 按键布局 )按键 	static public final int 
+G8xx.LAYOUT_KEY_RKAKKO = 18;
 
--- 按键布局 1/x按键 	static public final int LAYOUT_KEY_RCP = 13;
+-- 按键布局 (按键 	static public final int 
+G8xx.LAYOUT_KEY_LKAKKO = 19;
 
--- 按键布局 log按键 	static public final int LAYOUT_KEY_LOG = 14;
+-- 按键布局 ^按键 	static public final int 
+G8xx.LAYOUT_KEY_HAT = 20;
 
--- 按键布局 ln按键 	static public final int LAYOUT_KEY_LN = 15;
+-- 按键布局 x^2按键 	static public final int 
+G8xx.LAYOUT_KEY_SQU = 21;
 
--- 按键布局 →DEG按键 	static public final int LAYOUT_KEY_DEG = 16;
+-- 按键布局 √按键 	static public final int 
+G8xx.LAYOUT_KEY_SQR = 22;
 
--- 按键布局 nPr按键 	static public final int LAYOUT_KEY_NPR = 17;
+-- 按键布局 π按键 	static public final int 
+G8xx.LAYOUT_KEY_PI = 23;
 
--- 按键布局 )按键 	static public final int LAYOUT_KEY_RKAKKO = 18;
+-- 按键布局 R・CM按键 	static public final int 
+G8xx.LAYOUT_KEY_RCM = 24;
 
--- 按键布局 (按键 	static public final int LAYOUT_KEY_LKAKKO = 19;
+-- 按键布局 /按键 	static public final int 
+G8xx.LAYOUT_KEY_SLASH = 25;
 
--- 按键布局 ^按键 	static public final int LAYOUT_KEY_HAT = 20;
+-- 按键布局 9按键 	static public final int 
+G8xx.LAYOUT_KEY_9 = 26;
 
--- 按键布局 x^2按键 	static public final int LAYOUT_KEY_SQU = 21;
+-- 按键布局 8按键 	static public final int 
+G8xx.LAYOUT_KEY_8 = 27;
 
--- 按键布局 √按键 	static public final int LAYOUT_KEY_SQR = 22;
+-- 按键布局 7按键 	static public final int 
+G8xx.LAYOUT_KEY_7 = 28;
 
--- 按键布局 π按键 	static public final int LAYOUT_KEY_PI = 23;
+-- 按键布局 M+按键 	static public final int 
+G8xx.LAYOUT_KEY_MPLUS = 29;
 
--- 按键布局 R・CM按键 	static public final int LAYOUT_KEY_RCM = 24;
+-- 按键布局 *按键 	static public final int 
+G8xx.LAYOUT_KEY_ASTER = 30;
 
--- 按键布局 /按键 	static public final int LAYOUT_KEY_SLASH = 25;
+-- 按键布局 6按键 	static public final int 
+G8xx.LAYOUT_KEY_6 = 31;
 
--- 按键布局 9按键 	static public final int LAYOUT_KEY_9 = 26;
+-- 按键布局 5按键 	static public final int 
+G8xx.LAYOUT_KEY_5 = 32;
 
--- 按键布局 8按键 	static public final int LAYOUT_KEY_8 = 27;
+-- 按键布局 4按键 	static public final int 
+G8xx.LAYOUT_KEY_4 = 33;
 
--- 按键布局 7按键 	static public final int LAYOUT_KEY_7 = 28;
+-- 按键布局 RETURN按键(テン按键側) 	static public final int 
+G8xx.LAYOUT_KEY_RETURN2 = 34;
 
--- 按键布局 M+按键 	static public final int LAYOUT_KEY_MPLUS = 29;
+-- 按键布局 -按键 	static public final int 
+G8xx.LAYOUT_KEY_MINUS = 35;
 
--- 按键布局 *按键 	static public final int LAYOUT_KEY_ASTER = 30;
+-- 按键布局 3按键 	static public final int 
+G8xx.LAYOUT_KEY_3 = 36;
 
--- 按键布局 6按键 	static public final int LAYOUT_KEY_6 = 31;
+-- 按键布局 2按键 	static public final int 
+G8xx.LAYOUT_KEY_2 = 37;
 
--- 按键布局 5按键 	static public final int LAYOUT_KEY_5 = 32;
+-- 按键布局 1按键 	static public final int 
+G8xx.LAYOUT_KEY_1 = 38;
 
--- 按键布局 4按键 	static public final int LAYOUT_KEY_4 = 33;
+-- 按键布局 +按键 	static public final int 
+G8xx.LAYOUT_KEY_PLUS = 39;
 
--- 按键布局 RETURN按键(テン按键側) 	static public final int LAYOUT_KEY_RETURN2 = 34;
+-- 按键布局 =按键 	static public final int 
+G8xx.LAYOUT_KEY_EQUAL = 40;
 
--- 按键布局 -按键 	static public final int LAYOUT_KEY_MINUS = 35;
+-- 按键布局 .按键 	static public final int 
+G8xx.LAYOUT_KEY_PERIOD = 41;
 
--- 按键布局 3按键 	static public final int LAYOUT_KEY_3 = 36;
+-- 按键布局 0按键 	static public final int 
+G8xx.LAYOUT_KEY_0 = 42;
 
--- 按键布局 2按键 	static public final int LAYOUT_KEY_2 = 37;
+-- 按键布局 BS 	static public final int 
+G8xx.LAYOUT_KEY_BACKSPACE = 43;
 
--- 按键布局 1按键 	static public final int LAYOUT_KEY_1 = 38;
+-- 按键布局 P按键 	static public final int 
+G8xx.LAYOUT_KEY_P = 44;
 
--- 按键布局 +按键 	static public final int LAYOUT_KEY_PLUS = 39;
+-- 按键布局 O按键 	static public final int 
+G8xx.LAYOUT_KEY_O = 45;
 
--- 按键布局 =按键 	static public final int LAYOUT_KEY_EQUAL = 40;
+-- 按键布局 I按键 	static public final int 
+G8xx.LAYOUT_KEY_I = 46;
 
--- 按键布局 .按键 	static public final int LAYOUT_KEY_PERIOD = 41;
+-- 按键布局 U按键 	static public final int 
+G8xx.LAYOUT_KEY_U = 47;
 
--- 按键布局 0按键 	static public final int LAYOUT_KEY_0 = 42;
+-- 按键布局 Y按键 	static public final int 
+G8xx.LAYOUT_KEY_Y = 48;
 
--- 按键布局 BS 	static public final int LAYOUT_KEY_BACKSPACE = 43;
+-- 按键布局 T按键 	static public final int 
+G8xx.LAYOUT_KEY_T = 49;
 
--- 按键布局 P按键 	static public final int LAYOUT_KEY_P = 44;
+-- 按键布局 R按键 	static public final int 
+G8xx.LAYOUT_KEY_R = 50;
 
--- 按键布局 O按键 	static public final int LAYOUT_KEY_O = 45;
+-- 按键布局 E按键 	static public final int 
+G8xx.LAYOUT_KEY_E = 51;
 
--- 按键布局 I按键 	static public final int LAYOUT_KEY_I = 46;
+-- 按键布局 W按键 	static public final int 
+G8xx.LAYOUT_KEY_W = 52;
 
--- 按键布局 U按键 	static public final int LAYOUT_KEY_U = 47;
+-- 按键布局 Q按键 	static public final int 
+G8xx.LAYOUT_KEY_Q = 53;
 
--- 按键布局 Y按键 	static public final int LAYOUT_KEY_Y = 48;
+-- 按键布局 TAB按键 	static public final int 
+G8xx.LAYOUT_KEY_TAB = 54;
 
--- 按键布局 T按键 	static public final int LAYOUT_KEY_T = 49;
+-- 按键布局 RETURN按键 	static public final int 
+G8xx.LAYOUT_KEY_RETURN = 55;
 
--- 按键布局 R按键 	static public final int LAYOUT_KEY_R = 50;
+-- 按键布局 ;按键 	static public final int 
+G8xx.LAYOUT_KEY_SEMICOLON = 56;
 
--- 按键布局 E按键 	static public final int LAYOUT_KEY_E = 51;
+-- 按键布局 L按键 	static public final int 
+G8xx.LAYOUT_KEY_L = 57;
 
--- 按键布局 W按键 	static public final int LAYOUT_KEY_W = 52;
+-- 按键布局 K按键 	static public final int 
+G8xx.LAYOUT_KEY_K = 58;
 
--- 按键布局 Q按键 	static public final int LAYOUT_KEY_Q = 53;
+-- 按键布局 J按键 	static public final int 
+G8xx.LAYOUT_KEY_J = 59;
 
--- 按键布局 TAB按键 	static public final int LAYOUT_KEY_TAB = 54;
+-- 按键布局 H按键 	static public final int 
+G8xx.LAYOUT_KEY_H = 60;
 
--- 按键布局 RETURN按键 	static public final int LAYOUT_KEY_RETURN = 55;
+-- 按键布局 G按键 	static public final int 
+G8xx.LAYOUT_KEY_G = 61;
 
--- 按键布局 ;按键 	static public final int LAYOUT_KEY_SEMICOLON = 56;
+-- 按键布局 F按键 	static public final int 
+G8xx.LAYOUT_KEY_F = 62;
 
--- 按键布局 L按键 	static public final int LAYOUT_KEY_L = 57;
+-- 按键布局 D按键 	static public final int 
+G8xx.LAYOUT_KEY_D = 63;
 
--- 按键布局 K按键 	static public final int LAYOUT_KEY_K = 58;
+-- 按键布局 S按键 	static public final int 
+G8xx.LAYOUT_KEY_S = 64;
 
--- 按键布局 J按键 	static public final int LAYOUT_KEY_J = 59;
+-- 按键布局 A按键 	static public final int 
+G8xx.LAYOUT_KEY_A = 65;
 
--- 按键布局 H按键 	static public final int LAYOUT_KEY_H = 60;
+-- 按键布局 CAPS按键 	static public final int 
+G8xx.LAYOUT_KEY_CAPS = 66;
 
--- 按键布局 G按键 	static public final int LAYOUT_KEY_G = 61;
+-- 按键布局 ↑按键 	static public final int 
+G8xx.LAYOUT_KEY_UP = 67;
 
--- 按键布局 F按键 	static public final int LAYOUT_KEY_F = 62;
+-- 按键布局 ,按键 	static public final int 
+G8xx.LAYOUT_KEY_COMMA = 68;
 
--- 按键布局 D按键 	static public final int LAYOUT_KEY_D = 63;
+-- 按键布局 M按键 	static public final int 
+G8xx.LAYOUT_KEY_M = 69;
 
--- 按键布局 S按键 	static public final int LAYOUT_KEY_S = 64;
+-- 按键布局 N按键 	static public final int 
+G8xx.LAYOUT_KEY_N = 70;
 
--- 按键布局 A按键 	static public final int LAYOUT_KEY_A = 65;
+-- 按键布局 B按键 	static public final int 
+G8xx.LAYOUT_KEY_B = 71;
 
--- 按键布局 CAPS按键 	static public final int LAYOUT_KEY_CAPS = 66;
+-- 按键布局 V按键 	static public final int 
+G8xx.LAYOUT_KEY_V = 72;
 
--- 按键布局 ↑按键 	static public final int LAYOUT_KEY_UP = 67;
+-- 按键布局 C按键 	static public final int 
+G8xx.LAYOUT_KEY_C = 73;
 
--- 按键布局 ,按键 	static public final int LAYOUT_KEY_COMMA = 68;
+-- 按键布局 X按键 	static public final int 
+G8xx.LAYOUT_KEY_X = 74;
 
--- 按键布局 M按键 	static public final int LAYOUT_KEY_M = 69;
+-- 按键布局 Z按键 	static public final int 
+G8xx.LAYOUT_KEY_Z = 75;
 
--- 按键布局 N按键 	static public final int LAYOUT_KEY_N = 70;
+-- 按键布局 SHIFT按键 	static public final int 
+G8xx.LAYOUT_KEY_SHIFT = 76;
 
--- 按键布局 B按键 	static public final int LAYOUT_KEY_B = 71;
+-- 按键布局 →按键 	static public final int 
+G8xx.LAYOUT_KEY_RIGHT = 77;
 
--- 按键布局 V按键 	static public final int LAYOUT_KEY_V = 72;
+-- 按键布局 ↓按键 	static public final int 
+G8xx.LAYOUT_KEY_DOWN = 78;
 
--- 按键布局 C按键 	static public final int LAYOUT_KEY_C = 73;
+-- 按键布局 ←按键 	static public final int 
+G8xx.LAYOUT_KEY_LEFT = 79;
 
--- 按键布局 X按键 	static public final int LAYOUT_KEY_X = 74;
+-- 按键布局 INS按键 	static public final int 
+G8xx.LAYOUT_KEY_INSERT = 80;
 
--- 按键布局 Z按键 	static public final int LAYOUT_KEY_Z = 75;
+-- 按键布局 SPACE按键 	static public final int 
+G8xx.LAYOUT_KEY_SPACE = 81;
 
--- 按键布局 SHIFT按键 	static public final int LAYOUT_KEY_SHIFT = 76;
+-- 按键布局 カナ按键 	static public final int 
+G8xx.LAYOUT_KEY_KANA = 82;
 
--- 按键布局 →按键 	static public final int LAYOUT_KEY_RIGHT = 77;
+-- 按键布局 RESETボタン 	static public final int 
+G8xx.LAYOUT_KEY_RESET = 83;
 
--- 按键布局 ↓按键 	static public final int LAYOUT_KEY_DOWN = 78;
+-- 按键布局 按键の最後のレイアウト番号 	static public final int 
+G8xx.LAYOUT_KEY_LAST = 83;
 
--- 按键布局 ←按键 	static public final int LAYOUT_KEY_LEFT = 79;
+-- 按键布局 LCDドットマトリクス部 	static public final int 
+G8xx.LAYOUT_LCD_MATRIX = 84;
 
--- 按键布局 INS按键 	static public final int LAYOUT_KEY_INSERT = 80;
+-- 按键布局 LCDステータス部の最初のレイアウト番号 	static public final int 
+G8xx.LAYOUT_LCD_STATUS_FIRST = 85;
 
--- 按键布局 SPACE按键 	static public final int LAYOUT_KEY_SPACE = 81;
+-- 按键布局 LCDステータス部の最後のレイアウト番号 	static public final int 
+G8xx.LAYOUT_LCD_STATUS_LAST = 148;
 
--- 按键布局 カナ按键 	static public final int LAYOUT_KEY_KANA = 82;
+-- 按键布局 LCD全体 	static public final int 
+G8xx.LAYOUT_LCD = 149;
 
--- 按键布局 RESETボタン 	static public final int LAYOUT_KEY_RESET = 83;
+-- 按键布局 LCD画面枠 	static public final int 
+G8xx.LAYOUT_FRAME = 150;
 
--- 按键布局 按键の最後のレイアウト番号 	static public final int LAYOUT_KEY_LAST = 83;
+-- 按键布局 0列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL0 = 151;
 
--- 按键布局 LCDドットマトリクス部 	static public final int LAYOUT_LCD_MATRIX = 84;
+-- 按键布局 1列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL1 = 152;
 
--- 按键布局 LCDステータス部の最初のレイアウト番号 	static public final int LAYOUT_LCD_STATUS_FIRST = 85;
+-- 按键布局 2列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL2 = 153;
 
--- 按键布局 LCDステータス部の最後のレイアウト番号 	static public final int LAYOUT_LCD_STATUS_LAST = 148;
+-- 按键布局 3列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL3 = 154;
 
--- 按键布局 LCD全体 	static public final int LAYOUT_LCD = 149;
+-- 按键布局 4列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL4 = 155;
 
--- 按键布局 LCD画面枠 	static public final int LAYOUT_FRAME = 150;
+-- 按键布局 5列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL5 = 156;
 
--- 按键布局 0列目 	static public final int LAYOUT_LABEL_COL0 = 151;
+-- 按键布局 6列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL6 = 157;
 
--- 按键布局 1列目 	static public final int LAYOUT_LABEL_COL1 = 152;
+-- 按键布局 7列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL7 = 158;
 
--- 按键布局 2列目 	static public final int LAYOUT_LABEL_COL2 = 153;
+-- 按键布局 8列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL8 = 159;
 
--- 按键布局 3列目 	static public final int LAYOUT_LABEL_COL3 = 154;
+-- 按键布局 9列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL9 = 160;
 
--- 按键布局 4列目 	static public final int LAYOUT_LABEL_COL4 = 155;
+-- 按键布局 10列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL10 = 161;
 
--- 按键布局 5列目 	static public final int LAYOUT_LABEL_COL5 = 156;
+-- 按键布局 11列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL11 = 162;
 
--- 按键布局 6列目 	static public final int LAYOUT_LABEL_COL6 = 157;
+-- 按键布局 12列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL12 = 163;
 
--- 按键布局 7列目 	static public final int LAYOUT_LABEL_COL7 = 158;
+-- 按键布局 13列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL13 = 164;
 
--- 按键布局 8列目 	static public final int LAYOUT_LABEL_COL8 = 159;
+-- 按键布局 14列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL14 = 165;
 
--- 按键布局 9列目 	static public final int LAYOUT_LABEL_COL9 = 160;
+-- 按键布局 15列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL15 = 166;
 
--- 按键布局 10列目 	static public final int LAYOUT_LABEL_COL10 = 161;
+-- 按键布局 16列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL16 = 167;
 
--- 按键布局 11列目 	static public final int LAYOUT_LABEL_COL11 = 162;
+-- 按键布局 17列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL17 = 168;
 
--- 按键布局 12列目 	static public final int LAYOUT_LABEL_COL12 = 163;
+-- 按键布局 18列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL18 = 169;
 
--- 按键布局 13列目 	static public final int LAYOUT_LABEL_COL13 = 164;
+-- 按键布局 19列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL19 = 170;
 
--- 按键布局 14列目 	static public final int LAYOUT_LABEL_COL14 = 165;
+-- 按键布局 20列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL20 = 171;
 
--- 按键布局 15列目 	static public final int LAYOUT_LABEL_COL15 = 166;
+-- 按键布局 21列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL21 = 172;
 
--- 按键布局 16列目 	static public final int LAYOUT_LABEL_COL16 = 167;
+-- 按键布局 22列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL22 = 173;
 
--- 按键布局 17列目 	static public final int LAYOUT_LABEL_COL17 = 168;
+-- 按键布局 23列目 	static public final int 
+G8xx.LAYOUT_LABEL_COL23 = 174;
 
--- 按键布局 18列目 	static public final int LAYOUT_LABEL_COL18 = 169;
+-- 按键布局 0列目(下) 	static public final int 
+G8xx.LAYOUT_LABEL_BOTTOM_COL0 = 175;
 
--- 按键布局 19列目 	static public final int LAYOUT_LABEL_COL19 = 170;
+-- 按键布局 5列目(下) 	static public final int 
+G8xx.LAYOUT_LABEL_BOTTOM_COL5 = 176;
 
--- 按键布局 20列目 	static public final int LAYOUT_LABEL_COL20 = 171;
+-- 按键布局 10列目(下) 	static public final int 
+G8xx.LAYOUT_LABEL_BOTTOM_COL10 = 177;
 
--- 按键布局 21列目 	static public final int LAYOUT_LABEL_COL21 = 172;
+-- 按键布局 15列目(下) 	static public final int 
+G8xx.LAYOUT_LABEL_BOTTOM_COL15 = 178;
 
--- 按键布局 22列目 	static public final int LAYOUT_LABEL_COL22 = 173;
+-- 按键布局 20列目(下) 	static public final int 
+G8xx.LAYOUT_LABEL_BOTTOM_COL20 = 179;
 
--- 按键布局 23列目 	static public final int LAYOUT_LABEL_COL23 = 174;
+-- 按键布局 0行目(右) 	static public final int 
+G8xx.LAYOUT_LABEL_RROW0 = 180;
 
--- 按键布局 0列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL0 = 175;
+-- 按键布局 1行目(右) 	static public final int 
+G8xx.LAYOUT_LABEL_RROW1 = 181;
 
--- 按键布局 5列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL5 = 176;
+-- 按键布局 2行目(右) 	static public final int 
+G8xx.LAYOUT_LABEL_RROW2 = 182;
 
--- 按键布局 10列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL10 = 177;
+-- 按键布局 3行目(右) 	static public final int 
+G8xx.LAYOUT_LABEL_RROW3 = 183;
 
--- 按键布局 15列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL15 = 178;
+-- 按键布局 4行目(右) 	static public final int 
+G8xx.LAYOUT_LABEL_RROW4 = 184;
 
--- 按键布局 20列目(下) 	static public final int LAYOUT_LABEL_BOTTOM_COL20 = 179;
+-- 按键布局 5行目(右) 	static public final int 
+G8xx.LAYOUT_LABEL_RROW5 = 185;
 
--- 按键布局 0行目(右) 	static public final int LAYOUT_LABEL_RROW0 = 180;
+-- 按键布局 0行目(左) 	static public final int 
+G8xx.LAYOUT_LABEL_LROW0 = 186;
 
--- 按键布局 1行目(右) 	static public final int LAYOUT_LABEL_RROW1 = 181;
+-- 按键布局 1行目(左) 	static public final int 
+G8xx.LAYOUT_LABEL_LROW1 = 187;
 
--- 按键布局 2行目(右) 	static public final int LAYOUT_LABEL_RROW2 = 182;
+-- 按键布局 2行目(左) 	static public final int 
+G8xx.LAYOUT_LABEL_LROW2 = 188;
 
--- 按键布局 3行目(右) 	static public final int LAYOUT_LABEL_RROW3 = 183;
+-- 按键布局 3行目(左) 	static public final int 
+G8xx.LAYOUT_LABEL_LROW3 = 189;
 
--- 按键布局 4行目(右) 	static public final int LAYOUT_LABEL_RROW4 = 184;
+-- 按键布局 4行目(左) 	static public final int 
+G8xx.LAYOUT_LABEL_LROW4 = 190;
 
--- 按键布局 5行目(右) 	static public final int LAYOUT_LABEL_RROW5 = 185;
+-- 按键布局 5行目(左) 	static public final int 
+G8xx.LAYOUT_LABEL_LROW5 = 191;
 
--- 按键布局 0行目(左) 	static public final int LAYOUT_LABEL_LROW0 = 186;
+-- 按键布局 右カギカッコ 	static public final int 
+G8xx.LAYOUT_LABEL_RKAGIKAKKO = 192;
 
--- 按键布局 1行目(左) 	static public final int LAYOUT_LABEL_LROW1 = 187;
+-- 按键布局 左カギカッコ 	static public final int 
+G8xx.LAYOUT_LABEL_LKAGIKAKKO = 193;
 
--- 按键布局 2行目(左) 	static public final int LAYOUT_LABEL_LROW2 = 188;
+-- 按键布局 中点 	static public final int 
+G8xx.LAYOUT_LABEL_NAKATEN = 194;
 
--- 按键布局 3行目(左) 	static public final int LAYOUT_LABEL_LROW3 = 189;
+-- 按键布局 句点 	static public final int 
+G8xx.LAYOUT_LABEL_KUTEN = 195;
 
--- 按键布局 4行目(左) 	static public final int LAYOUT_LABEL_LROW4 = 190;
+-- 按键布局 読点 	static public final int 
+G8xx.LAYOUT_LABEL_TOUTEN = 196;
 
--- 按键布局 5行目(左) 	static public final int LAYOUT_LABEL_LROW5 = 191;
+-- 按键布局 BREAK 	static public final int 
+G8xx.LAYOUT_LABEL_BREAK = 197;
 
--- 按键布局 右カギカッコ 	static public final int LAYOUT_LABEL_RKAGIKAKKO = 192;
+-- 按键布局 コントラスト 	static public final int 
+G8xx.LAYOUT_LABEL_CONTRAST = 198;
 
--- 按键布局 左カギカッコ 	static public final int LAYOUT_LABEL_LKAGIKAKKO = 193;
+-- 按键布局 C 	static public final int 
+G8xx.LAYOUT_LABEL_C = 199;
 
--- 按键布局 中点 	static public final int LAYOUT_LABEL_NAKATEN = 194;
+-- 按键布局 ASMBL 	static public final int 
+G8xx.LAYOUT_LABEL_ASMBL = 200;
 
--- 按键布局 句点 	static public final int LAYOUT_LABEL_KUTEN = 195;
+-- 按键布局 CA 	static public final int 
+G8xx.LAYOUT_LABEL_CA = 201;
 
--- 按键布局 読点 	static public final int LAYOUT_LABEL_TOUTEN = 196;
+-- 按键布局 DIGIT 	static public final int 
+G8xx.LAYOUT_LABEL_DIGIT = 202;
 
--- 按键布局 BREAK 	static public final int LAYOUT_LABEL_BREAK = 197;
+-- 按键布局 atan 	static public final int 
+G8xx.LAYOUT_LABEL_ATAN = 203;
 
--- 按键布局 コントラスト 	static public final int LAYOUT_LABEL_CONTRAST = 198;
+-- 按键布局 acos 	static public final int 
+G8xx.LAYOUT_LABEL_ACOS = 204;
 
--- 按键布局 C 	static public final int LAYOUT_LABEL_C = 199;
+-- 按键布局 asin 	static public final int 
+G8xx.LAYOUT_LABEL_ASIN = 205;
 
--- 按键布局 ASMBL 	static public final int LAYOUT_LABEL_ASMBL = 200;
+-- 按键布局 STAT 	static public final int 
+G8xx.LAYOUT_LABEL_STAT = 206;
 
--- 按键布局 CA 	static public final int LAYOUT_LABEL_CA = 201;
+-- 按键布局 n! 	static public final int 
+G8xx.LAYOUT_LABEL_FACT = 207;
 
--- 按键布局 DIGIT 	static public final int LAYOUT_LABEL_DIGIT = 202;
+-- 按键布局 10^x 	static public final int 
+G8xx.LAYOUT_LABEL_TEN = 208;
 
--- 按键布局 atan 	static public final int LAYOUT_LABEL_ATAN = 203;
+-- 按键布局 e^x 	static public final int 
+G8xx.LAYOUT_LABEL_EXP = 209;
 
--- 按键布局 acos 	static public final int LAYOUT_LABEL_ACOS = 204;
+-- 按键布局 →DMS 	static public final int 
+G8xx.LAYOUT_LABEL_DMS = 210;
 
--- 按键布局 asin 	static public final int LAYOUT_LABEL_ASIN = 205;
+-- 按键布局 nCr 	static public final int 
+G8xx.LAYOUT_LABEL_NCR = 211;
 
--- 按键布局 STAT 	static public final int LAYOUT_LABEL_STAT = 206;
+-- 按键布局 BASE-n 	static public final int 
+G8xx.LAYOUT_LABEL_BASEN = 212;
 
--- 按键布局 n! 	static public final int LAYOUT_LABEL_FACT = 207;
+-- 按键布局 →xy 	static public final int 
+G8xx.LAYOUT_LABEL_XY = 213;
 
--- 按键布局 10^x 	static public final int LAYOUT_LABEL_TEN = 208;
+-- 按键布局 →rθ 	static public final int 
+G8xx.LAYOUT_LABEL_POL = 214;
 
--- 按键布局 e^x 	static public final int LAYOUT_LABEL_EXP = 209;
+-- 按键布局 x^3 	static public final int 
+G8xx.LAYOUT_LABEL_CUB = 215;
 
--- 按键布局 →DMS 	static public final int LAYOUT_LABEL_DMS = 210;
+-- 按键布局 3√ 	static public final int 
+G8xx.LAYOUT_LABEL_CUR = 216;
 
--- 按键布局 nCr 	static public final int LAYOUT_LABEL_NCR = 211;
+-- 按键布局 RND 	static public final int 
+G8xx.LAYOUT_LABEL_RND = 217;
 
--- 按键布局 BASE-n 	static public final int LAYOUT_LABEL_BASEN = 212;
+-- 按键布局 ″ 	static public final int 
+G8xx.LAYOUT_LABEL_SECOND = 218;
 
--- 按键布局 →xy 	static public final int LAYOUT_LABEL_XY = 213;
+-- 按键布局 ′ 	static public final int 
+G8xx.LAYOUT_LABEL_MINUTE = 219;
 
--- 按键布局 →rθ 	static public final int LAYOUT_LABEL_POL = 214;
+-- 按键布局 ° 	static public final int 
+G8xx.LAYOUT_LABEL_DEGREE = 220;
 
--- 按键布局 x^3 	static public final int LAYOUT_LABEL_CUB = 215;
+-- 按键布局 M- 	static public final int 
+G8xx.LAYOUT_LABEL_MMINUS = 221;
 
--- 按键布局 3√ 	static public final int LAYOUT_LABEL_CUR = 216;
+-- 按键布局 P-NP 	static public final int 
+G8xx.LAYOUT_LABEL_PNP2 = 222;
 
--- 按键布局 RND 	static public final int LAYOUT_LABEL_RND = 217;
+-- 按键布局 (-) 	static public final int 
+G8xx.LAYOUT_LABEL_NEG = 223;
 
--- 按键布局 ″ 	static public final int LAYOUT_LABEL_SECOND = 218;
+-- 按键布局 Exp 	static public final int 
+G8xx.LAYOUT_LABEL_E = 224;
 
--- 按键布局 ′ 	static public final int LAYOUT_LABEL_MINUTE = 219;
+-- 按键布局 DRG 	static public final int 
+G8xx.LAYOUT_LABEL_DRG = 225;
 
--- 按键布局 ° 	static public final int LAYOUT_LABEL_DEGREE = 220;
+-- 按键布局 @ 	static public final int 
+G8xx.LAYOUT_LABEL_AT = 226;
 
--- 按键布局 M- 	static public final int LAYOUT_LABEL_MMINUS = 221;
+-- 按键布局 > 	static public final int 
+G8xx.LAYOUT_LABEL_GREATER = 227;
 
--- 按键布局 P-NP 	static public final int LAYOUT_LABEL_PNP2 = 222;
+-- 按键布局 < 	static public final int 
+G8xx.LAYOUT_LABEL_LESS = 228;
 
--- 按键布局 (-) 	static public final int LAYOUT_LABEL_NEG = 223;
+-- 按键布局 ' 	static public final int 
+G8xx.LAYOUT_LABEL_APOSTROPHE = 229;
 
--- 按键布局 Exp 	static public final int LAYOUT_LABEL_E = 224;
+-- 按键布局 & 	static public final int 
+G8xx.LAYOUT_LABEL_AMPERSAND = 230;
 
--- 按键布局 DRG 	static public final int LAYOUT_LABEL_DRG = 225;
+-- 按键布局 % 	static public final int 
+G8xx.LAYOUT_LABEL_PERCENT = 231;
 
--- 按键布局 @ 	static public final int LAYOUT_LABEL_AT = 226;
+-- 按键布局 $ 	static public final int 
+G8xx.LAYOUT_LABEL_DOLLAR = 232;
 
--- 按键布局 > 	static public final int LAYOUT_LABEL_GREATER = 227;
+-- 按键布局 # 	static public final int 
+G8xx.LAYOUT_LABEL_HASH = 233;
 
--- 按键布局 < 	static public final int LAYOUT_LABEL_LESS = 228;
+-- 按键布局 " 	static public final int 
+G8xx.LAYOUT_LABEL_DQUARTATION = 234;
 
--- 按键布局 ' 	static public final int LAYOUT_LABEL_APOSTROPHE = 229;
+-- 按键布局 ! 	static public final int 
+G8xx.LAYOUT_LABEL_EXCLAMATION = 235;
 
--- 按键布局 & 	static public final int LAYOUT_LABEL_AMPERSAND = 230;
+-- 按键布局 P-NP(アルファベット按键側) 	static public final int 
+G8xx.LAYOUT_LABEL_PNP = 236;
 
--- 按键布局 % 	static public final int LAYOUT_LABEL_PERCENT = 231;
+-- 按键布局 : 	static public final int 
+G8xx.LAYOUT_LABEL_COLON = 237;
 
--- 按键布局 $ 	static public final int LAYOUT_LABEL_DOLLAR = 232;
+-- 按键布局 = 	static public final int 
+G8xx.LAYOUT_LABEL_EQUAL = 238;
 
--- 按键布局 # 	static public final int LAYOUT_LABEL_HASH = 233;
+-- 按键布局 _ 	static public final int 
+G8xx.LAYOUT_LABEL_UNDERBAR = 239;
 
--- 按键布局 " 	static public final int LAYOUT_LABEL_DQUARTATION = 234;
+-- 按键布局 	static public final int 
+G8xx.LAYOUT_LABEL_TILDE = 240;
 
--- 按键布局 ! 	static public final int LAYOUT_LABEL_EXCLAMATION = 235;
+-- 按键布局 | 	static public final int 
+G8xx.LAYOUT_LABEL_PIPE = 241;
 
--- 按键布局 P-NP(アルファベット按键側) 	static public final int LAYOUT_LABEL_PNP = 236;
+-- 按键布局 \ 	static public final int 
+G8xx.LAYOUT_LABEL_YEN = 242;
 
--- 按键布局 : 	static public final int LAYOUT_LABEL_COLON = 237;
+-- 按键布局 } 	static public final int 
+G8xx.LAYOUT_LABEL_RBRACE = 243;
 
--- 按键布局 = 	static public final int LAYOUT_LABEL_EQUAL = 238;
+-- 按键布局 { 	static public final int 
+G8xx.LAYOUT_LABEL_LBRACE = 244;
 
--- 按键布局 _ 	static public final int LAYOUT_LABEL_UNDERBAR = 239;
+-- 按键布局 ] 	static public final int 
+G8xx.LAYOUT_LABEL_RBRACKET = 245;
 
--- 按键布局 	static public final int LAYOUT_LABEL_TILDE = 240;
+-- 按键布局 [ 	static public final int 
+G8xx.LAYOUT_LABEL_LBRACKET = 246;
 
--- 按键布局 | 	static public final int LAYOUT_LABEL_PIPE = 241;
+-- 按键布局 小文字 	static public final int 
+G8xx.LAYOUT_LABEL_KOMOZI = 247;
 
--- 按键布局 \ 	static public final int LAYOUT_LABEL_YEN = 242;
+-- 按键布局 ? 	static public final int 
+G8xx.LAYOUT_LABEL_QUESTION = 248;
 
--- 按键布局 } 	static public final int LAYOUT_LABEL_RBRACE = 243;
+-- 按键布局 LOAD 	static public final int 
+G8xx.LAYOUT_LABEL_LOAD = 249;
 
--- 按键布局 { 	static public final int LAYOUT_LABEL_LBRACE = 244;
+-- 按键布局 SAVE 	static public final int 
+G8xx.LAYOUT_LABEL_SAVE = 250;
 
--- 按键布局 ] 	static public final int LAYOUT_LABEL_RBRACKET = 245;
+-- 按键布局 LIST 	static public final int 
+G8xx.LAYOUT_LABEL_LIST = 251;
 
--- 按键布局 [ 	static public final int LAYOUT_LABEL_LBRACKET = 246;
+-- 按键布局 RUN 	static public final int 
+G8xx.LAYOUT_LABEL_RUN = 252;
 
--- 按键布局 小文字 	static public final int LAYOUT_LABEL_KOMOZI = 247;
+-- 按键布局 CONT 	static public final int 
+G8xx.LAYOUT_LABEL_CONT = 253;
 
--- 按键布局 ? 	static public final int LAYOUT_LABEL_QUESTION = 248;
+-- 按键布局 PRINT 	static public final int 
+G8xx.LAYOUT_LABEL_PRINT = 254;
 
--- 按键布局 LOAD 	static public final int LAYOUT_LABEL_LOAD = 249;
+-- 按键布局 INPUT 	static public final int 
+G8xx.LAYOUT_LABEL_INPUT = 255;
 
--- 按键布局 SAVE 	static public final int LAYOUT_LABEL_SAVE = 250;
+-- 按键布局 DEL 	static public final int 
+G8xx.LAYOUT_LABEL_DELETE = 256;
 
--- 按键布局 LIST 	static public final int LAYOUT_LABEL_LIST = 251;
+-- 按键布局 ー 	static public final int 
+G8xx.LAYOUT_LABEL_CHOON = 257;
 
--- 按键布局 RUN 	static public final int LAYOUT_LABEL_RUN = 252;
+-- 按键布局 RESET 	static public final int 
+G8xx.LAYOUT_LABEL_RESET = 258;
 
--- 按键布局 CONT 	static public final int LAYOUT_LABEL_CONT = 253;
+-- 按键布局 GRAPHIC 	static public final int 
+G8xx.LAYOUT_LABEL_LOGO1 = 259;
 
--- 按键布局 PRINT 	static public final int LAYOUT_LABEL_PRINT = 254;
+-- 按键布局 C-LANGUAGE 	static public final int 
+G8xx.LAYOUT_LABEL_LOGO2 = 260;
 
--- 按键布局 INPUT 	static public final int LAYOUT_LABEL_INPUT = 255;
+-- 按键布局 POCKET COMPUTER PC-G850/S/V/VS 	static public final int 
+G8xx.LAYOUT_LABEL_LOGO3 = 261;
 
--- 按键布局 DEL 	static public final int LAYOUT_LABEL_DELETE = 256;
+-- 按键布局 SHARP 	static public final int 
+G8xx.LAYOUT_LABEL_LOGO4 = 262;
 
--- 按键布局 ー 	static public final int LAYOUT_LABEL_CHOON = 257;
+-- 按键布局 本体 	static public final int 
+G8xx.LAYOUT_BODY = 263;
 
--- 按键布局 RESET 	static public final int LAYOUT_LABEL_RESET = 258;
+-- 按键布局 最後の番号 	static public final int 
+G8xx.LAYOUT_LAST = 263;
 
--- 按键布局 GRAPHIC 	static public final int LAYOUT_LABEL_LOGO1 = 259;
+-- 色: 黒 	static public final int 
+G8xx.COLOR_BLACK = 0;
 
--- 按键布局 C-LANGUAGE 	static public final int LAYOUT_LABEL_LOGO2 = 260;
+-- 色: 暗い灰色 	static public final int 
+G8xx.COLOR_DARKGRAY = 1;
 
--- 按键布局 POCKET COMPUTER PC-G850/S/V/VS 	static public final int LAYOUT_LABEL_LOGO3 = 261;
+-- 色: 灰色 	static public final int 
+G8xx.COLOR_GRAY = 2;
 
--- 按键布局 SHARP 	static public final int LAYOUT_LABEL_LOGO4 = 262;
+-- 色: 明るい灰色 	static public final int 
+G8xx.COLOR_LIGHTGRAY = 3;
 
--- 按键布局 本体 	static public final int LAYOUT_BODY = 263;
+-- 色: 白 	static public final int 
+G8xx.COLOR_WHITE = 4;
 
--- 按键布局 最後の番号 	static public final int LAYOUT_LAST = 263;
+-- 色: 赤 	static public final int 
+G8xx.COLOR_RED = 5;
 
--- 色: 黒 	static public final int COLOR_BLACK = 0;
+-- 色: 明るい赤 	static public final int 
+G8xx.COLOR_LIGHTRED = 6;
 
--- 色: 暗い灰色 	static public final int COLOR_DARKGRAY = 1;
+-- 色: 緑 	static public final int 
+G8xx.COLOR_GREEN = 7;
 
--- 色: 灰色 	static public final int COLOR_GRAY = 2;
+-- 色: 明るい緑 	static public final int 
+G8xx.COLOR_LIGHTGREEN = 8;
 
--- 色: 明るい灰色 	static public final int COLOR_LIGHTGRAY = 3;
+-- 色: 黄 	static public final int 
+G8xx.COLOR_YELLOW = 9;
 
--- 色: 白 	static public final int COLOR_WHITE = 4;
+-- 色: 明るい黄 	static public final int 
+G8xx.COLOR_LIGHTYELLOW = 10;
 
--- 色: 赤 	static public final int COLOR_RED = 5;
+-- 色: 青 	static public final int 
+G8xx.COLOR_BLUE = 11;
 
--- 色: 明るい赤 	static public final int COLOR_LIGHTRED = 6;
+-- 動作モード: エミュレート 	static public final int 
+G8xx.MODE_EMULATOR = 0;
+-- 動作モード: メニュー 	static public final int 
+G8xx.MODE_MENU = 1;
+-- エミュレートの対象: PC-G801/PC-G802/PC-G803/PC-G805/PC-G811/PC-G813/PC-G820/PC-G830/PC-E200/PC-E220 	static public final int 
+G8xx.MACHINE_E200 = 0;
+local MACHINE_E200 = G8xx.MACHINE_E200
+-- エミュレートの対象: PC-G815 	static public final int 
+G8xx.MACHINE_G815 = 1;
+local MACHINE_G815 = G8xx.MACHINE_G815
+-- エミュレートの対象: PC-G850/PC-G850S/PC-G850V/PC-G850VS 	static public final int 
+G8xx.MACHINE_G850 = 2;
+local MACHINE_G850 = G8xx.MACHINE_G850
 
--- 色: 緑 	static public final int COLOR_GREEN = 7;
+-- 1文字横ドット数 (PC-E200) 	static private final int 
+G8xx.E200_CELL_WIDTH = 5;
 
--- 色: 明るい緑 	static public final int COLOR_LIGHTGREEN = 8;
+-- 1文字縦ドット数 (PC-E200) 	static private final int 
+G8xx.E200_CELL_HEIGHT = 7;
 
--- 色: 黄 	static public final int COLOR_YELLOW = 9;
+-- 表示横文字数 (PC-E200) 	static private final int 
+G8xx.E200_LCD_COLS = 24;
 
--- 色: 明るい黄 	static public final int COLOR_LIGHTYELLOW = 10;
+-- 表示縦文字数 (PC-E200) 	static private final int 
+G8xx.E200_LCD_ROWS = 4;
 
--- 色: 青 	static public final int COLOR_BLUE = 11;
+-- VRAM横文字数 (PC-E200) 	static private final int 
+G8xx.E200_VRAM_COLS = 24;
 
--- 動作モード: エミュレート 	static public final int MODE_EMULATOR = 0;
+-- VRAM縦文字数 (PC-E200) 	static private final int 
+G8xx.E200_VRAM_ROWS = 4;
 
--- 動作モード: メニュー 	static public final int MODE_MENU = 1;
+-- VRAM横ドット数 (PC-E200) 	static private final int 
+G8xx.E200_VRAM_WIDTH = G8xx.E200_VRAM_COLS * G8xx.E200_CELL_WIDTH + 1;
 
--- エミュレートの対象: PC-G801/PC-G802/PC-G803/PC-G805/PC-G811/PC-G813/PC-G820/PC-G830/PC-E200/PC-E220 	static public final int MACHINE_E200 = 0;
+-- VRAM縦ドット数 (PC-E200) 	static private final int 
+G8xx.E200_VRAM_HEIGHT = G8xx.E200_VRAM_ROWS * 8;
 
--- エミュレートの対象: PC-G815 	static public final int MACHINE_G815 = 1;
+-- 1文字横ドット数 (PC-G815) 	static private final int 
+G8xx.G815_CELL_WIDTH = 6;
 
--- エミュレートの対象: PC-G850/PC-G850S/PC-G850V/PC-G850VS 	static public final int MACHINE_G850 = 2;
+-- 1文字縦ドット数 (PC-G815) 	static private final int 
+G8xx.G815_CELL_HEIGHT = 8;
 
--- 1文字横ドット数 (PC-E200) 	static private final int E200_CELL_WIDTH = 5;
+-- 表示横文字数 (PC-G815) 	static private final int 
+G8xx.G815_LCD_COLS = 24;
 
--- 1文字縦ドット数 (PC-E200) 	static private final int E200_CELL_HEIGHT = 7;
+-- 表示縦文字数 (PC-G815) 	static private final int 
+G8xx.G815_LCD_ROWS = 4;
 
--- 表示横文字数 (PC-E200) 	static private final int E200_LCD_COLS = 24;
+-- VRAM横文字数 (PC-G815) 	static private final int 
+G8xx.G815_VRAM_COLS = 24;
 
--- 表示縦文字数 (PC-E200) 	static private final int E200_LCD_ROWS = 4;
+-- VRAM縦文字数 (PC-G815) 	static private final int 
+G8xx.G815_VRAM_ROWS = 4;
 
--- VRAM横文字数 (PC-E200) 	static private final int E200_VRAM_COLS = 24;
+-- VRAM横ドット数 (PC-G815) 	static private final int 
+G8xx.G815_VRAM_WIDTH = G8xx.G815_VRAM_COLS * G8xx.G815_CELL_WIDTH + 1;
 
--- VRAM縦文字数 (PC-E200) 	static private final int E200_VRAM_ROWS = 4;
+-- VRAM縦ドット数 (PC-G815) 	static private final int 
+G8xx.G815_VRAM_HEIGHT = G8xx.G815_VRAM_ROWS * 8;
 
--- VRAM横ドット数 (PC-E200) 	static private final int E200_VRAM_WIDTH = E200_VRAM_COLS * E200_CELL_WIDTH + 1;
+-- 1文字横ドット数 (PC-G850) 	static private final int 
+G8xx.G850_CELL_WIDTH = 6;
 
--- VRAM縦ドット数 (PC-E200) 	static private final int E200_VRAM_HEIGHT = E200_VRAM_ROWS * 8;
+-- 1文字縦ドット数 (PC-G850) 	static private final int 
+G8xx.G850_CELL_HEIGHT = 8;
 
--- 1文字横ドット数 (PC-G815) 	static private final int G815_CELL_WIDTH = 6;
+-- 画面横文字数 (PC-G850) 	static private final int 
+G8xx.G850_LCD_COLS = 24;
 
--- 1文字縦ドット数 (PC-G815) 	static private final int G815_CELL_HEIGHT = 8;
+-- 画面縦文字数 (PC-G850) 	static private final int 
+G8xx.G850_LCD_ROWS = 6;
 
--- 表示横文字数 (PC-G815) 	static private final int G815_LCD_COLS = 24;
+-- VRAM横文字数 (PC-G850) 	static private final int 
+G8xx.G850_VRAM_COLS = 24;
 
--- 表示縦文字数 (PC-G815) 	static private final int G815_LCD_ROWS = 4;
+-- VRAM縦文字数 (PC-G850) 	static private final int 
+G8xx.G850_VRAM_ROWS = 8;
 
--- VRAM横文字数 (PC-G815) 	static private final int G815_VRAM_COLS = 24;
+-- VRAM横ドット数 (PC-G850) 	static private final int 
+G8xx.G850_VRAM_WIDTH = G8xx.G850_VRAM_COLS * G8xx.G850_CELL_WIDTH + 1;
 
--- VRAM縦文字数 (PC-G815) 	static private final int G815_VRAM_ROWS = 4;
+-- VRAM縦ドット数 (PC-G850) 	static private final int 
+G8xx.G850_VRAM_HEIGHT = G8xx.G850_VRAM_ROWS * 8;
 
--- VRAM横ドット数 (PC-G815) 	static private final int G815_VRAM_WIDTH = G815_VRAM_COLS * G815_CELL_WIDTH + 1;
+-- SIOモード: 入出力なし 	static public final int 
+G8xx.SIO_MODE_STOP = 0;
+local SIO_MODE_STOP = G8xx.SIO_MODE_STOP 
+-- SIOモード: 入力 	static public final int 
+G8xx.SIO_MODE_IN = 1;
+local SIO_MODE_IN = G8xx.SIO_MODE_IN
+-- SIOモード: 出力 	static public final int 
+G8xx.SIO_MODE_OUT = 2;
+local SIO_MODE_OUT = G8xx.SIO_MODE_OUT 
 
--- VRAM縦ドット数 (PC-G815) 	static private final int G815_VRAM_HEIGHT = G815_VRAM_ROWS * 8;
+-- 按键割り込み 	static private final int
+local INTERRUPT_IA = 0x01;
 
--- 1文字横ドット数 (PC-G850) 	static private final int G850_CELL_WIDTH = 6;
+-- 按键割り込み 	static private final int
+local INTERRUPT_KON = 0x02;
 
--- 1文字縦ドット数 (PC-G850) 	static private final int G850_CELL_HEIGHT = 8;
+-- タイマ割り込み 	static private final int
+local INTERRUPT_1S = 0x04;
 
--- 画面横文字数 (PC-G850) 	static private final int G850_LCD_COLS = 24;
+-- 11ピン割り込み 	static private final int 
+local INTERRUPT_INT1 = 0x08;
 
--- 画面縦文字数 (PC-G850) 	static private final int G850_LCD_ROWS = 6;
 
--- VRAM横文字数 (PC-G850) 	static private final int G850_VRAM_COLS = 24;
+-- 按键コード: なし 	static public final int 
+G8xx.GKEY_NONE = 0x00;
+-- 按键コード: OFF按键 	static public final int 
+G8xx.GKEY_OFF = 0x01;
 
--- VRAM縦文字数 (PC-G850) 	static private final int G850_VRAM_ROWS = 8;
+-- 按键コード: Q按键 	static public final int 
+G8xx.GKEY_Q = 0x02;
 
--- VRAM横ドット数 (PC-G850) 	static private final int G850_VRAM_WIDTH = G850_VRAM_COLS * G850_CELL_WIDTH + 1;
+-- 按键コード: W按键 	static public final int 
+G8xx.GKEY_W = 0x03;
 
--- VRAM縦ドット数 (PC-G850) 	static private final int G850_VRAM_HEIGHT = G850_VRAM_ROWS * 8;
+-- 按键コード: E按键 	static public final int 
+G8xx.GKEY_E = 0x04;
 
--- SIOモード: 入出力なし 	static public final int SIO_MODE_STOP = 0;
+-- 按键コード: R按键 	static public final int 
+G8xx.GKEY_R = 0x05;
 
--- SIOモード: 入力 	static public final int SIO_MODE_IN = 1;
+-- 按键コード: T按键 	static public final int 
+G8xx.GKEY_T = 0x06;
 
--- SIOモード: 出力 	static public final int SIO_MODE_OUT = 2;
+-- 按键コード: Y按键 	static public final int 
+G8xx.GKEY_Y = 0x07;
 
--- 按键割り込み 	static private final int INTERRUPT_IA = 0x01;
+-- 按键コード: U按键 	static public final int 
+G8xx.GKEY_U = 0x08;
 
--- 按键割り込み 	static private final int INTERRUPT_KON = 0x02;
+-- 按键コード: A按键 	static public final int 
+G8xx.GKEY_A = 0x09;
 
--- タイマ割り込み 	static private final int INTERRUPT_1S = 0x04;
+-- 按键コード: S按键 	static public final int 
+G8xx.GKEY_S = 0x0a;
 
--- 11ピン割り込み 	static private final int INTERRUPT_INT1 = 0x08;
+-- 按键コード: D按键 	static public final int 
+G8xx.GKEY_D = 0x0b;
 
--- 按键コード: なし 	static public final int GKEY_NONE = 0x00;
+-- 按键コード: F按键 	static public final int 
+G8xx.GKEY_F = 0x0c;
 
--- 按键コード: OFF按键 	static public final int GKEY_OFF = 0x01;
+-- 按键コード: G按键 	static public final int 
+G8xx.GKEY_G = 0x0d;
 
--- 按键コード: Q按键 	static public final int GKEY_Q = 0x02;
+-- 按键コード: H按键 	static public final int 
+G8xx.GKEY_H = 0x0e;
 
--- 按键コード: W按键 	static public final int GKEY_W = 0x03;
+-- 按键コード: J按键 	static public final int 
+G8xx.GKEY_J = 0x0f;
 
--- 按键コード: E按键 	static public final int GKEY_E = 0x04;
+-- 按键コード: K按键 	static public final int 
+G8xx.GKEY_K = 0x10;
 
--- 按键コード: R按键 	static public final int GKEY_R = 0x05;
+-- 按键コード: Z按键 	static public final int 
+G8xx.GKEY_Z = 0x11;
 
--- 按键コード: T按键 	static public final int GKEY_T = 0x06;
+-- 按键コード: X按键 	static public final int 
+G8xx.GKEY_X = 0x12;
 
--- 按键コード: Y按键 	static public final int GKEY_Y = 0x07;
+-- 按键コード: C按键 	static public final int 
+G8xx.GKEY_C = 0x13;
 
--- 按键コード: U按键 	static public final int GKEY_U = 0x08;
+-- 按键コード: V按键 	static public final int 
+G8xx.GKEY_V = 0x14;
 
--- 按键コード: A按键 	static public final int GKEY_A = 0x09;
+-- 按键コード: B按键 	static public final int 
+G8xx.GKEY_B = 0x15;
 
--- 按键コード: S按键 	static public final int GKEY_S = 0x0a;
+-- 按键コード: N按键 	static public final int 
+G8xx.GKEY_N = 0x16;
 
--- 按键コード: D按键 	static public final int GKEY_D = 0x0b;
+-- 按键コード: M按键 	static public final int 
+G8xx.GKEY_M = 0x17;
 
--- 按键コード: F按键 	static public final int GKEY_F = 0x0c;
+-- 按键コード: ,按键 	static public final int 
+G8xx.GKEY_COMMA = 0x18;
 
--- 按键コード: G按键 	static public final int GKEY_G = 0x0d;
+-- 按键コード: BASIC按键 	static public final int 
+G8xx.GKEY_BASIC = 0x19;
 
--- 按键コード: H按键 	static public final int GKEY_H = 0x0e;
+-- 按键コード: TEXT按键 	static public final int 
+G8xx.GKEY_TEXT = 0x1a;
 
--- 按键コード: J按键 	static public final int GKEY_J = 0x0f;
+-- 按键コード: CAPS按键 	static public final int 
+G8xx.GKEY_CAPS = 0x1b;
 
--- 按键コード: K按键 	static public final int GKEY_K = 0x10;
+-- 按键コード: カナ按键 	static public final int 
+G8xx.GKEY_KANA = 0x1c;
 
--- 按键コード: Z按键 	static public final int GKEY_Z = 0x11;
+-- 按键コード: TAB按键 	static public final int 
+G8xx.GKEY_TAB = 0x1d;
 
--- 按键コード: X按键 	static public final int GKEY_X = 0x12;
+-- 按键コード: SPACE按键 	static public final int 
+G8xx.GKEY_SPACE = 0x1e;
 
--- 按键コード: C按键 	static public final int GKEY_C = 0x13;
+-- 按键コード: ↓按键 	static public final int 
+G8xx.GKEY_DOWN = 0x1f;
 
--- 按键コード: V按键 	static public final int GKEY_V = 0x14;
+-- 按键コード: ↑按键 	static public final int 
+G8xx.GKEY_UP = 0x20;
 
--- 按键コード: B按键 	static public final int GKEY_B = 0x15;
+-- 按键コード: ←按键 	static public final int 
+G8xx.GKEY_LEFT = 0x21;
 
--- 按键コード: N按键 	static public final int GKEY_N = 0x16;
+-- 按键コード: →按键 	static public final int 
+G8xx.GKEY_RIGHT = 0x22;
 
--- 按键コード: M按键 	static public final int GKEY_M = 0x17;
+-- 按键コード: ANS按键 	static public final int 
+G8xx.GKEY_ANS = 0x23;
 
--- 按键コード: ,按键 	static public final int GKEY_COMMA = 0x18;
+-- 按键コード: 0按键 	static public final int 
+G8xx.GKEY_0 = 0x24;
 
--- 按键コード: BASIC按键 	static public final int GKEY_BASIC = 0x19;
+-- 按键コード: .按键 	static public final int 
+G8xx.GKEY_PERIOD = 0x25;
 
--- 按键コード: TEXT按键 	static public final int GKEY_TEXT = 0x1a;
+-- 按键コード: =按键 	static public final int 
+G8xx.GKEY_EQUAL = 0x26;
 
--- 按键コード: CAPS按键 	static public final int GKEY_CAPS = 0x1b;
+-- 按键コード: +按键 	static public final int 
+G8xx.GKEY_PLUS = 0x27;
 
--- 按键コード: カナ按键 	static public final int GKEY_KANA = 0x1c;
+-- 按键コード: RETURN按键 	static public final int 
+G8xx.GKEY_RETURN = 0x28;
 
--- 按键コード: TAB按键 	static public final int GKEY_TAB = 0x1d;
+-- 按键コード: L按键 	static public final int 
+G8xx.GKEY_L = 0x29;
 
--- 按键コード: SPACE按键 	static public final int GKEY_SPACE = 0x1e;
+-- 按键コード: ;按键 	static public final int 
+G8xx.GKEY_SEMICOLON = 0x2a;
 
--- 按键コード: ↓按键 	static public final int GKEY_DOWN = 0x1f;
+-- 按键コード: CONST按键 	static public final int 
+G8xx.GKEY_CONST = 0x2b;
 
--- 按键コード: ↑按键 	static public final int GKEY_UP = 0x20;
+-- 按键コード: 1按键 	static public final int 
+G8xx.GKEY_1 = 0x2c;
 
--- 按键コード: ←按键 	static public final int GKEY_LEFT = 0x21;
+-- 按键コード: 2按键 	static public final int 
+G8xx.GKEY_2 = 0x2d;
 
--- 按键コード: →按键 	static public final int GKEY_RIGHT = 0x22;
+-- 按键コード: 3按键 	static public final int 
+G8xx.GKEY_3 = 0x2e;
 
--- 按键コード: ANS按键 	static public final int GKEY_ANS = 0x23;
+-- 按键コード: -按键 	static public final int 
+G8xx.GKEY_MINUS = 0x2f;
 
--- 按键コード: 0按键 	static public final int GKEY_0 = 0x24;
+-- 按键コード: M+按键 	static public final int 
+G8xx.GKEY_MPLUS = 0x30;
 
--- 按键コード: .按键 	static public final int GKEY_PERIOD = 0x25;
+-- 按键コード: I按键 	static public final int 
+G8xx.GKEY_I = 0x31;
 
--- 按键コード: =按键 	static public final int GKEY_EQUAL = 0x26;
+-- 按键コード: O按键 	static public final int 
+G8xx.GKEY_O = 0x32;
 
--- 按键コード: +按键 	static public final int GKEY_PLUS = 0x27;
+-- 按键コード: INS按键 	static public final int 
+G8xx.GKEY_INSERT = 0x33;
 
--- 按键コード: RETURN按键 	static public final int GKEY_RETURN = 0x28;
+-- 按键コード: 4按键 	static public final int 
+G8xx.GKEY_4 = 0x34;
 
--- 按键コード: L按键 	static public final int GKEY_L = 0x29;
+-- 按键コード: 5按键 	static public final int 
+G8xx.GKEY_5 = 0x35;
 
--- 按键コード: ;按键 	static public final int GKEY_SEMICOLON = 0x2a;
+-- 按键コード: 6按键 	static public final int 
+G8xx.GKEY_6 = 0x36;
 
--- 按键コード: CONST按键 	static public final int GKEY_CONST = 0x2b;
+-- 按键コード: *按键 	static public final int 
+G8xx.GKEY_ASTER = 0x37;
 
--- 按键コード: 1按键 	static public final int GKEY_1 = 0x2c;
+-- 按键コード: R・CM按键 	static public final int 
+G8xx.GKEY_RCM = 0x38;
 
--- 按键コード: 2按键 	static public final int GKEY_2 = 0x2d;
+-- 按键コード: P按键 	static public final int 
+G8xx.GKEY_P = 0x39;
 
--- 按键コード: 3按键 	static public final int GKEY_3 = 0x2e;
+-- 按键コード: BS按键 	static public final int 
+G8xx.GKEY_BACKSPACE = 0x3a;
 
--- 按键コード: -按键 	static public final int GKEY_MINUS = 0x2f;
+-- 按键コード: π按键 	static public final int 
+G8xx.GKEY_PI = 0x3b;
 
--- 按键コード: M+按键 	static public final int GKEY_MPLUS = 0x30;
+-- 按键コード: 7按键 	static public final int 
+G8xx.GKEY_7 = 0x3c;
 
--- 按键コード: I按键 	static public final int GKEY_I = 0x31;
+-- 按键コード: 8按键 	static public final int 
+G8xx.GKEY_8 = 0x3d;
 
--- 按键コード: O按键 	static public final int GKEY_O = 0x32;
+-- 按键コード: 9按键 	static public final int 
+G8xx.GKEY_9 = 0x3e;
 
--- 按键コード: INS按键 	static public final int GKEY_INSERT = 0x33;
+-- 按键コード: /按键 	static public final int 
+G8xx.GKEY_SLASH = 0x3f;
 
--- 按键コード: 4按键 	static public final int GKEY_4 = 0x34;
+-- 按键コード: )按键 	static public final int 
+G8xx.GKEY_RKAKKO = 0x40;
 
--- 按键コード: 5按键 	static public final int GKEY_5 = 0x35;
+-- 按键コード: nPr按键 	static public final int 
+G8xx.GKEY_NPR = 0x41;
 
--- 按键コード: 6按键 	static public final int GKEY_6 = 0x36;
+-- 按键コード: →DEG按键 	static public final int 
+G8xx.GKEY_DEG = 0x42;
 
--- 按键コード: *按键 	static public final int GKEY_ASTER = 0x37;
+-- 按键コード: √按键 	static public final int 
+G8xx.GKEY_SQR = 0x43;
 
--- 按键コード: R・CM按键 	static public final int GKEY_RCM = 0x38;
+-- 按键コード: x^2按键 	static public final int 
+G8xx.GKEY_SQU = 0x44;
 
--- 按键コード: P按键 	static public final int GKEY_P = 0x39;
+-- 按键コード: ^按键 	static public final int 
+G8xx.GKEY_HAT = 0x45;
 
--- 按键コード: BS按键 	static public final int GKEY_BACKSPACE = 0x3a;
+-- 按键コード: (按键 	static public final int 
+G8xx.GKEY_LKAKKO = 0x46;
 
--- 按键コード: π按键 	static public final int GKEY_PI = 0x3b;
+-- 按键コード: 1/x按键 	static public final int 
+G8xx.GKEY_RCP = 0x47;
 
--- 按键コード: 7按键 	static public final int GKEY_7 = 0x3c;
+-- 按键コード: MDF按键 	static public final int 
+G8xx.GKEY_MDF = 0x48;
 
--- 按键コード: 8按键 	static public final int GKEY_8 = 0x3d;
+-- 按键コード: 2ndF按键 	static public final int 
+G8xx.GKEY_2NDF = 0x49;
 
--- 按键コード: 9按键 	static public final int GKEY_9 = 0x3e;
+-- 按键コード: sin按键 	static public final int 
+G8xx.GKEY_SIN = 0x4a;
 
--- 按键コード: /按键 	static public final int GKEY_SLASH = 0x3f;
+-- 按键コード: cos按键 	static public final int 
+G8xx.GKEY_COS = 0x4b;
 
--- 按键コード: )按键 	static public final int GKEY_RKAKKO = 0x40;
+-- 按键コード: ln按键 	static public final int 
+G8xx.GKEY_LN = 0x4c;
 
--- 按键コード: nPr按键 	static public final int GKEY_NPR = 0x41;
+-- 按键コード: log按键 	static public final int 
+G8xx.GKEY_LOG = 0x4d;
 
--- 按键コード: →DEG按键 	static public final int GKEY_DEG = 0x42;
+-- 按键コード: tan按键 	static public final int 
+G8xx.GKEY_TAN = 0x4e;
 
--- 按键コード: √按键 	static public final int GKEY_SQR = 0x43;
+-- 按键コード: F←→E按键 	static public final int 
+G8xx.GKEY_FE = 0x4f;
 
--- 按键コード: x^2按键 	static public final int GKEY_SQU = 0x44;
+-- 按键コード: CLS按键 	static public final int 
+G8xx.GKEY_CLS = 0x50;
 
--- 按键コード: ^按键 	static public final int GKEY_HAT = 0x45;
+-- 按键コード: ON按键 	static public final int 
+G8xx.GKEY_BREAK = 0x51;
 
--- 按键コード: (按键 	static public final int GKEY_LKAKKO = 0x46;
+-- 按键コード: 同時押し 	static public final int 
+G8xx.GKEY_DOUBLE = 0x52;
 
--- 按键コード: 1/x按键 	static public final int GKEY_RCP = 0x47;
+-- 仮想按键コード: SHIFT按键 	static public final int 
+G8xx.GKEY_SHIFT = 0x1000;
 
--- 按键コード: MDF按键 	static public final int GKEY_MDF = 0x48;
+-- 仮想按键コード: RESET按键 	static public final int 
+G8xx.GKEY_RESET = 0x2000;
+-- 11ピン出力: Fo1 	static private final int 
+G8xx.PIN11_OUT_FO1 = 0x01;
 
--- 按键コード: 2ndF按键 	static public final int GKEY_2NDF = 0x49;
+-- 11ピン出力: Fo2 	static private final int 
+G8xx.PIN11_OUT_FO2 = 0x02;
 
--- 按键コード: sin按键 	static public final int GKEY_SIN = 0x4a;
+-- 11ピン出力: BEEP 	static private final int 
+G8xx.PIN11_OUT_BEEP = 0x40;
 
--- 按键コード: cos按键 	static public final int GKEY_COS = 0x4b;
+-- 11ピン出力: Xout 	static private final int 
+G8xx.PIN11_OUT_XOUT = 0x80;
 
--- 按键コード: ln按键 	static public final int GKEY_LN = 0x4c;
+-- 11ピン入力: IB1 	static private final int 
+G8xx.PIN11_IN_IB1 = 0x01;
 
--- 按键コード: log按键 	static public final int GKEY_LOG = 0x4d;
+-- 11ピン入力: IB2 	static private final int 
+G8xx.PIN11_IN_IB2 = 0x02;
 
--- 按键コード: tan按键 	static public final int GKEY_TAN = 0x4e;
+-- 11ピン入力: Xin 	static private final int 
+G8xx.PIN11_IN_XIN = 0x04;
 
--- 按键コード: F←→E按键 	static public final int GKEY_FE = 0x4f;
+-- 最初の実行か? 	private boolean 
+local first = true;
 
--- 按键コード: CLS按键 	static public final int GKEY_CLS = 0x50;
-
--- 按键コード: ON按键 	static public final int GKEY_BREAK = 0x51;
-
--- 按键コード: 同時押し 	static public final int GKEY_DOUBLE = 0x52;
-
--- 仮想按键コード: SHIFT按键 	static public final int GKEY_SHIFT = 0x1000;
-
--- 仮想按键コード: RESET按键 	static public final int GKEY_RESET = 0x2000;
-
--- 11ピン出力: Fo1 	static private final int PIN11_OUT_FO1 = 0x01;
-
--- 11ピン出力: Fo2 	static private final int PIN11_OUT_FO2 = 0x02;
-
--- 11ピン出力: BEEP 	static private final int PIN11_OUT_BEEP = 0x40;
-
--- 11ピン出力: Xout 	static private final int PIN11_OUT_XOUT = 0x80;
-
--- 11ピン入力: IB1 	static private final int PIN11_IN_IB1 = 0x01;
-
--- 11ピン入力: IB2 	static private final int PIN11_IN_IB2 = 0x02;
-
--- 11ピン入力: Xin 	static private final int PIN11_IN_XIN = 0x04;
-
--- 最初の実行か? 	private boolean first = true;
-
--- 動作モード 	private int mode = 0;
+-- 動作モード 	private int 
+local mode = 0;
 
 -- エミュレートするマシン 	private int machine;
 
@@ -1378,7 +1702,7 @@ G8xx.LAYOUT_KEY_FE = 7;
 -- LCD縦文字数 	private int lcdRows;
 
 -- メモリ (0x0000~0xffff) 	private byte[] memory;
-
+local memory = {}
 -- RAMの初期値 (0x0000~0x003f) private byte[] base = new byte[] {i}
 local base = {
 		0xc3, 0xf4, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1420,6 +1744,7 @@ local ramBank
 -- 最後に設定した按键ストローブ 	private int keyStrobeLast;
 
 -- 按键状態 	private int[] keyMatrix;
+local keyMatrix = {}
 
 -- ON按键状態 	private int keyBreak;
 
@@ -1496,13 +1821,13 @@ local lcdScalePrev = {{}}
 -- LCDページ数 	private int lcdPages;
 
 -- SIO入出力モード 	private int sioMode = SIO_MODE_STOP;
-
+local sioMode = SIO_MODE_STOP;
 -- SIO入力ファイル名 	private String sioInPathname = "";
-
+local sioInPathname = "";
 -- SIO出力ファイル名 	private String sioOutPathname = "";
-
+local sioOutPathname = "";
 -- SIOバッファ 	private byte sioBuffer[];
-
+local sioBuffer = {}
 -- SIO入出力カウンタ 	private int sioCount;
 
 -- SIOへの出力 	private int pin11Out;
@@ -1531,7 +1856,7 @@ local zoomY = 1
 local offsetX = 0
 
 -- レイアウトの原点のY座標 private int offsetY = 0;
-offsetY = 0
+local offsetY = 0
 
 -- コンストラクタ public G800Emulator(int m, int cpu_clocks, int freq, int lcd_scales)
 function G8xx:G800Emulator(m, cpu_clocks, freq, lcd_scales)
@@ -3771,7 +4096,7 @@ end
 --起動する (subroutineの下請け)
 --private int iocs_bff4()
 local function iocs_bff4()
-	setMode(MODE_MENU);
+	setMode(G8xx.MODE_MENU);
 	return 0;
 end
 
@@ -3862,7 +4187,7 @@ function run()
 	--int x, y, i, col, row, mask, screenx, screeny;
 	--boolean dot;
 
-	if(mode == MODE_EMULATOR) then
+	if(mode == G8xx.MODE_EMULATOR) then
 	-- コードを実行する 		
 		execute(cpuClocks / fps);
 	
@@ -4027,11 +4352,11 @@ end
 --public void boot()
 function boot()
 	if(rom[0] ~= nil) then
-		mode = MODE_EMULATOR;
+		mode = G8xx.MODE_EMULATOR;
 		System.arraycopy(rom[0], 0, memory, 0x8000, rom[0].length);
 		System.arraycopy(rom[0], 0, memory, 0xc000, rom[0].length);
 	else 
-		mode = MODE_MENU;
+		mode = G8xx.MODE_MENU;
 		Arrays.fill(memory, 0x8000, 0x8000, 0xff);
 	end
 
